@@ -80,17 +80,17 @@ data2 <- data.table::data.table(
    "product" = c(1,1,"bla",1,2,3,3,4,4,5,6,6,7),
    "price" = runif(13,5,6))
 
-is_connected(data2$region, data2$product) # false
+is.connected(data2$region, data2$product) # false
 data2$groups <- neighbors(data2$region, data2$product, TRUE)
 lapply(X = split(data2, data2$groups),
        FUN = function(z) cpd(z$price, z$region, z$product))
 
 data2[, "group_id" := neighbors(region, product, TRUE)]
-data2[!is.na(group_id), 
-      data.table::as.data.table(cpd(price, region, product), keep.rownames = TRUE), 
+data2[!is.na(group_id),
+      data.table::as.data.table(cpd(price, region, product), keep.rownames = TRUE),
       by = "group_id"]
-data2[!is.na(group_id), 
-      .("output" = list(cpd(price, region, product, simplify = FALSE))), 
+data2[!is.na(group_id),
+      .("output" = list(cpd(price, region, product, simplify = FALSE))),
       by = "group_id"]
 
 ### (3) computational speed in nlcpd() usually increases if use.jac=TRUE
@@ -98,11 +98,11 @@ set.seed(123)
 R <- 20 # number of regions
 N <- 30 # number of products
 data3 <- prices(R = R, N = N)
-system.time(m1 <- data3[, nlcpd(x=price, r=region, n=product, 
-                                settings=list(use.jac=FALSE), simplify=FALSE, 
+system.time(m1 <- data3[, nlcpd(x=price, r=region, n=product,
+                                settings=list(use.jac=FALSE), simplify=FALSE,
                                 control=minpack.lm::nls.lm.control("maxiter"=200))])
-system.time(m2 <- data3[, nlcpd(x=price, r=region, n=product, 
-                                settings=list(use.jac=TRUE), simplify=FALSE, 
+system.time(m2 <- data3[, nlcpd(x=price, r=region, n=product,
+                                settings=list(use.jac=TRUE), simplify=FALSE,
                                 control=minpack.lm::nls.lm.control("maxiter"=200))])
 all.equal(m1$par, m2$par, tol=1e-05)
 }

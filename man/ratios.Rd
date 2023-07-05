@@ -58,10 +58,10 @@ data3[1, "price" := data1[2,price]+abs(rnorm(1))]
 anyDuplicated(data3, by=c("region","product"))
 
 data3[, c("base","ratio") := data.table::as.data.table(
-                              ratios(price, region, product), 
+                              ratios(price, region, product),
                               keep.rownames = TRUE)]
 
 # duplicated prices are divided by the base price and
 # kept when base prices used are dropped:
-data3[, ratios(price, region, product, drop_base = TRUE)]
+data3[, ratios(price, region, product, drop = TRUE)]
 }
