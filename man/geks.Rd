@@ -2,7 +2,7 @@
 
 \alias{geks}
 
-\title{GEKS index}
+\title{GEKS method}
 
 \description{Calculation of regional price levels by the GEKS index method.}
 
@@ -35,7 +35,7 @@ Szulc, B. J. (1964). Indices for Multiregional Comparisons. \emph{Przeglad Staty
 \details{
 The GEKS index is a two-step approach. First, prices are aggregated into bilateral index numbers using the index given in \code{type}. This is done for all pairs of regions via function \code{\link{index.pairs}}. Second, these bilateral index numbers are transformed into a set of multilateral, transitive index numbers.
 
-Note that the weights \code{w} are used within the aggregation of prices into index numbers (first stage) while the subsequent transformation of these index numbers (second stage) does not rely on any weights. 
+Note that the weights \code{w} are used within the aggregation of prices into index numbers (first stage) while the subsequent transformation of these index numbers (second stage) does not rely on any weights.
 }
 
 \seealso{\code{\link{index.pairs}}}

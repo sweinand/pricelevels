@@ -3,7 +3,7 @@
 \alias{cpd}
 \alias{nlcpd}
 
-\title{Stochastic index number methods}
+\title{CPD and NLCPD methods}
 
 \description{
 Function \code{cpd()} estimates regional price levels by the Country-Product-Dummy (CPD) method, originally developed by Summers (1973). Auer and Weinand (2022) recently proposed a generalization of the CPD method. This nonlinear CPD method (NLCPD method) is implemented in \code{nlcpd()}.
