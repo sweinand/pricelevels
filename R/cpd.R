@@ -400,7 +400,7 @@ nlcpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = li
   }else{
 
     # number of observations per product:
-    nfreq <- table(n)
+    nfreq <- table(as.character(n)) # should be no factor due to unused levels
 
     # coerce to factor with ordering of products such that those with
     # one observation are not residually derived:
@@ -473,7 +473,7 @@ nlcpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = li
 
     # estimate NLCPD model:
     nlcpd_reg_out <- minpack.lm::nls.lm(
-      par = unlist(start, use.names = TRUE),
+      par = par.start,
       fn = resid_fun,
       jac = jacobi_fun,
       lower = defaults$lower,
