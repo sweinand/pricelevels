@@ -5,27 +5,27 @@ set.seed(123)
 data <- prices(R=1, N=4, w=~n)
 
 expect_equal(
-  data[, laspey(x=price, r=region, n=product, w=weight)],
+  data[, laspey(p=price, r=region, n=product, w=weight)],
   c("r1"=1)
 )
 
 expect_equal(
-  data[, paasche(x=price, r=region, n=product, w=weight)],
+  data[, paasche(p=price, r=region, n=product, w=weight)],
   c("r1"=1)
 )
 
 expect_equal(
-  data[, walsh(x=price, r=region, n=product, w=weight)],
+  data[, walsh(p=price, r=region, n=product, w=weight)],
   c("r1"=1)
 )
 
 expect_equal(
-  data[, fisher(x=price, r=region, n=product, w=weight)],
+  data[, fisher(p=price, r=region, n=product, w=weight)],
   c("r1"=1)
 )
 
 expect_equal(
-  data[, toernq(x=price, r=region, n=product, w=weight)],
+  data[, toernq(p=price, r=region, n=product, w=weight)],
   c("r1"=1)
 )
 
@@ -34,23 +34,23 @@ set.seed(123)
 data <- prices(R=4, N=1, weights=~n)
 
 expect_no_error(
-  data[, laspey(x=price, r=region, n=product, w=weight)]
+  data[, laspey(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, paasche(x=price, r=region, n=product, w=weight)]
+  data[, paasche(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, fisher(x=price, r=region, n=product, w=weight)]
+  data[, fisher(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, walsh(x=price, r=region, n=product, w=weight)]
+  data[, walsh(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, toernq(x=price, r=region, n=product, w=weight)]
+  data[, toernq(p=price, r=region, n=product, w=weight)]
 )
 
 # example data with weights:
@@ -69,27 +69,27 @@ W <- r[, weighted.mean(sqrt(V2), weight)/weighted.mean(sqrt(1/V2), weight), by="
 W <- setNames(W$V1, W$region)
 
 expect_equal(
-  data[, laspey(x=price, r=region, n=product, w=weight)],
+  data[, laspey(p=price, r=region, n=product, w=weight)],
   L
 )
 
 expect_equal(
-  data[, paasche(x=price, r=region, n=product, w=weight)],
+  data[, paasche(p=price, r=region, n=product, w=weight)],
   P
 )
 
 expect_equal(
-  data[, fisher(x=price, r=region, n=product, w=weight)],
+  data[, fisher(p=price, r=region, n=product, w=weight)],
   Fi
 )
 
 expect_equal(
-  data[, walsh(x=price, r=region, n=product, w=weight)],
+  data[, walsh(p=price, r=region, n=product, w=weight)],
   W
 )
 
 expect_equal(
-  data[, toernq(x=price, r=region, n=product, w=weight)],
+  data[, toernq(p=price, r=region, n=product, w=weight)],
   To
 )
 
@@ -109,27 +109,27 @@ W <- r[, weighted.mean(sqrt(V2), weight, na.rm=TRUE)/weighted.mean(sqrt(1/V2), w
 W <- setNames(W$V1, W$region)
 
 expect_equal(
-  data[, laspey(x=price, r=region, n=product, w=weight, base="r1")],
+  data[, laspey(p=price, r=region, n=product, w=weight, base="r1")],
   L
 )
 
 expect_equal(
-  data[, paasche(x=price, r=region, n=product, w=weight, base="r1")],
+  data[, paasche(p=price, r=region, n=product, w=weight, base="r1")],
   P
 )
 
 expect_equal(
-  data[, fisher(x=price, r=region, n=product, w=weight, base="r1")],
+  data[, fisher(p=price, r=region, n=product, w=weight, base="r1")],
   Fi
 )
 
 expect_equal(
-  data[, toernq(x=price, r=region, n=product, w=weight, base="r1")],
+  data[, toernq(p=price, r=region, n=product, w=weight, base="r1")],
   To
 )
 
 expect_equal(
-  data[, walsh(x=price, r=region, n=product, w=weight, base="r1")],
+  data[, walsh(p=price, r=region, n=product, w=weight, base="r1")],
   W
 )
 

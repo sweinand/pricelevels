@@ -4,16 +4,16 @@
 
 \title{GEKS method}
 
-\description{Calculation of regional price levels by the GEKS index method.}
+\description{Calculation of regional price levels using the GEKS method proposed by Gini (1924, 1931), Elteto and Koves (1964), and Szulc (1964).}
 
 \usage{
-geks(x, r, n, w = NULL, type = "jevons", base = NULL)
+geks(p, r, n, w = NULL, type = "jevons", base = NULL)
 }
 
 \arguments{
-   \item{x}{A numeric vector of prices.}
+   \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
-   \item{w}{A numeric vector of weights \eqn{w} to be applied. By default (\code{=NULL}), no weights are used in the regression.}
+   \item{w}{A numeric vector of weights used in the computation of weighted bilateral index numbers. Can be \code{NULL}, if the index formula specified in \code{type} does not require weights.}
    \item{type}{A character specifying the index number method to be used. See \code{\link{index.pairs}} for allowed values.}
    \item{base}{A character specifying the base region to which all price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average.}
 }
@@ -43,13 +43,13 @@ Note that the weights \code{w} are used within the aggregation of prices into in
 \examples{
 # sample complete price data; equal weights:
 data <- prices(R = 7, N = 20)
-data[, geks(x = price, r = region, n = product, type = "jevons", base = "r1")]
-data[, jevons(x = price, r = region, n = product, base = "r1")]
+data[, geks(p = price, r = region, n = product, type = "jevons", base = "r1")]
+data[, jevons(p = price, r = region, n = product, base = "r1")]
 # -> identical
 
 # introduce gaps:
 data_gaps <- data[!gaps(region, product, amount=0.4), ]
-data_gaps[, geks(x = price, r = region, n = product, type = "jevons", base = "r1")]
-data_gaps[, jevons(x = price, r = region, n = product, base = "r1")]
+data_gaps[, geks(p = price, r = region, n = product, type = "jevons", base = "r1")]
+data_gaps[, jevons(p = price, r = region, n = product, base = "r1")]
 # -> now, differences
 }

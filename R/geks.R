@@ -2,10 +2,10 @@
 
 # Title:  GEKS index
 # Author: Sebastian Weinand
-# Date:   2023-06-29
+# Date:   2023-08_23
 
 # compute mutlilateral GEKS index:
-geks <- function(x, r, n, w = NULL, type = "jevons", base = NULL){
+geks <- function(p, r, n, w = NULL, type = "jevons", base = NULL){
 
   # input checks:
   .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
@@ -14,7 +14,7 @@ geks <- function(x, r, n, w = NULL, type = "jevons", base = NULL){
   # compute bilateral price index numbers:
   price_mat <- index.pairs(r = r,
                            n = n,
-                           x = x,
+                           p = p,
                            w = w,
                            type = type,
                            all.pairs = TRUE,

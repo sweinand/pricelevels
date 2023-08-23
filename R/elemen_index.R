@@ -2,7 +2,7 @@
 
 # Title:  Elementary price indices
 # Author: Sebastian Weinand
-# Date:   2023-06-29
+# Date:   2023-08-23
 
 # helper functions:
 .jevons <- function(prices, weights = NULL, base = 1L){
@@ -61,16 +61,16 @@
 }
 
 # helper function for input checking and calculations:
-.elem.index <- function(x, r, n, type, base = NULL){
+.elem.index <- function(p, r, n, type, base = NULL){
 
   # input checks:
-  .check.num(x=x, int=c(0, Inf))
+  .check.num(x=p, int=c(0, Inf))
   .check.char(x=r)
   .check.char(x=n)
   .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
   .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=x)
+  .check.lengths(x=r, y=p)
 
   # set index function based on type:
   type <- match.arg(arg = type, choices = c("jevons", "carli", "dutot", "harmonic"))
@@ -84,13 +84,13 @@
   if(!(base%in%r)){ # when base is no valid region
     base <- names(which.max(table(r)))[1]
     warning(paste("Base region not found and reset to", base))
-  } 
+  }
 
   # gather in data.table:
   price_data <- data.table("region" = factor(r),
                            "product" = factor(n),
-                           "price" = as.numeric(x))
-  
+                           "price" = as.numeric(p))
+
   # store initial ordering of region levels:
   region.lev <- levels(price_data$region)
 
@@ -137,24 +137,24 @@
 }
 
 # package functions:
-jevons <- function(x, r, n, base = NULL){
+jevons <- function(p, r, n, base = NULL){
 
-  .elem.index(r = r, n = n, x = x, type = "jevons", base = base)
-
-}
-dutot <- function(x, r, n, base = NULL){
-
-  .elem.index(r = r, n = n, x = x, type = "dutot", base = base)
+  .elem.index(r = r, n = n, p = p, type = "jevons", base = base)
 
 }
-carli <- function(x, r, n, base = NULL){
+dutot <- function(p, r, n, base = NULL){
 
-  .elem.index(r = r, n = n, x = x, type = "carli", base = base)
+  .elem.index(r = r, n = n, p = p, type = "dutot", base = base)
 
 }
-harmonic <- function(x, r, n, base = NULL){
+carli <- function(p, r, n, base = NULL){
 
-  .elem.index(r = r, n = n, x = x, type = "harmonic", base = base)
+  .elem.index(r = r, n = n, p = p, type = "carli", base = base)
+
+}
+harmonic <- function(p, r, n, base = NULL){
+
+  .elem.index(r = r, n = n, p = p, type = "harmonic", base = base)
 
 }
 

@@ -2,10 +2,10 @@
 
 # Title:  Compute index pairs
 # Author: Sebastian Weinand
-# Date:   2020-05-18
+# Date:   2023-08-23
 
 # compute bilateral index pairs:
-index.pairs <- function(x, r, n, w=NULL, type="jevons", all.pairs=TRUE, as.dt=FALSE){
+index.pairs <- function(p, r, n, w=NULL, type="jevons", all.pairs=TRUE, as.dt=FALSE){
 
   # allowed values for index type:
   index_vals <- c("jevons", "carli", "dutot", "harmonic", "toernq", "laspey", "paasche", "walsh", "fisher")
@@ -14,14 +14,14 @@ index.pairs <- function(x, r, n, w=NULL, type="jevons", all.pairs=TRUE, as.dt=FA
   index_weights <- c("toernq", "laspey", "paasche", "walsh", "fisher")
 
   # input checks:
-  .check.num(x=x, int=c(0, Inf))
+  .check.num(x=p, int=c(0, Inf))
   .check.char(x=r)
   .check.char(x=n)
   .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
   .check.log(x=all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   .check.log(x=as.dt, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=x)
+  .check.lengths(x=r, y=p)
 
   # set index function based on type:
   type <- match.arg(arg = type, choices = index_vals)
@@ -37,21 +37,21 @@ index.pairs <- function(x, r, n, w=NULL, type="jevons", all.pairs=TRUE, as.dt=FA
 
   # more sophisticated error handling for weights:
   if(type%in%index_weights){
-    
+
     if(is.null(w) || missing(w)){
       stop(paste0("Non-valid input for type -> weights required for type='", type, "'"))
     }else{
       .check.num(x=w, miss.ok=FALSE, null.ok=FALSE, int=c(0, Inf))
       .check.lengths(x=r, y=w)
     }
-    
+
   }else{
-    
+
     if(!is.null(w)){
       warning("Weights supplied, but will be ignored for type='", type, "'")
     }
     w <- NULL # set to NULL such that weights are ignored in the following
-    
+
   }
 
   # coerce to character:
@@ -59,7 +59,7 @@ index.pairs <- function(x, r, n, w=NULL, type="jevons", all.pairs=TRUE, as.dt=FA
   n <- factor(n)
 
   # convert prices and weights into matrix:
-  prices <- tapply(X = x, INDEX = list(n, r), FUN = mean)
+  prices <- tapply(X = p, INDEX = list(n, r), FUN = mean)
   if(!is.null(w)){weights <- tapply(X = w, INDEX = list(n, r), FUN = mean)}
 
   # number of regions or time periods:

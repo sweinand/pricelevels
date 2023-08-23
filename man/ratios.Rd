@@ -9,11 +9,11 @@ Groupwise calculation of price ratios with flexible setting of base prices by pr
 }
 
 \usage{
-ratios(x, r, n, base = NULL, static = FALSE, drop = FALSE)
+ratios(p, r, n, base = NULL, static = FALSE, drop = FALSE)
 }
 
 \arguments{
-   \item{x}{A numeric vector of prices.}
+   \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
    \item{base}{A character specifying the base region to be used for the calculation of price ratios. If \code{NULL}, \code{base} is set internally.}
    \item{static}{A logical indicating whether the \code{base} region is static (\code{TRUE}), i.e. always the same as \code{base}, or if another region than \code{base} is allowed to be used when prices for \code{base} are not available.}
@@ -38,7 +38,7 @@ data1 <- prices(R = 3, N = 4)
 levels(data1$region) <- c("a","b","c")
 
 # calculate price ratios by product groups:
-(pr <- data1[, ratios(x = price, r = region, n = product, base = "b")])
+(pr <- data1[, ratios(p = price, r = region, n = product, base = "b")])
 
 # add to data:
 data1[, c("base", "ratio") := list(names(pr), as.vector(pr))]

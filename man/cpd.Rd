@@ -20,15 +20,15 @@ Note that both the CPD and the NLCPD method require a normalization of the estim
 }
 
 \usage{
-cpd(x, r, n, w = NULL, base = NULL, simplify = TRUE)
+cpd(p, r, n, w = NULL, base = NULL, simplify = TRUE)
 
-nlcpd(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...)
+nlcpd(p, r, n, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...)
 }
 
 \arguments{
-   \item{x}{A numeric vector of prices.}
+   \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
-   \item{w}{A numeric vector of weights \eqn{w} to be applied. By default (\code{w=NULL}), no weights are used in the regression.}
+   \item{w}{A numeric vector of weights used for weighted regression. By default (\code{w=NULL}), no weights are used in the regression.}
    \item{base}{A character specifying the base to which the estimated logarithmic regional price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average, similar to \code{\link{contr.sum}}.}
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
@@ -98,10 +98,10 @@ set.seed(123)
 R <- 20 # number of regions
 N <- 30 # number of products
 data3 <- prices(R = R, N = N)
-system.time(m1 <- data3[, nlcpd(x=price, r=region, n=product,
+system.time(m1 <- data3[, nlcpd(p=price, r=region, n=product,
                                 settings=list(use.jac=FALSE), simplify=FALSE,
                                 control=minpack.lm::nls.lm.control("maxiter"=200))])
-system.time(m2 <- data3[, nlcpd(x=price, r=region, n=product,
+system.time(m2 <- data3[, nlcpd(p=price, r=region, n=product,
                                 settings=list(use.jac=TRUE), simplify=FALSE,
                                 control=minpack.lm::nls.lm.control("maxiter"=200))])
 all.equal(m1$par, m2$par, tol=1e-05)

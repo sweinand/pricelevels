@@ -10,14 +10,14 @@
 \description{Calculation of elementary price indices. Currently, Jevons, Carli, Harmonic and Dutot index are implemented.}
 
 \usage{
-jevons(x, r, n, base = NULL)
+jevons(p, r, n, base = NULL)
 carli(...)
 harmonic(...)
 dutot(...)
 }
 
 \arguments{
-   \item{x}{A numeric vector of prices.}
+   \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
    \item{base}{A character specifying the base region to which all price levels are expressed. If \code{NULL}, base region is set internally.}
 }
@@ -35,7 +35,7 @@ ILO, IMF, OECD, UNECE, Eurostat and World Bank (2020). \emph{Consumer Price Inde
 \examples{
 # sample complete price data:
 data <- prices(R = 7, N = 20)
-(P1.jev <- data[, jevons(x=price, r=region, n=product, base="r1")])
+(P1.jev <- data[, jevons(p=price, r=region, n=product, base="r1")])
 (P2.jev <- data[, jevons(price, region, product, base="r2")])
 all.equal(P1.jev, P2.jev/P2.jev[1]) # true
 

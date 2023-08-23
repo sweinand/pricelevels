@@ -2,7 +2,7 @@
 
 # Title:  Weighted price indices
 # Author: Sebastian Weinand
-# Date:   2020-05-17
+# Date:   2023-08-23
 
 # helper functions:
 .walsh <- function(prices, weights, base = 1L){
@@ -154,17 +154,17 @@
 #    a weighted harmonic and the Laspeyres a weighted Carli index.
 
 # helper function for input checking and calculations:
-.weighted.index <- function(x, r, n, w, type, base = NULL){
+.weighted.index <- function(p, r, n, w, type, base = NULL){
 
   # input checks:
-  .check.num(x=x, int=c(0, Inf))
+  .check.num(x=p, int=c(0, Inf))
   .check.char(x=r)
   .check.char(x=n)
   .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
   .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=x)
+  .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=w)
 
   # set index function based on type:
@@ -180,17 +180,17 @@
   if(!(base%in%r)){ # when base is no valid region
     base <- names(which.max(table(r)))[1]
     warning(paste("Base region not found and reset to", base))
-  } 
+  }
 
   # gather in data.table:
   price_data <- data.table("region" = factor(r),
                            "product" = factor(n),
-                           "price" = as.numeric(x),
+                           "price" = as.numeric(p),
                            "weights" = as.numeric(w))
 
   # store initial ordering of region levels:
   region.lev <- levels(price_data$region)
-  
+
   # set key:
   setkeyv(x = price_data, cols = c("region", "product"))
 
@@ -226,61 +226,61 @@
 
   # coerce to vector:
   out <- setNames(index_data$V1, index_data$region.x)
-  
+
   # match to initial ordering and unlog:
   out <- out[match(x=region.lev, table=names(out))]
-  
+
   # print output to console:
   return(out)
 
 }
 
 # package functions:
-walsh <- function(x, r, n, w, base = NULL){
+walsh <- function(p, r, n, w, base = NULL){
 
   .weighted.index(r = r,
                   n = n,
-                  x = x,
+                  p = p,
                   w = w,
                   type = "walsh",
                   base = base)
 
 }
-toernq <- function(x, r, n, w, base = NULL){
+toernq <- function(p, r, n, w, base = NULL){
 
   .weighted.index(r = r,
                   n = n,
-                  x = x,
+                  p = p,
                   w = w,
                   type = "toernq",
                   base = base)
 
 }
-laspey <- function(x, r, n, w, base = NULL){
+laspey <- function(p, r, n, w, base = NULL){
 
   .weighted.index(r = r,
                   n = n,
-                  x = x,
+                  p = p,
                   w = w,
                   type = "laspey",
                   base = base)
 
 }
-paasche <- function(x, r, n, w, base = NULL){
+paasche <- function(p, r, n, w, base = NULL){
 
   .weighted.index(r = r,
                   n = n,
-                  x = x,
+                  p = p,
                   w = w,
                   type = "paasche",
                   base = base)
 
 }
-fisher <- function(x, r, n, w, base = NULL){
+fisher <- function(p, r, n, w, base = NULL){
 
   .weighted.index(r = r,
                   n = n,
-                  x = x,
+                  p = p,
                   w = w,
                   type = "fisher",
                   base = base)

@@ -8,13 +8,13 @@
 }
 
 \usage{
-index.pairs(x, r, n, w = NULL, type = "jevons", all.pairs = TRUE, as.dt = FALSE)
+index.pairs(p, r, n, w = NULL, type = "jevons", all.pairs = TRUE, as.dt = FALSE)
 }
 
 \arguments{
-   \item{x}{A numeric vector of prices.}
+   \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
-   \item{w}{A numeric vector of weights \eqn{w} to be applied. For elementary indices (e.g. \code{\link{jevons}}), \code{weights} are ignored if given.}
+   \item{w}{A numeric vector of weights used in the computation of weighted bilateral index numbers. Can be \code{NULL}, if the index formula specified in \code{type} does not require weights.}
    \item{type}{A character specifying the index to be applied. Allowed values are \code{jevons}, \code{carli}, \code{dutot}, \code{harmonic}, \code{laspey}, \code{paasche}, \code{fisher}, \code{walsh} and \code{toernq}.}
    \item{all.pairs}{Logical indicating whether index numbers should be computed for all region pairs (\code{TRUE}) or only for non-redundant ones (\code{FALSE}), e.g. the index number of regions \code{AB} should be the same as the inverse of \code{BA}.}
    \item{as.dt}{A logical indicating whether the results should be transformed to a data.table (\code{TRUE}) or not (\code{FALSE}).}
@@ -39,7 +39,7 @@ ILO, IMF, OECD, UNECE, Eurostat and World Bank (2020). \emph{Consumer Price Inde
 data <- prices(R = 7, N = 20)
 data[, "weights" := 1]
 
-P.je <- data[, index.pairs(x=price, r=region, n=product, type="jevons")]
+P.je <- data[, index.pairs(p=price, r=region, n=product, type="jevons")]
 P.to <- data[, index.pairs(price, region, product, w=weights, type="toernq")]
 all.equal(P.je, P.to) # true
 

@@ -2,24 +2,24 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   2023-06-29
+# Date:   2023-08-23
 
 # CPD method:
-cpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE){
+cpd <- function(p, r, n, w = NULL, base = NULL, simplify = TRUE){
 
   # input checks:
-  .check.num(x=x, int=c(0, Inf))
+  .check.num(x=p, int=c(0, Inf))
   .check.char(x=r)
   .check.char(x=n)
   .check.num(x=w, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
   .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=x)
+  .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=w)
 
   # complete cases:
-  full_row <- complete.cases(r, n, x, w)
+  full_row <- complete.cases(r, n, p, w)
 
   # stop if no observations left:
   if(all(!full_row)){stop("No complete cases available. All data pairs contain at least one NA.")}
@@ -27,7 +27,7 @@ cpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE){
   # keep only complete cases:
   region <- r[full_row]
   product <- n[full_row]
-  price <- x[full_row]
+  price <- p[full_row]
   w <- w[full_row]
 
   # coerce to factor:
@@ -117,10 +117,10 @@ cpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE){
 }
 
 # helper function for NLCPD starting values:
-.nlcpd_self_start <- function(x, r, n, w, w.delta, base=NULL, strategy="s1"){
+.nlcpd_self_start <- function(p, r, n, w, w.delta, base=NULL, strategy="s1"){
 
   # gather data:
-  dt <- data.table(x, r, n, w)
+  dt <- data.table(p, r, n, w)
   n.lev <- levels(dt$n)
   r.lev <- levels(dt$r)
 
@@ -129,10 +129,10 @@ cpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE){
 
   if(strategy == "s1"){
 
-    pi <- dt[, weighted.mean(log(x), w), by="n"]
+    pi <- dt[, weighted.mean(log(p), w), by="n"]
     pi <- setNames(pi$V1, pi$n)
     pi <- pi[match(n.lev, names(pi))]
-    lnP <- dt[, weighted.mean(log(x), w), by="r"]
+    lnP <- dt[, weighted.mean(log(p), w), by="r"]
     lnP <- setNames(lnP$V1, lnP$r)
     lnP <- lnP[match(r.lev, names(lnP))]
     if(is.null(base)){
@@ -147,7 +147,7 @@ cpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE){
 
   if(strategy %in% c("s2", "s3")){
 
-    mod.cpd <- dt[, spin::cpd(x=x, r=r, n=n, w=w, base=base, simplify=FALSE)]
+    mod.cpd <- dt[, spin::cpd(p=p, r=r, n=n, w=w, base=base, simplify=FALSE)]
     beta.cpd <- dummy.coef(mod.cpd)
     lnP <- beta.cpd$region
     pi <- beta.cpd$product
@@ -162,7 +162,7 @@ cpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE){
     if(strategy == "s3"){
       dt$lnP <- lnP[match(dt$r, names(lnP))]
       dt$pi <- pi[match(dt$n, names(pi))]
-      dt.delta <- dt[ , list("d"=sum(lnP*(log(x)-pi)/sum(lnP^2)), "w_delta"=w_delta[1]), by="n"]
+      dt.delta <- dt[ , list("d"=sum(lnP*(log(p)-pi)/sum(lnP^2)), "w_delta"=w_delta[1]), by="n"]
       delta <- setNames(dt.delta[, d/sum(d*w_delta)], dt.delta$n)
       delta <- delta[match(n.lev, names(delta))]
       delta <- delta[-1]
@@ -318,17 +318,17 @@ cpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE){
 }
 
 # NLCPD method:
-nlcpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...){
+nlcpd <- function(p, r, n, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...){
 
   # input checks:
-  .check.num(x=x, int=c(0, Inf))
+  .check.num(x=p, int=c(0, Inf))
   .check.char(x=r)
   .check.char(x=n)
   .check.num(x=w, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
   .check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=x)
+  .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=w)
 
   # set settings if necessary:
@@ -342,13 +342,13 @@ nlcpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = li
   defaults[names(dots)] <- dots
 
   # residual function to be minimzed:
-  resid_fun <- function(par, x, r, n, w, w.delta, base=NULL){
-    sqrt(w)*(log(x) - .nlcpd_optimize(par=par, n=n, r=r, w=w, w.delta=w.delta, base=base))
+  resid_fun <- function(par, p, r, n, w, w.delta, base=NULL){
+    sqrt(w)*(log(p) - .nlcpd_optimize(par=par, n=n, r=r, w=w, w.delta=w.delta, base=base))
   }
 
   # jacobi function:
   if(settings$use.jac){
-    jacobi_fun <- function(par, x=NULL, r, n, w, w.delta, base=NULL){
+    jacobi_fun <- function(par, p=NULL, r, n, w, w.delta, base=NULL){
       sqrt(w)*(-1)*.nlcpd_jacobi(par=par, n=n, r=r, w=w, w.delta=w.delta, base=base)
     }
   }else{
@@ -356,18 +356,18 @@ nlcpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = li
   }
 
   # complete cases:
-  full_row <- complete.cases(r, n, x, w)
+  full_row <- complete.cases(r, n, p, w)
 
   # stop if no observations left:
   if(all(!full_row)) stop("No complete cases available. All data pairs contain at least one NA.")
 
   # set weights if missing:
-  if(is.null(w)) w <- rep(1, length(x))
+  if(is.null(w)) w <- rep(1, length(p))
 
   # keep only complete cases:
   region <- r[full_row]
   product <- n[full_row]
-  price <- x[full_row]
+  price <- p[full_row]
   w <- w[full_row]
 
   # coerce to factor:
@@ -424,7 +424,7 @@ nlcpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = li
     # set start parameters if not given by user:
     if(is.null(settings$par.start)){
       settings$self.start <- match.arg(arg=settings$self.start, choices=paste0("s", 1:3))
-      start <- .nlcpd_self_start(x=x, r=region, n=product, w=w, w.delta=w.delta, base=base, strategy=settings$self.start)
+      start <- .nlcpd_self_start(p=p, r=region, n=product, w=w, w.delta=w.delta, base=base, strategy=settings$self.start)
     }else{
       start <- settings$par.start
     }
@@ -479,7 +479,7 @@ nlcpd <- function(x, r, n, w = NULL, base = NULL, simplify = TRUE, settings = li
       lower = defaults$lower,
       upper = defaults$upper,
       control = defaults$control,
-      x = x,
+      p = p,
       r = region,
       n = product,
       w = w,

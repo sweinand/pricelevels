@@ -12,7 +12,7 @@ res <- setNames(res$V1, rep("b", nrow(res)))
 
 # calculate price ratios by product groups:
 expect_equal(
-  data1[, ratios(x = price, r = region, n = product, base = "b")],
+  data1[, ratios(p = price, r = region, n = product, base = "b")],
   res
 )
 
