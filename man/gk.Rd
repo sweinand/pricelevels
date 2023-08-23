@@ -52,10 +52,10 @@ data <- prices(R = R, N = N)
 data[, "quantity" := 1]
 
 # complete data:
-dt[, gk(p=price, q=quantity, t=time, n=item, settings=list(method="iterative"))]
-dt[, gk(p=price, q=quantity, t=time, n=item, settings=list(method="solve"))]
+data[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
+data[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
 
 # incomplete data:
-dt[-c(1,16), gk(p=price, q=quantity, t=time, n=item, settings=list(method="iterative"))]
-dt[-c(1,16), gk(p=price, q=quantity, t=time, n=item, settings=list(method="solve"))]
+data[-c(1,12), gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
+data[-c(1,12), gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
 }
