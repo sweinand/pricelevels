@@ -9,7 +9,7 @@ Calculation of regional price levels using the Geary-Khamis method proposed by G
 }
 
 \usage{
-gk(p, q, r, n, base = NULL, simplify = TRUE, settings = list())
+gk(p, r, n, q, base = NULL, simplify = TRUE, settings = list())
 }
 
 \arguments{

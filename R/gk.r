@@ -5,7 +5,7 @@
 # Date:     22 August 2023
 
 # geary-khamis index:
-gk <- function(p, q, r, n, base=NULL, simplify=TRUE, settings=list()){
+gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
