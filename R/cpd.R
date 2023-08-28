@@ -2,24 +2,30 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   2023-08-23
+# Date:   2023-08-28
 
 # CPD method:
-cpd <- function(p, r, n, w = NULL, base = NULL, simplify = TRUE){
+cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
   .check.char(x=r)
   .check.char(x=n)
-  .check.num(x=w, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
+  .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+  .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
   .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=w)
+  .check.lengths(x=r, y=q)
 
-  # complete cases:
-  full_row <- complete.cases(r, n, p, w)
+  # if q is provided w will not be used if provided as well:
+  if(is.null(q)){
+    full_row <- complete.cases(r, n, p, w)
+  }else{
+    full_row <- complete.cases(r, n, p, q)
+  }
 
   # stop if no observations left:
   if(all(!full_row)){stop("No complete cases available. All data pairs contain at least one NA.")}
@@ -29,6 +35,12 @@ cpd <- function(p, r, n, w = NULL, base = NULL, simplify = TRUE){
   product <- n[full_row]
   price <- p[full_row]
   w <- w[full_row]
+  q <- q[full_row]
+
+  # compute expenditure share weights:
+  if(!is.null(q)){
+    w <- (p*q)/ave(x=p*q, r, FUN=function(z) sum(z, na.rm=TRUE))
+  }
 
   # coerce to factor:
   region <- factor(region)
@@ -318,18 +330,20 @@ cpd <- function(p, r, n, w = NULL, base = NULL, simplify = TRUE){
 }
 
 # NLCPD method:
-nlcpd <- function(p, r, n, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...){
+nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...){
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
   .check.char(x=r)
   .check.char(x=n)
-  .check.num(x=w, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
+  .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+  .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
   .check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=w)
+  .check.lengths(x=r, y=q)
 
   # set settings if necessary:
   if(is.null(settings$use.jac)) settings$use.jac <- FALSE
@@ -355,20 +369,29 @@ nlcpd <- function(p, r, n, w = NULL, base = NULL, simplify = TRUE, settings = li
     jacobi_fun <- defaults$jac
   }
 
-  # complete cases:
-  full_row <- complete.cases(r, n, p, w)
+  # if q is provided w will not be used if provided as well:
+  if(is.null(q)){
+    full_row <- complete.cases(r, n, p, w)
+  }else{
+    full_row <- complete.cases(r, n, p, q)
+  }
 
   # stop if no observations left:
   if(all(!full_row)) stop("No complete cases available. All data pairs contain at least one NA.")
-
-  # set weights if missing:
-  if(is.null(w)) w <- rep(1, length(p))
 
   # keep only complete cases:
   region <- r[full_row]
   product <- n[full_row]
   price <- p[full_row]
   w <- w[full_row]
+  q <- q[full_row]
+
+  # compute expenditure share weights:
+  if(!is.null(q)){
+    w <- (p*q)/ave(x=p*q, r, FUN=function(z) sum(z, na.rm=TRUE))
+  }else{
+    if(is.null(w)) w <- rep(1, length(p))
+  }
 
   # coerce to factor:
   region <- factor(region)

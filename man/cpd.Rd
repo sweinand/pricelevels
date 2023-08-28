@@ -20,15 +20,15 @@ Note that both the CPD and the NLCPD method require a normalization of the estim
 }
 
 \usage{
-cpd(p, r, n, w = NULL, base = NULL, simplify = TRUE)
+cpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE)
 
-nlcpd(p, r, n, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...)
+nlcpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...)
 }
 
 \arguments{
    \item{p}{A numeric vector of prices.}
-   \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
-   \item{w}{A numeric vector of weights used for weighted regression. By default (\code{w=NULL}), no weights are used in the regression.}
+   \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or weights \code{w}, respectively. By default, no weights are used in the regression (\code{w=NULL}). While \code{w} can be any weights considered as approriate for weighted regression, \code{q} will result in an expenditure share weighted regression, i.e. weights are defined as regional expenditure shares. If both \code{q} and \code{w} are provided, \code{q} will be used.}
    \item{base}{A character specifying the base to which the estimated logarithmic regional price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average, similar to \code{\link{contr.sum}}.}
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
