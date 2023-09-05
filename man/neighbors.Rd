@@ -25,7 +25,7 @@ sparsity(r, n, useable = FALSE)
 }
 
 \arguments{
-   \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
+   \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
    \item{simplify}{A logical indicating whether the results should be simplified to a factor of group identifiers (\code{TRUE}) or not (\code{FALSE}). In the latter case the output will be a list of connected regions.}
    \item{ngbs}{Either \code{NULL} or a list of connected regions derived from \code{neighbors()}. The latter case will allow for small performance gains in terms of processing times.}
    \item{useable}{A logical indicating whether only observations should be taken into account that could be used for interregional comparisons (\code{TRUE}) or not (\code{FALSE}).}

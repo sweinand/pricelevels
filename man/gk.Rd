@@ -13,8 +13,9 @@ gk(p, r, n, q, base = NULL, simplify = TRUE, settings = list())
 }
 
 \arguments{
-   \item{p, q}{A numeric vector of prices and quantities, respectively.}
-   \item{r, n}{A character vector or factor of regional entities \eqn{r} and products \eqn{n}, respectively.}
+   \item{p}{A numeric vector of prices.}
+   \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
+   \item{q}{A numeric vector of non-negative quantities.}
    \item{base}{A character specifying the base region to which all price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average.}
    \item{simplify}{A logical indicating whether a named vector of estimated regional price levels (\code{TRUE}) should be returned, or also the average product prices.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
