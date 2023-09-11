@@ -73,21 +73,24 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   }
   if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
+  # change coefficient names:
+  setnames(x=pdata, old=c("r","n"), new=c("lnP","pi"))
+
   # CPD regression formula:
-  cpd_mod <- log(p) ~ n + r - 1
+  cpd_mod <- log(p) ~ pi + lnP - 1
 
   # CASE: one product, multiple regions:
-  if(nlevels(pdata$n) <= 1){
+  if(nlevels(pdata$pi) <= 1){
 
     # update formula:
-    cpd_mod <- update.formula(old = cpd_mod, new = . ~ r + 1)
+    cpd_mod <- update.formula(old = cpd_mod, new = . ~ lnP + 1)
     # include intercept to express regional price levels
     # relative to base level
 
   }
 
   # CASE: one region, one or multiple products:
-  if(nlevels(pdata$r) <= 1){
+  if(nlevels(pdata$lnP) <= 1){
 
     # update formula:
     cpd_mod <- update.formula(old = cpd_mod, new = . ~ 0)
@@ -99,13 +102,13 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
     # update contrasts:
     if(is.null(base)){
 
-      contrasts(x=pdata$r) <- contr.sum(levels(pdata$r))
-      colnames(contrasts(x=pdata$r)) <- levels(pdata$r)[-nlevels(pdata$r)]
+      contrasts(x=pdata$lnP) <- contr.sum(levels(pdata$lnP))
+      colnames(contrasts(x=pdata$lnP)) <- levels(pdata$lnP)[-nlevels(pdata$lnP)]
 
     }else{
 
-      contrasts(x=pdata$r) <- contr.treatment(levels(pdata$r))
-      colnames(contrasts(x=pdata$r)) <- levels(pdata$r)[-1]
+      contrasts(x=pdata$lnP) <- contr.treatment(levels(pdata$lnP))
+      colnames(contrasts(x=pdata$lnP)) <- levels(pdata$lnP)[-1]
 
     }
 
@@ -122,7 +125,7 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   if(simplify){
 
     # extract estimated regional price levels:
-    out <- dummy.coef(cpd_reg_out)[["r"]]
+    out <- dummy.coef(cpd_reg_out)[["lnP"]]
     # usage of 'dummy.coef' requires dummy variables of class 'factor'
 
     # set price level if there is only one region:
@@ -138,6 +141,7 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
 
     # keep lm-object:
     out <- cpd_reg_out
+    names(out$coefficients) <- gsub("^(pi|lnP)", "\\1.", names(out$coefficients))
 
   }
 
@@ -179,8 +183,8 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
 
     mod.cpd <- dt[, spin::cpd(p=p, r=r, n=n, w=w, base=base, simplify=FALSE)]
     beta.cpd <- dummy.coef(mod.cpd)
-    lnP <- beta.cpd$r
-    pi <- beta.cpd$n
+    lnP <- beta.cpd$lnP
+    pi <- beta.cpd$pi
     # if only one product:
     if(is.null(pi)) pi <- setNames(beta.cpd[["(Intercept)"]], n.lev)
 
@@ -218,15 +222,15 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   R <- nlevels(dt$r) # number of regions
 
   # split start values by parameter:
-  lnP <- par[grepl("^r\\.", names(par))]
-  pi <- par[grepl("^n\\.", names(par))]
+  lnP <- par[grepl("^lnP\\.", names(par))]
+  pi <- par[grepl("^pi\\.", names(par))]
   delta <- par[grepl("^delta\\.", names(par))]
 
   # set base region:
   if(base%in%levels(dt$r) && !is.null(base)) dt[, "r" := relevel(x=r, ref=base)]
 
   # adjust parameter names for matching:
-  names(lnP) <- gsub("^r\\.", "", names(lnP))
+  names(lnP) <- gsub("^lnP\\.", "", names(lnP))
   lnP.base <- setdiff(levels(dt$r), names(lnP))
   if(!is.null(base) && lnP.base!=base){
     stop("Base region in 'base' does not match 'start$lnP'.")
@@ -246,7 +250,7 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   delta <- setNames(c((1-sum(w.delta[-1]*delta))/w.delta[1], delta), c(delta.base, names(delta)))
 
   # adjust parameter names for matching:
-  names(pi) <- gsub("^n\\.", "", names(pi))
+  names(pi) <- gsub("^pi\\.", "", names(pi))
 
   # add parameter values:
   dt$lnP <- lnP[match(dt$r, names(lnP))]
@@ -272,15 +276,15 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   R <- nlevels(dt$r) # number of regions
 
   # split start values by parameter:
-  lnP <- par[grepl("^r\\.", names(par))]
-  pi <- par[grepl("^n\\.", names(par))]
+  lnP <- par[grepl("^lnP\\.", names(par))]
+  pi <- par[grepl("^pi\\.", names(par))]
   delta <- par[grepl("^delta\\.", names(par))]
 
   # set base region:
   if(base%in%levels(dt$r) && !is.null(base)) dt[, "r" := relevel(x=r, ref=base)]
 
   # adjust parameter names for matching:
-  names(lnP) <- gsub("^r\\.", "", names(lnP))
+  names(lnP) <- gsub("^lnP\\.", "", names(lnP))
   lnP.base <- setdiff(levels(dt$r), names(lnP))
   if(!is.null(base) && lnP.base!=base){
     stop("Base region in 'base' does not match 'start$lnP'.")
@@ -300,7 +304,7 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   delta <- setNames(c((1-sum(w.delta[-1]*delta))/w.delta[1], delta), c(delta.base, names(delta)))
 
   # adjust parameter names for matching:
-  names(pi) <- gsub("^n\\.", "", names(pi))
+  names(pi) <- gsub("^pi\\.", "", names(pi))
 
   # add parameter values:
   dt$lnP <- lnP[match(dt$r, names(lnP))]
@@ -494,10 +498,10 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
     if(length(names(start$delta)) <= 0 && N>1) names(start$delta) <- levels(pdata$n)[-1]
 
     # align coefficient names to output of cpd():
-    names(start)[names(start) == "lnP"] <- "r"
-    names(start)[names(start) == "pi"] <- "n"
-    names(start)[names(start) == "delta"] <- "delta"
-    start <- start[c("n", "r", "delta")] # important if use.jac=TRUE
+    # names(start)[names(start) == "lnP"] <- "r"
+    # names(start)[names(start) == "pi"] <- "n"
+    # names(start)[names(start) == "delta"] <- "delta"
+    start <- start[c("pi", "lnP", "delta")] # important if use.jac=TRUE
     par.start <- unlist(start, use.names=TRUE)
 
     # set lower and/or upper bounds on delta parameter
@@ -547,7 +551,7 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
 
       # extract estimated regional price levels:
       out <- coef(nlcpd_reg_out)
-      out <- out[grepl("^r\\.", names(out))]
+      out <- out[grepl("^lnP\\.", names(out))]
 
       # add price level of base (region):
       if(is.null(base)) out <- c(out, -sum(out)) else out <- c(0, out)

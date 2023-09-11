@@ -143,7 +143,7 @@ gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
     v <- sapply(X=v, "[[", 1L)
 
     # gather output:
-    res <- c("n"=v, "r"=P)
+    res <- c("v"=v, "P"=P)
 
   }
 
