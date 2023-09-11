@@ -41,6 +41,10 @@ nlcpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list
    \item{...}{Further arguments passed to \code{\link{nls.lm}}, typically arguments \code{control}, \code{upper} and \code{lower}.}
 }
 
+\details{
+Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+}
+
 \author{Sebastian Weinand}
 
 \references{

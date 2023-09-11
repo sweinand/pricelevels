@@ -2,10 +2,21 @@
 
 # Title:  Groupwise calculation of price ratios
 # Author: Sebastian Weinand
-# Date:   2023-08-23
+# Date:   11 September 2023
 
 # main function to perform groupwise calculations:
 .apply_per_group <- function(p, r, n, base=NULL, static=FALSE, drop=FALSE, FUN=function(x, x0){x/x0}){
+
+  # select base region:
+  .base <- function(p, r, base){
+    na.p <- !is.na(p)
+    if(base%in%r && any(!is.na(p[r==base]))){
+      res <- r==base & na.p
+    }else{
+      res <- na.p & !duplicated(na.p)
+    }
+    return(res)
+  }
 
   # define environment:
   env <- environment()
@@ -23,7 +34,7 @@
   if(static){
     dt[, "is_base" := region==base, by="product"]
   }else{
-    dt[, "is_base" := if(base%in%region){region==base}else{c(TRUE, rep(x=FALSE, times=.N-1))}, by="product"]
+    dt[, "is_base" := .base(p=price, r=region, base=base), by="product"]
   }
 
   # subset to unique observations of base region:

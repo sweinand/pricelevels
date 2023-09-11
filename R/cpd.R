@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   2023-08-28
+# Date:   11 September 2023
 
 # CPD method:
 cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
@@ -20,59 +20,74 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   .check.lengths(x=r, y=w)
   .check.lengths(x=r, y=q)
 
-  # if q is provided w will not be used if provided as well:
-  if(is.null(q)){
-    full_row <- complete.cases(r, n, p, w)
+  # set quantities or weights if available:
+  if(is.null(q) && is.null(w)){
+    z <- rep(1, length(p))
   }else{
-    full_row <- complete.cases(r, n, p, q)
+    if(is.null(q)) z <- w else z <- q
   }
 
+  # gather in data.table:
+  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "z"=as.numeric(z))
+
+  # if both q and w are provided, q will be checked:
+  pdata <- pdata[complete.cases(r, n, p, z), ]
+
   # stop if no observations left:
-  if(all(!full_row)){stop("No complete cases available. All data pairs contain at least one NA.")}
+  if(nrow(pdata)<=0L){
+    stop("No complete cases available. All data pairs contain at least one NA.")
+  }
 
-  # keep only complete cases:
-  region <- r[full_row]
-  product <- n[full_row]
-  price <- p[full_row]
-  w <- w[full_row]
-  q <- q[full_row]
+  # check for duplicated entries:
+  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
 
-  # compute expenditure share weights:
+    # average duplicated prices and weights, sum duplicated quantities:
+    if(is.null(q)){
+      pdata <- pdata[, list("p"=mean(p), "z"=mean(z)), by=c("r","n")]
+    }else{
+      pdata <- pdata[, list("p"=mean(p), "z"=sum(z)), by=c("r","n")]
+    }
+
+    # print warning:
+    warning("Duplicated observations found and aggregated.", call.=FALSE)
+
+  }
+
+  # compute expenditure share weights for each region:
   if(!is.null(q)){
-    w <- (p*q)/ave(x=p*q, r, FUN=function(z) sum(z, na.rm=TRUE))
+    pdata[, "w" := (p*z)/sum(p*z, na.rm=TRUE), by="r"]
   }
 
   # coerce to factor:
-  region <- factor(region)
-  product <- factor(product)
+  pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
   # store initial ordering of region levels:
-  region.lev <- levels(region)
+  r.lvl <- levels(pdata$r)
 
   # relevel to base region:
-  if(!base%in%levels(region) && !is.null(base)){
+  if(!base%in%r.lvl && !is.null(base)){
     # reset base region and print warning:
-    base <- names(which.max(table(region)))[1]
-    warning(paste("Base region not found and reset to", base))
+    base <- names(which.max(table(pdata$r)))[1]
+    warning(paste("Base region not found and reset to", base), call.=FALSE)
   }
-  if(!is.null(base)) region <- relevel(x=region, ref=base)
+  if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # CPD regression formula:
-  cpd_mod <- log(price) ~ product + region - 1
+  cpd_mod <- log(p) ~ n + r - 1
 
   # CASE: one product, multiple regions:
-  if(nlevels(product) <= 1){
+  if(nlevels(pdata$n) <= 1){
 
     # update formula:
-    cpd_mod <- update.formula(old = cpd_mod, new = . ~ region + 1)
+    cpd_mod <- update.formula(old = cpd_mod, new = . ~ r + 1)
     # include intercept to express regional price levels
     # relative to base level
 
   }
 
   # CASE: one region, one or multiple products:
-  if(nlevels(region) <= 1){
+  if(nlevels(pdata$r) <= 1){
 
     # update formula:
     cpd_mod <- update.formula(old = cpd_mod, new = . ~ 0)
@@ -84,34 +99,37 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
     # update contrasts:
     if(is.null(base)){
 
-      contrasts(x = region) <- contr.sum(levels(region))
-      colnames(contrasts(x = region)) <- levels(region)[-nlevels(region)]
+      contrasts(x=pdata$r) <- contr.sum(levels(pdata$r))
+      colnames(contrasts(x=pdata$r)) <- levels(pdata$r)[-nlevels(pdata$r)]
 
     }else{
 
-      contrasts(x = region) <- contr.treatment(levels(region))
+      contrasts(x=pdata$r) <- contr.treatment(levels(pdata$r))
+      colnames(contrasts(x=pdata$r)) <- levels(pdata$r)[-1]
 
     }
 
   }
 
   # estimate CPD regression model:
-  cpd_reg_out <- lm(formula = cpd_mod,
-                    weights = w,
-                    singular.ok = FALSE)
+  if(is.null(w) && is.null(q)){
+    cpd_reg_out <- lm(formula=cpd_mod, data=pdata, singular.ok=FALSE)
+  }else{
+    cpd_reg_out <- lm(formula=cpd_mod, data=pdata, weights=w, singular.ok=FALSE)
+  }
 
   # simplify to price levels only or not:
   if(simplify){
 
     # extract estimated regional price levels:
-    out <- dummy.coef(cpd_reg_out)[["region"]]
+    out <- dummy.coef(cpd_reg_out)[["r"]]
     # usage of 'dummy.coef' requires dummy variables of class 'factor'
 
     # set price level if there is only one region:
-    if(is.null(out)) out <- setNames(0, region.lev)
+    if(is.null(out)) out <- setNames(0, r.lvl)
 
     # match to initial ordering:
-    out <- out[match(x=region.lev, table=names(out))]
+    out <- out[match(x=r.lvl, table=names(out))]
 
     # unlog price levels:
     out <- exp(out)
@@ -161,8 +179,8 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
 
     mod.cpd <- dt[, spin::cpd(p=p, r=r, n=n, w=w, base=base, simplify=FALSE)]
     beta.cpd <- dummy.coef(mod.cpd)
-    lnP <- beta.cpd$region
-    pi <- beta.cpd$product
+    lnP <- beta.cpd$r
+    pi <- beta.cpd$n
     # if only one product:
     if(is.null(pi)) pi <- setNames(beta.cpd[["(Intercept)"]], n.lev)
 
@@ -200,15 +218,15 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   R <- nlevels(dt$r) # number of regions
 
   # split start values by parameter:
-  lnP <- par[grepl("^region\\.", names(par))]
-  pi <- par[grepl("^product\\.", names(par))]
+  lnP <- par[grepl("^r\\.", names(par))]
+  pi <- par[grepl("^n\\.", names(par))]
   delta <- par[grepl("^delta\\.", names(par))]
 
   # set base region:
   if(base%in%levels(dt$r) && !is.null(base)) dt[, "r" := relevel(x=r, ref=base)]
 
   # adjust parameter names for matching:
-  names(lnP) <- gsub("^region\\.", "", names(lnP))
+  names(lnP) <- gsub("^r\\.", "", names(lnP))
   lnP.base <- setdiff(levels(dt$r), names(lnP))
   if(!is.null(base) && lnP.base!=base){
     stop("Base region in 'base' does not match 'start$lnP'.")
@@ -228,7 +246,7 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   delta <- setNames(c((1-sum(w.delta[-1]*delta))/w.delta[1], delta), c(delta.base, names(delta)))
 
   # adjust parameter names for matching:
-  names(pi) <- gsub("^product\\.", "", names(pi))
+  names(pi) <- gsub("^n\\.", "", names(pi))
 
   # add parameter values:
   dt$lnP <- lnP[match(dt$r, names(lnP))]
@@ -254,15 +272,15 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   R <- nlevels(dt$r) # number of regions
 
   # split start values by parameter:
-  lnP <- par[grepl("^region\\.", names(par))]
-  pi <- par[grepl("^product\\.", names(par))]
+  lnP <- par[grepl("^r\\.", names(par))]
+  pi <- par[grepl("^n\\.", names(par))]
   delta <- par[grepl("^delta\\.", names(par))]
 
   # set base region:
   if(base%in%levels(dt$r) && !is.null(base)) dt[, "r" := relevel(x=r, ref=base)]
 
   # adjust parameter names for matching:
-  names(lnP) <- gsub("^region\\.", "", names(lnP))
+  names(lnP) <- gsub("^r\\.", "", names(lnP))
   lnP.base <- setdiff(levels(dt$r), names(lnP))
   if(!is.null(base) && lnP.base!=base){
     stop("Base region in 'base' does not match 'start$lnP'.")
@@ -282,7 +300,7 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   delta <- setNames(c((1-sum(w.delta[-1]*delta))/w.delta[1], delta), c(delta.base, names(delta)))
 
   # adjust parameter names for matching:
-  names(pi) <- gsub("^product\\.", "", names(pi))
+  names(pi) <- gsub("^n\\.", "", names(pi))
 
   # add parameter values:
   dt$lnP <- lnP[match(dt$r, names(lnP))]
@@ -369,53 +387,69 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
     jacobi_fun <- defaults$jac
   }
 
-  # if q is provided w will not be used if provided as well:
-  if(is.null(q)){
-    full_row <- complete.cases(r, n, p, w)
+  # set quantities or weights if available:
+  if(is.null(q) && is.null(w)){
+    z <- rep(1, length(p))
   }else{
-    full_row <- complete.cases(r, n, p, q)
+    if(is.null(q)) z <- w else z <- q
   }
 
+  # gather in data.table:
+  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "z"=as.numeric(z))
+
+  # if both q and w are provided, q will be checked:
+  pdata <- pdata[complete.cases(r, n, p, z), ]
+
   # stop if no observations left:
-  if(all(!full_row)) stop("No complete cases available. All data pairs contain at least one NA.")
+  if(nrow(pdata)<=0L){
+    stop("No complete cases available. All data pairs contain at least one NA.")
+  }
 
-  # keep only complete cases:
-  region <- r[full_row]
-  product <- n[full_row]
-  price <- p[full_row]
-  w <- w[full_row]
-  q <- q[full_row]
+  # check for duplicated entries:
+  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
 
-  # compute expenditure share weights:
+    # average duplicated prices and weights, sum duplicated quantities:
+    if(is.null(q)){
+      pdata <- pdata[, list("p"=mean(p), "z"=mean(z)), by=c("r","n")]
+    }else{
+      pdata <- pdata[, list("p"=mean(p), "z"=sum(z)), by=c("r","n")]
+    }
+
+    # print warning:
+    warning("Duplicated observations found and aggregated.", call.=FALSE)
+
+  }
+
+  # compute expenditure share weights for each region:
   if(!is.null(q)){
-    w <- (p*q)/ave(x=p*q, r, FUN=function(z) sum(z, na.rm=TRUE))
+    pdata[, "w" := (p*z)/sum(p*z, na.rm=TRUE), by="r"]
   }else{
-    if(is.null(w)) w <- rep(1, length(p))
+    if(is.null(w)) pdata[, "w" := 1] else pdata[, "w" := z]
   }
 
   # coerce to factor:
-  region <- factor(region)
+  pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
   # store initial ordering of region levels:
-  region.lev <- levels(region)
+  r.lvl <- levels(pdata$r)
 
   # number of regions:
-  R <- nlevels(region)
+  R <- nlevels(pdata$r)
 
   # relevel to base region:
-  if(!base%in%levels(region) && !is.null(base)){
+  if(!base%in%r.lvl && !is.null(base)){
     # reset base region and print warning:
-    base <- names(which.max(table(region)))[1]
-    warning(paste("Base region not found and reset to", base))
+    base <- names(which.max(table(pdata$r)))[1]
+    warning(paste("Base region not found and reset to", base), call.=FALSE)
   }
-  if(!is.null(base)) region <- relevel(x=region, ref=base)
+  if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # output if there is only one region:
   if(R<=1){
 
     if(simplify){
-      out <- setNames(1, region.lev)
+      out <- setNames(1, r.lvl)
     }else{
       out <- NULL
     }
@@ -423,23 +457,22 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
   }else{
 
     # number of observations per product:
-    nfreq <- table(as.character(n)) # should be no factor due to unused levels
+    nfreq <- pdata[, table(as.character(n))] # should be no factor due to unused levels
 
     # coerce to factor with ordering of products such that those with
     # one observation are not residually derived:
-    product <- factor(x=n, levels=names(sort(nfreq, decreasing=TRUE)))
+    pdata[, "n" := factor(x=n, levels=names(sort(nfreq, decreasing=TRUE)))]
 
     # number of products
-    N <- nlevels(product)
+    N <- nlevels(pdata$n)
 
     # set delta weights if missing:
     if(is.null(settings$w.delta)){
-      w.delta <- w
-      w.delta <- tapply(X=w.delta, INDEX=product, FUN=mean)
+      w.delta <- pdata[, tapply(X=w, INDEX=n, FUN=mean)]
       w.delta <- w.delta/sum(w.delta) # normalisation of weights
     }else{
       if(is.null(names(settings$w.delta))) stop("Please provide names for 'settings$w.delta'.")
-      if(!all(levels(product)%in%names(settings$w.delta), na.rm=TRUE)) stop("Please provide delta weights for all products 'n'.")
+      if(!all(levels(pdata$n)%in%names(settings$w.delta), na.rm=TRUE)) stop("Please provide delta weights for all products 'n'.")
       if(abs(sum(settings$w.delta)-1)>1e-5) warning("Sum of 'settings$w.delta' not 1.")
       w.delta <- settings$w.delta
     }
@@ -447,7 +480,7 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
     # set start parameters if not given by user:
     if(is.null(settings$par.start)){
       settings$self.start <- match.arg(arg=settings$self.start, choices=paste0("s", 1:3))
-      start <- .nlcpd_self_start(p=p, r=region, n=product, w=w, w.delta=w.delta, base=base, strategy=settings$self.start)
+      start <- with(pdata, .nlcpd_self_start(p=p, r=r, n=n, w=w, w.delta=w.delta, base=base, strategy=settings$self.start))
     }else{
       start <- settings$par.start
     }
@@ -456,15 +489,15 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
     .check.nlcpd.start(x = start, len = c(R-1, N, N-1))
 
     # adjust names of start parameters:
-    if(length(names(start$lnP)) <= 0) names(start$lnP) <- levels(region)[-ifelse(is.null(base), R, 1)]
-    if(length(names(start$pi)) <= 0) names(start$pi) <- levels(product)
-    if(length(names(start$delta)) <= 0 && N>1) names(start$delta) <- levels(product)[-1]
+    if(length(names(start$lnP)) <= 0) names(start$lnP) <- levels(pdata$r)[-ifelse(is.null(base), R, 1)]
+    if(length(names(start$pi)) <= 0) names(start$pi) <- levels(pdata$n)
+    if(length(names(start$delta)) <= 0 && N>1) names(start$delta) <- levels(pdata$n)[-1]
 
     # align coefficient names to output of cpd():
-    names(start)[names(start) == "lnP"] <- "region"
-    names(start)[names(start) == "pi"] <- "product"
+    names(start)[names(start) == "lnP"] <- "r"
+    names(start)[names(start) == "pi"] <- "n"
     names(start)[names(start) == "delta"] <- "delta"
-    start <- start[c("product", "region", "delta")] # important if use.jac=TRUE
+    start <- start[c("n", "r", "delta")] # important if use.jac=TRUE
     par.start <- unlist(start, use.names=TRUE)
 
     # set lower and/or upper bounds on delta parameter
@@ -502,10 +535,10 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
       lower = defaults$lower,
       upper = defaults$upper,
       control = defaults$control,
-      p = p,
-      r = region,
-      n = product,
-      w = w,
+      p = pdata$p,
+      r = pdata$r,
+      n = pdata$n,
+      w = pdata$w,
       w.delta = w.delta,
       base = base)
 
@@ -514,16 +547,16 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
 
       # extract estimated regional price levels:
       out <- coef(nlcpd_reg_out)
-      out <- out[grepl("^region\\.", names(out))]
+      out <- out[grepl("^r\\.", names(out))]
 
       # add price level of base (region):
       if(is.null(base)) out <- c(out, -sum(out)) else out <- c(0, out)
 
       # set names:
-      names(out) <- levels(region)
+      names(out) <- r.lvl
 
       # match to initial ordering and unlog:
-      out <- exp(out)[match(x=region.lev, table=names(out))]
+      out <- exp(out)[match(x=r.lvl, table=names(out))]
 
     }else{
 

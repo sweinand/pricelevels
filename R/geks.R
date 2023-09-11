@@ -2,13 +2,31 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   2023-08-27
+# Date:   11 September 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, as.dt=FALSE){
 
-  # check 'type':
+  # input checks:
+  .check.num(x=p, int=c(0, Inf))
+  .check.char(x=r)
+  .check.char(x=n)
+  .check.num(x=q, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
+  .check.num(x=w, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  .check.log(x=as.dt, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  .check.lengths(x=r, y=n)
+  .check.lengths(x=r, y=p)
+  .check.lengths(x=r, y=q)
+  .check.lengths(x=r, y=w)
+
+  # set quantities or weights if available:
+  if(is.null(q) && is.null(w)){
+    z <- rep(1, length(p))
+  }else{
+    if(is.null(q)) z <- w else z <- q
+  }
 
   # allowed index types:
   type.vals <- c("jevons", "carli", "dutot", "harmonic", "toernq", "laspey", "paasche", "walsh", "fisher")
@@ -32,41 +50,25 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
   type.weights <- c("toernq", "laspey", "paasche", "walsh", "fisher")
 
   # error handling for quantity and weights:
-  if(type%in%type.weights){
-
-    if((missing(w) || is.null(w)) && (missing(q) || is.null(q))){
-      stop(paste0("Non-valid input for type -> 'q' or 'w' required for type='", type, "'"))
-    }else{
-      # work with quantities or weights:
-      if(!(missing(q) || is.null(q))){
-        z <- q
-        q.avail <- TRUE
-      }else{
-        z <- w # we will work with q where q are the weights w
-        q.avail <- FALSE
-      }
-    }
-
-  }else{
-
-    z <- rep(1, length(p))
-    q.avail <- TRUE
-
+  if(type%in%type.weights && is.null(q) && is.null(w)){
+    stop(paste0("Non-valid input for type -> 'q' or 'w' required for type='", type, "'"))
   }
 
-  # input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.num(x=z, null.ok=FALSE, int=c(0, Inf))
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.log(x=all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.log(x=as.dt, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=p)
-  .check.lengths(x=r, y=z)
-
   # gather in data.table:
-  pdata <- data.table("r"=factor(r), "n"=factor(n), "p"=as.numeric(p), "z"=as.numeric(z))
+  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "z"=as.numeric(z))
+
+  # if both q and w are provided, q will be checked:
+  pdata <- pdata[complete.cases(r, n, p, z), ]
+
+  # stop if no observations left:
+  if(nrow(pdata)<=0L){
+    stop("No complete cases available. All data pairs contain at least one NA.")
+  }
+
+  # check for duplicated entries:
+  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
+    warning("Duplicated observations found and aggregated.", call.=FALSE)
+  }
 
   # convert prices into matrix:
   P <- as.matrix(
@@ -75,14 +77,18 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
 
   # convert weights or quantities into matrix, where duplicated weights
   # are averaged, duplicated quantites added up:
-  Z <- as.matrix(
-    x=dcast(
-      data=pdata,
-      formula=n~r,
-      fun.aggregate=function(j){if(q.avail) sum(j) else mean(j)},
-      value.var="z",
-      fill=NA),
-    rownames="n")
+  if(is.null(q) && is.null(w)){
+    Z <- NULL
+  }else{
+    Z <- as.matrix(
+      x=dcast(
+        data=pdata,
+        formula=n~r,
+        fun.aggregate=function(j){if(is.null(q)) mean(j) else sum(j)},
+        value.var="z",
+        fill=NA),
+      rownames="n")
+  }
 
   # number of regions or time periods:
   R <- ncol(P)
@@ -93,24 +99,24 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
   # slow, but complete or quick, but only non-redundant:
   if(!all.pairs){
 
-    if(q.avail){
+    if(is.null(q)){
       for(i in 1:R){
         idx <- i:R # tighten column selection in each iteration
-        res[i, idx] <- index_func(P=P[, idx, drop=FALSE], Q=Z[, idx, drop=FALSE], base=1L)
+        res[i, idx] <- index_func(P=P[, idx, drop=FALSE], W=Z[, idx, drop=FALSE], base=1L)
       }
     }else{
       for(i in 1:R){
         idx <- i:R # tighten column selection in each iteration
-        res[i, idx] <- index_func(P=P[, idx, drop=FALSE], W=Z[, idx, drop=FALSE], base=1L)
+        res[i, idx] <- index_func(P=P[, idx, drop=FALSE], Q=Z[, idx, drop=FALSE], base=1L)
       }
     }
 
   }else{
 
-    if(q.avail){
-      for(i in 1:R) res[i, ] <- index_func(P=P, Q=Z, base=i)
-    }else{
+    if(is.null(q)){
       for(i in 1:R) res[i, ] <- index_func(P=P, W=Z, base=i)
+    }else{
+      for(i in 1:R) res[i, ] <- index_func(P=P, Q=Z, base=i)
     }
 
   }
@@ -141,23 +147,42 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
 geks <- function(p, r, n, q=NULL, w=NULL, type="jevons", base=NULL){
 
   # input checks:
-  .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
+  .check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
   # -> input checks of other arguments are performed in index_pairs()
 
   # compute bilateral price index numbers:
   pmat <- index.pairs(r=r, n=n, p=p, q=q, w=w, type=type, all.pairs=TRUE, as.dt=FALSE)
 
   # define position of base region in matrix:
-  if(is.null(base) | missing(base)){
+  if(is.null(base)){
     idx <- 1L
   }else{
     if(base%in%colnames(pmat)){
-      idx <- which(base == colnames(pmat))
+      idx <- which(base==colnames(pmat))
     }else{
       idx <- 1L
-      warning(paste("Base region not found and reset to", colnames(pmat)[idx]))
+      warning(paste("Base region not found and reset to", colnames(pmat)[idx]), call.=FALSE)
     }
   }
+
+  # if(method=="unweighted"){
+  #   W <- matrix(data=1, nrow=nrow(pmat), ncol=ncol(pmat))
+  # }
+  #
+  # if(method=="obs.weighted"){
+  #   # this gives non-transitive index numbers
+  #   W <- as.matrix(table(n, r))>0
+  #   W <- t(W)%*%W
+  #   # W <- 0.5*(W+W[idx,])
+  #
+  # }
+  #
+  # # normalize weighting matrix:
+  # W <- W / colSums(W, na.rm=TRUE)[col(W)]
+  #
+  # # compute multilateral GEKS index numbers:
+  # out <- colSums(x=W*log(pmat)+sum((W*log(pmat))[,-idx]), na.rm=TRUE)
+  # out <- out-out[idx]
 
   # compute multilateral GEKS index numbers:
   out <- colMeans(x=log(pmat*pmat[idx,]), na.rm=TRUE)

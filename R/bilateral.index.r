@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     26 August 2023
+# Date:     11 September 2023
 
 # helper functions for comparison of two regions if
 # item sets are already matched. these will be called
@@ -309,8 +309,28 @@
 # bilateral index
 .bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL){
 
-  # check 'type':
+  # set default if missing:
+  if(missing(q)) q <- NULL
+
+  # input checks:
+  .check.num(x=p, int=c(0, Inf))
+  .check.char(x=r)
+  .check.char(x=n)
+  .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+  .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
+  .check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+  .check.lengths(x=r, y=n)
+  .check.lengths(x=r, y=p)
+  .check.lengths(x=r, y=q)
+  .check.lengths(x=r, y=w)
+
+  # set quantities or weights if available:
+  if(is.null(q) && is.null(w)){
+    z <- rep(1, length(p))
+  }else{
+    if(is.null(q)) z <- w else z <- q
+  }
 
   # allowed index types:
   type.vals <- c("jevons", "carli", "dutot", "harmonic", "toernq", "laspey", "paasche", "walsh", "fisher")
@@ -334,80 +354,64 @@
   type.weights <- c("toernq", "laspey", "paasche", "walsh", "fisher")
 
   # error handling for quantity and weights:
-  if(type%in%type.weights){
-
-    if((missing(w) || is.null(w)) && (missing(q) || is.null(q))){
-      stop(paste0("Non-valid input for type -> 'q' or 'w' required for type='", type, "'"))
-    }else{
-      # work with quantities or weights:
-      if(!(missing(q) || is.null(q))){
-        z <- q
-        q.avail <- TRUE
-      }else{
-        z <- w # we will work with q where q are the weights w
-        q.avail <- FALSE
-      }
-    }
-
-  }else{
-
-    z <- rep(1, length(p))
-    q.avail <- TRUE
-
-  }
-
-  # input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.num(x=z, null.ok=FALSE, int=c(0, Inf))
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=p)
-  .check.lengths(x=r, y=z)
-
-  # set default base if necessary:
-  if(is.null(base)){base <- names(which.max(table(r)))[1]} # when base is NULL
-  if(!(base%in%r)){ # when base is no valid region
-    base <- names(which.max(table(r)))[1]
-    warning(paste("Base region not found and reset to", base))
+  if(type%in%type.weights && is.null(q) && is.null(w)){
+    stop(paste0("Non-valid input for type -> 'q' or 'w' required for type='", type, "'"))
   }
 
   # gather in data.table:
-  pdata <- data.table("r"=factor(r), "n"=factor(n), "p"=as.numeric(p), "z"=as.numeric(z))
+  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "z"=as.numeric(z))
+
+  # if both q and w are provided, q will be checked:
+  pdata <- pdata[complete.cases(r, n, p, z), ]
+
+  # stop if no observations left:
+  if(nrow(pdata)<=0L){
+    stop("No complete cases available. All data pairs contain at least one NA.")
+  }
+
+  # check for duplicated entries:
+  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
+
+    # average duplicated prices and weights, sum duplicated quantities:
+    if(is.null(q)){
+      pdata <- pdata[, list("p"=mean(p), "z"=mean(z)), by=c("r","n")]
+    }else{
+      pdata <- pdata[, list("p"=mean(p), "z"=sum(z)), by=c("r","n")]
+    }
+
+    # print warning:
+    warning("Duplicated observations found and aggregated.", call.=FALSE)
+
+  }
+
+  # coerce to factor:
+  pdata[, c("r","n") := list(factor(r), factor(n))]
+  # do not use "as.factor()" because this does not drop unused factor levels
 
   # store initial ordering of region levels:
   r.lvl <- levels(pdata$r)
 
-  # set key:
-  setkeyv(x=pdata, cols=c("r", "n"))
-
-  # check for duplicated entries:
-  if(anyDuplicated(x=pdata, by=key(pdata)) > 0){
-
-    # average duplicated prices and weights:
-    if(q.avail){
-      pdata <- pdata[, list("p"=mean(p), "z"=sum(z)), by = c("r", "n")]
-    }else{
-      pdata <- pdata[, list("p"=mean(p), "z"=mean(z)), by = c("r", "n")]
-    }
-
+  # set default base if necessary:
+  if(is.null(base)){base <- names(which.max(table(pdata$r)))[1]} # when base is NULL
+  if(!(base%in%r.lvl)){ # when base is no valid region
+    base <- names(which.max(table(pdata$r)))[1]
+    warning(paste("Base region not found and reset to", base), call.=FALSE)
   }
 
   # intersection with base region prices and weights:
   pdata <- merge(x=pdata, y=pdata[r==base,], by="n", all=FALSE, suffixes=c("","_base"))
 
   # compute price index for each region:
-  if(q.avail){
-    aggdata <- pdata[, index_func(p1=p, q1=z, p0=p_base, q0=z_base), by="r"]
-  }else{
+  if(is.null(q)){
     aggdata <- pdata[, index_func(p1=p, w1=z, p0=p_base, w0=z_base), by="r"]
+  }else{
+    aggdata <- pdata[, index_func(p1=p, q1=z, p0=p_base, q0=z_base), by="r"]
   }
 
   # ensure that results contain all regions, also in cases
   # where no product matches were found. This is important
   # in cases of incomplete price data:
-  aggdata <- merge(x=data.table("r"=levels(pdata$r)), y=aggdata, by="r", all.x=TRUE)
+  aggdata <- merge(x=data.table("r"=r.lvl), y=aggdata, by="r", all.x=TRUE)
 
   # coerce to vector:
   res <- setNames(aggdata$V1, aggdata$r)

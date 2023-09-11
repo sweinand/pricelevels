@@ -2,7 +2,7 @@
 
 # Title:    Gery-Khamis index
 # Author:   Sebastian Weinand
-# Date:     22 August 2023
+# Date:     11 September 2023
 
 # geary-khamis index:
 gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
@@ -42,35 +42,41 @@ gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
     return(res)
   }
 
-  # complete cases:
-  full_row <- complete.cases(r, n, p, q)
+  # gather in data.table:
+  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "q"=as.numeric(q))
+
+  # if both q and w are provided, q will be checked:
+  pdata <- pdata[complete.cases(r, n, p, q), ]
 
   # stop if no observations left:
-  if(all(!full_row)){stop("No complete cases available. All data pairs contain at least one NA.")}
+  if(nrow(pdata)<=0L){
+    stop("No complete cases available. All data pairs contain at least one NA.")
+  }
 
-  # keep only complete cases:
-  r <- r[full_row]
-  n <- n[full_row]
-  p <- p[full_row]
-  q <- q[full_row]
+  # check for duplicated entries:
+  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
 
-  # coerce to character:
-  r <- as.character(r)
-  n <- as.character(n)
+    # average duplicated prices and sum duplicated quantities:
+    pdata <- pdata[, list("p"=mean(p), "q"=sum(q)), by=c("r","n")]
+
+    # print warning:
+    warning("Duplicated observations found and aggregated.", call.=FALSE)
+
+  }
 
   # set base region:
-  if(!base%in%r && !is.null(base)){
+  if(!base%in%pdata$r && !is.null(base)){
     # reset base region and print warning:
-    base <- names(which.max(table(r)))[1]
-    warning(paste("Base region not found and reset to", base))
+    base <- names(which.max(table(pdata$r)))[1]
+    warning(paste("Base region not found and reset to", base), call.=FALSE)
   }
 
   # Diewert (1999) solution:
   if(settings$method=="solve"){
 
     # define matrices:
-    Q <- tapply(X=q, INDEX=list(r, n), FUN=mean, default=0)
-    E <- tapply(X=p*q, INDEX=list(r, n), FUN=mean, default=0)
+    Q <- pdata[, tapply(X=q, INDEX=list(r, n), FUN=mean, default=0)]
+    E <- pdata[, tapply(X=p*q, INDEX=list(r, n), FUN=mean, default=0)]
     E <- E/rowSums(E)
     C <- diag(1/colSums(Q), ncol=ncol(Q), nrow=ncol(Q))%*%t(E)%*%Q
 
@@ -84,22 +90,22 @@ gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
     names(b) <- colnames(C)
 
     # compute price levels:
-    Ptmp <- P.def(p=p, q=q, r=r, v=b[match(x=n, names(b))])
+    Ptmp <- pdata[, P.def(p=p, q=q, r=r, v=b[match(x=n, names(b))])]
 
   }
 
   # iterative search procedure:
   if(settings$method=="iterative"){
 
-    Ptmp <- rep(1, length(p))
+    Ptmp <- rep(1, nrow(pdata))
     i <- 0
     check <- TRUE
     while(check && i<=settings$max.iter){
 
       # compute price levels:
       Ptmp0 <- Ptmp
-      vtmp <- v.def(p=p, q=q, n=n, P=Ptmp)
-      Ptmp <- P.def(p=p, q=q, r=r, v=vtmp)
+      vtmp <- pdata[, v.def(p=p, q=q, n=n, P=Ptmp)]
+      Ptmp <- pdata[, P.def(p=p, q=q, r=r, v=vtmp)]
 
       # check differences to previous price levels:
       check <- any(abs(Ptmp-Ptmp0)>settings$tol)
@@ -109,7 +115,7 @@ gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
 
     # print warning if maximum iterations exceeded:
     if(check && i>settings$max.iter){
-      warning("Iterative procedure stopped at 'max.iter' without reaching convergence.")
+      warning("Iterative procedure stopped at 'max.iter' without reaching convergence.", call.=FALSE)
     }
 
   }
@@ -132,12 +138,12 @@ gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
   }else{
 
     # average product prices using normalized price levels:
-    v <- v.def(p=p, q=q, n=n, P=P[match(x=r, table=names(P))])
+    v <- pdata[, v.def(p=p, q=q, n=n, P=P[match(x=r, table=names(P))])]
     v <- split(x=v, f=names(v))
     v <- sapply(X=v, "[[", 1L)
 
     # gather output:
-    res <- c("product"=v, "region"=P)
+    res <- c("n"=v, "r"=P)
 
   }
 

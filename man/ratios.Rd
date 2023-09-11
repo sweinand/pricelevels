@@ -16,7 +16,7 @@ ratios(p, r, n, base = NULL, static = FALSE, drop = FALSE)
    \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
    \item{base}{A character specifying the base region to be used for the calculation of price ratios. If \code{NULL}, \code{base} is set internally.}
-   \item{static}{A logical indicating whether the \code{base} region is static (\code{TRUE}), i.e. always the same as \code{base}, or if another region than \code{base} is allowed to be used when prices for \code{base} are not available.}
+   \item{static}{A logical indicating whether the \code{base} region is static (\code{TRUE}), i.e. always the same as \code{base}, or if another region than \code{base} is allowed to be used when prices for \code{base} are not available or missing (=\code{NA}).}
    \item{drop}{A logical indicating whether observations of \code{base} should be dropped (\code{TRUE}) from the output or not.}
 }
 

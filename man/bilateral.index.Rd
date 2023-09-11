@@ -43,6 +43,8 @@ ILO, IMF, OECD, UNECE, Eurostat and World Bank (2020). \emph{Consumer Price Inde
 }
 
 \details{
+Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+
 The weights in \code{w} are normalized internally for each regional comparison, such that they add up to 1.
 }
 

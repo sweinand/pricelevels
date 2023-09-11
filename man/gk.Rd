@@ -26,6 +26,10 @@ gk(p, r, n, q, base = NULL, simplify = TRUE, settings = list())
    }}
 }
 
+\details{
+Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+}
+
 \author{Sebastian Weinand}
 
 \references{
@@ -46,17 +50,16 @@ Purposes. \emph{Journal of the Royal Statistical Society. Series A (General)},
 \examples{
 require(data.table)
 
+# example data:
 set.seed(123)
-R <- 3 # number of regions
-N <- 4 # number of products
-data <- prices(R = R, N = N)
-data[, "quantity" := 1]
+dt <- prices(R=3, N=4)
+dt[, "quantity" := sample(x=1:100, size=.N)]
 
-# complete data:
-data[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
-data[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+# Gery-Khamis price index:
+dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
+dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
 
-# incomplete data:
-data[-c(1,12), gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
-data[-c(1,12), gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+# now for incomplete data:
+dt[-c(1,12), gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
+dt[-c(1,12), gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
 }
