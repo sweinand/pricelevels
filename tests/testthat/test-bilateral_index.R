@@ -84,8 +84,8 @@ expect_equal(
 
 
 # example data without weights and gaps:
-set.seed(123)
-data <- rdata(R=3, N=4, gaps=0.1)
+set.seed(1)
+data <- rdata(R=3, N=4, gaps=0.2)
 
 r <- data[, list(region, price/price[region=="1"]), by="product"]
 J <- r[, exp(mean(log(V2))), by="region"]
@@ -220,8 +220,8 @@ expect_equal(
 )
 
 # example data with weights and gaps:
-set.seed(123)
-data <- rdata(R=3, N=4, gaps=0.1)
+set.seed(1)
+data <- rdata(R=3, N=4, gaps=0.2)
 data[, "share" := rweights(r=region, n=product, type=~n)]
 
 r <- data[, list(region, price/price[region=="1"], share), by="product"]

@@ -307,7 +307,8 @@ rweights <- function(r, n, type=~1){
   # sample weights according to formula:
   if(length(rhs.vars) > 0){
 
-    dt.full[, "w" := runif(n=1, min=1, max=100), by="n"]
+    # dt.full[, "w" := runif(n=1, min=1, max=100), by="n"]
+    dt.full[, "w" := rlnorm(n=1), by="n"]
 
     if(all(c("r","n") %in% rhs.vars)){
       dt.full[, "w_adj":= rnorm(.N, mean=1, sd=0.1)]
