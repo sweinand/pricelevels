@@ -30,9 +30,10 @@ library(spin)
 
 # sample data:
 set.seed(1)
-dt <- prices(R=500, N=1000, gaps=0.1)
-dt[, "quantity" := sample(x=50:1000, size=.N, replace=TRUE)]
-dt[, "weight" := price*quantity/sum(price*quantity), by="region"]
+dt <- rdata(R=500, N=1000, gaps=0.1)
+# dt[, "quantity" := sample(x=50:1000, size=.N, replace=TRUE)]
+# dt[, "weight" := price*quantity/sum(price*quantity), by="region"]
+dt[, "is_sale":=NULL]
 setnames(dt, c("r","n","p","q","w"))
 
 # matrix version of jevons:
@@ -48,8 +49,8 @@ jevons.mat <- function(p, r, n, base){
 
 }
 
-system.time(PJ1 <- dt[, jevons.mat(p=p, r=r, n=n, base="r001")])
-system.time(PJ2 <- dt[, spin::jevons(p=p, r=r, n=n, base="r001")])
+system.time(PJ1 <- dt[, jevons.mat(p=p, r=r, n=n, base="001")])
+system.time(PJ2 <- dt[, spin::jevons(p=p, r=r, n=n, base="001")])
 all.equal(PJ1, PJ2)
 
 # matrix version of laspey:
@@ -77,12 +78,12 @@ laspey.mat <- function(p, r, n, q, w, base){
 
 }
 
-system.time(PL1 <- dt[, laspey.mat(p=p, r=r, n=n, q=q, base="r001")])
-system.time(PL2 <- dt[, spin::laspey(p=p, r=r, n=n, q=q, base="r001")])
+system.time(PL1 <- dt[, laspey.mat(p=p, r=r, n=n, q=q, base="001")])
+system.time(PL2 <- dt[, spin::laspey(p=p, r=r, n=n, q=q, base="001")])
 all.equal(PL1, PL2)
 
-system.time(PL3 <- dt[, laspey.mat(p=p, r=r, n=n, w=w, base="r001")])
-system.time(PL4 <- dt[, spin::laspey(p=p, r=r, n=n, w=w, base="r001")])
+system.time(PL3 <- dt[, laspey.mat(p=p, r=r, n=n, w=w, base="001")])
+system.time(PL4 <- dt[, spin::laspey(p=p, r=r, n=n, w=w, base="001")])
 all.equal(PL3, PL4)
 
 all.equal(PL1, PL3)
@@ -210,9 +211,10 @@ index.pairs2 <- function(p, q, r, n, w=NULL, type="jevons", all.pairs=TRUE, as.d
 
 # sample data:
 set.seed(1)
-dt <- prices(R=200, N=1000, gaps=0.1)
-dt[, "quantity" := sample(x=50:1000, size=.N, replace=TRUE)]
-dt[, "weight" := price*quantity/sum(price*quantity), by="region"]
+dt <- rdata(R=200, N=1000, gaps=0.1)
+# dt[, "quantity" := sample(x=50:1000, size=.N, replace=TRUE)]
+# dt[, "weight" := price*quantity/sum(price*quantity), by="region"]
+dt[, "is_sale":=NULL]
 setnames(dt, c("r","n","p","q","w"))
 
 # jevons:
