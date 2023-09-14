@@ -52,8 +52,7 @@ require(data.table)
 
 # example data:
 set.seed(123)
-dt <- prices(R=3, N=4)
-dt[, "quantity" := sample(x=1:100, size=.N)]
+dt <- rdata(R=3, N=4)
 
 # Gery-Khamis price index:
 dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]

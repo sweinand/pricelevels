@@ -2,7 +2,7 @@
 
 ### connected price data, no gaps:
 set.seed(123)
-data1 <- prices(R=4, N=3)
+data1 <- rdata(R=4, N=3)
 
 expect_equal(
   data1[, sparsity(r = region, n = product)],
@@ -30,7 +30,7 @@ expect_true(
 
 ### connected price data, gaps:
 set.seed(123)
-data2 <- prices(R=4, N=3, gaps=0.25)
+data2 <- rdata(R=4, N=3, gaps=0.25)
 
 expect_equal(
   data2[, sparsity(r = region, n = product)],

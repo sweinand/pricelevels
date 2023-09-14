@@ -56,39 +56,39 @@ Before calculations start, missing values are excluded and duplicated observatio
 ### Index pairs
 
 # (1) equal weights
-data <- prices(R = 7, N = 20)
-data[, "weights" := 1]
+dt <- rdata(R=7, N=15)
+dt[, "weight" := 1]
 
-P.je <- data[, index.pairs(p=price, r=region, n=product, type="jevons")]
-P.to <- data[, index.pairs(p=price, r=region, n=product, w=weights, type="toernq")]
+P.je <- dt[, index.pairs(p=price, r=region, n=product, type="jevons")]
+P.to <- dt[, index.pairs(p=price, r=region, n=product, w=weight, type="toernq")]
 all.equal(P.je, P.to) # true
 
-P.ca <- data[, index.pairs(p=price, r=region, n=product, type="carli")]
-P.la <- data[, index.pairs(p=price, r=region, n=product, w=weights, type="laspey")]
+P.ca <- dt[, index.pairs(p=price, r=region, n=product, type="carli")]
+P.la <- dt[, index.pairs(p=price, r=region, n=product, w=weight, type="laspey")]
 all.equal(P.ca, P.la) # true
 
-P.ha <- data[, index.pairs(p=price, r=region, n=product, type="harmonic")]
-P.pa <- data[, index.pairs(p=price, r=region, n=product, w=weights, type="paasche")]
+P.ha <- dt[, index.pairs(p=price, r=region, n=product, type="harmonic")]
+P.pa <- dt[, index.pairs(p=price, r=region, n=product, w=weight, type="paasche")]
 all.equal(P.ha, P.pa) # true
 
 # (2) non-equal weights
-data[, "weights" := weights(r=region, n=product, type=~n+r)]
+dt[, "weight" := rweights(r=region, n=product, type=~n+r)]
 
-P.je <- data[, index.pairs(p=price, r=region, n=product, type="jevons")]
-P.to <- data[, index.pairs(p=price, r=region, n=product, w=weights, type="toernq")]
+P.je <- dt[, index.pairs(p=price, r=region, n=product, type="jevons")]
+P.to <- dt[, index.pairs(p=price, r=region, n=product, w=weight, type="toernq")]
 all.equal(P.je, P.to) # false
 
 ### GEKS method
 
 # sample complete price data; equal weights:
-data <- prices(R = 7, N = 20)
-data[, geks(p=price, r=region, n=product, type="jevons", base="r1")]
-data[, jevons(p=price, r=region, n=product, base="r1")]
+dt <- rdata(R=7, N=15)
+dt[, geks(p=price, r=region, n=product, type="jevons", base="1")]
+dt[, jevons(p=price, r=region, n=product, base="1")]
 # -> identical
 
 # introduce gaps:
-data_gaps <- data[!gaps(region, product, amount=0.4), ]
-data_gaps[, geks(p=price, r=region, n=product, type="jevons", base="r1")]
-data_gaps[, jevons(p=price, r=region, n=product, base="r1")]
+dt.gaps <- dt[!rgaps(region, product, amount=0.4), ]
+dt.gaps[, geks(p=price, r=region, n=product, type="jevons", base="1")]
+dt.gaps[, jevons(p=price, r=region, n=product, base="1")]
 # -> now, differences
 }

@@ -51,29 +51,30 @@ The weights in \code{w} are normalized internally for each regional comparison, 
 \value{A named vector of price levels.}
 
 \examples{
-# sample complete price data:
-data <- prices(R = 7, N = 20, weights=~n)
+# sample complete price data with product-specific weights:
+dt <- rdata(R=7, N=15)
+dt[, "weight" := rweights(r=region, n=product, type=~n)]
 
 # jevons:
-(P1.jev <- data[, jevons(p=price, r=region, n=product, base="r1")])
-(P2.jev <- data[, jevons(p=price, r=region, n=product, base="r2")])
+(P1.jev <- dt[, jevons(p=price, r=region, n=product, base="1")])
+(P2.jev <- dt[, jevons(p=price, r=region, n=product, base="2")])
 all.equal(P1.jev, P2.jev/P2.jev[1]) # true
 
 # toernqvist:
-(P1.toern <- data[, toernq(p=price, r=region, n=product, w=weight, base="r1")])
-(P2.toern <- data[, toernq(p=price, r=region, n=product, w=weight, base="r2")])
+(P1.toern <- dt[, toernq(p=price, r=region, n=product, w=weight, base="1")])
+(P2.toern <- dt[, toernq(p=price, r=region, n=product, w=weight, base="2")])
 all.equal(P1.toern, P2.toern/P2.toern[1]) # true
 
 # introduce gaps:
-data_gaps <- data[!gaps(region, product, amount=0.2), ]
+dt.gaps <- dt[!rgaps(region, product, amount=0.2), ]
 
 # jevons:
-(P1.jev <- data_gaps[, jevons(p=price, r=region, n=product, base="r1")])
-(P2.jev <- data_gaps[, jevons(p=price, r=region, n=product, base="r2")])
+(P1.jev <- dt.gaps[, jevons(p=price, r=region, n=product, base="1")])
+(P2.jev <- dt.gaps[, jevons(p=price, r=region, n=product, base="2")])
 all.equal(P1.jev, P2.jev/P2.jev[1]) # false, transitivity gets lost
 
 # toernqvist:
-(P1.toern <- data_gaps[, toernq(p=price, r=region, n=product, w=weight, base="r1")])
-(P2.toern <- data_gaps[, toernq(p=price, r=region, n=product, w=weight, base="r2")])
+(P1.toern <- dt.gaps[, toernq(p=price, r=region, n=product, w=weight, base="1")])
+(P2.toern <- dt.gaps[, toernq(p=price, r=region, n=product, w=weight, base="2")])
 all.equal(P1.toern, P2.toern/P2.toern[1]) # false, transitivity gets lost
 }

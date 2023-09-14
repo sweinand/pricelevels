@@ -1,0 +1,178 @@
+# START
+
+
+# rgaps() ------------------------------------------------------------------
+
+
+data <- rdata(R=6, N=15)
+
+# number of gaps:
+expect_true(
+  all(abs(replicate(n=100, expr=nrow(data[!rgaps(region, product, amount=0.2, pairs=TRUE), ]))-6*15*(1-0.2))<1e-10)
+)
+
+# number of gaps:
+expect_true(
+  all(abs(replicate(n=100, expr=nrow(data[!rgaps(region, product, amount=0.2, pairs=FALSE), ]))-6*15*(1-0.2))<1e-10)
+)
+
+# still connected price data:
+expect_true(
+  all(replicate(n=100, expr=data[!rgaps(region, product, amount=0.6, pairs=TRUE), is.connected(r=region, n=product)]))
+)
+
+# still connected price data:
+expect_true(
+  all(replicate(n=100, expr=data[!rgaps(region, product, amount=0.6, pairs=FALSE), is.connected(r=region, n=product)]))
+)
+
+# at least two observations per product:
+expect_true(
+  all(replicate(n=100, expr=data[!rgaps(region, product, amount=0.6, pairs=TRUE), .N>=2, by="product"]$V1))
+)
+
+# at least one observations per product:
+expect_true(
+  all(replicate(n=100, expr=data[!rgaps(region, product, amount=0.6, pairs=FALSE), .N>=1, by="product"]$V1))
+)
+
+# probability of gaps:
+test <- rowMeans(replicate(n=100, expr=data[!rgaps(region, product, amount=0.6, prob=rev(as.integer(product))), .N, by="product"]$N))
+expect_gte(test[15], test[1])
+
+test <- rowMeans(replicate(n=100, expr=data[!rgaps(region, product, amount=0.6, prob=as.integer(product)), .N, by="product"]$N))
+expect_lte(test[15], test[1])
+
+# no gaps for region "r2" and for product "n3" in region "r5":
+dt.excl <- data.table("r"=c("2","5"),"n"=c(NA,"03"))
+
+expect_true(
+  all(
+    replicate(
+      n=100,
+      expr={
+        test <- data[!rgaps(region, product, amount=0.6, pairs=FALSE, exclude=dt.excl)]
+        all(
+          c(test[region=="2", abs(.N-15)<1e-10],
+            abs(nrow(test[region=="5" & product=="03",])-1)<1e-10)
+        )
+      }
+    )
+  )
+)
+
+
+# rweights() ---------------------------------------------------------------
+
+
+# sample complete price data:
+data <- rdata(R=7, N=13)
+
+# add weights:
+data[, "w1" := rweights(r=region, n=product, type=~1)] # constant
+data[, "w2" := rweights(r=region, n=product, type=~n)] # product-specific
+data[, "w3" := rweights(r=region, n=product, type=~n+r)] # product-region-specific
+
+# non-negative weights:
+expect_true(
+  all(replicate(n=100, expr=data[, rweights(r=region, n=product, type=~n+r)])>=0)
+)
+
+# no variation in constant weights:
+expect_true(
+  abs(sd(data$w1))<1e-10
+)
+
+# variation only between products:
+expect_true(
+  all(abs(data[, sd(w2), by="product"]$V1)<1e-10)
+)
+
+# weights add up to 1:
+expect_true(
+  all(abs(data[, sum(w1), by = "region"]$V1-1)<1e-10)
+)
+
+expect_true(
+  all(abs(data[, sum(w2), by = "region"]$V1-1)<1e-10)
+)
+
+expect_true(
+  all(abs(data[, sum(w3), by = "region"]$V1-1)<1e-10)
+)
+
+
+# rsales() ----------------------------------------------------------------
+
+
+# sample complete price data:
+data <- rdata(R=7, N=13)
+
+# no sales:
+expect_true(
+  all(data[, rsales(p=price, q=quantity, amount=0)]$price_is_sale==FALSE)
+)
+
+expect_true(
+  any(data[, rsales(p=price, q=quantity, amount=0.1)]$price_is_sale)
+)
+
+expect_true(
+  all(data[, rsales(p=price, q=quantity, amount=1)]$price_is_sale)
+)
+
+
+# rdata() ----------------------------------------------------------------
+
+
+expect_true(
+  abs(nrow(rdata(R=1, N=1))-1)<1e-10
+)
+
+expect_true(
+  abs(nrow(rdata(R=2, N=1))-2)<1e-10
+)
+
+expect_true(
+  abs(nrow(rdata(R=13, N=17))-13*17)<1e-10
+)
+
+expect_true(
+  nrow(rdata(R=13, N=17, gaps=0.1))<13*17
+)
+
+expect_true(
+  any(rdata(R=10, N=15, sales=0.1)$is_sale)
+)
+
+expect_true(
+  all(!rdata(R=10, N=15, sales=0)$is_sale)
+)
+
+expect_true(
+  all(names(rdata(R=13, N=17))%in%c("region","product","is_sale","price","quantity","share"))
+)
+
+expect_true(
+  data.table::is.data.table(rdata(R=5, N=10))
+)
+
+expect_true(
+  is.list(rdata(R=5, N=10, settings=list("par.add"=TRUE)))
+)
+
+dt.test <- rdata(R=5, N=10, settings=list("par.add"=TRUE, par.sd=c("lnP"=0, "pi"=0, "delta"=0)))
+
+expect_true(
+  all(abs(dt.test$param$lnP)<1e-10)
+)
+
+expect_true(
+  all(abs(dt.test$param$pi-1)<1e-10)
+)
+
+expect_true(
+  all(abs(dt.test$param$delta-1)<1e-10)
+)
+
+# END

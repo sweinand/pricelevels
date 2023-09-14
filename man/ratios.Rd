@@ -34,34 +34,34 @@ If there are duplicated observations, only one of these duplicates is used as th
 ### (1) unique price observations; no missings
 
 set.seed(123)
-data1 <- prices(R = 3, N = 4)
-levels(data1$region) <- c("a","b","c")
+dt1 <- rdata(R=3, N=4)
+levels(dt1$region) <- c("a","b","c")
 
 # calculate price ratios by product groups:
-(pr <- data1[, ratios(p = price, r = region, n = product, base = "b")])
+(pr <- dt1[, ratios(p = price, r = region, n = product, base = "b")])
 
 # add to data:
-data1[, c("base", "ratio") := list(names(pr), as.vector(pr))]
+dt1[, c("base", "ratio") := list(names(pr), as.vector(pr))]
 
 ### (2) unique price observations; missings
 
 # drop two observations:
-data2 <- data1[-c(5,10), ]
-data2[, ratios(price, region, product, base = "b")]
+dt2 <- dt1[-c(5,10), ]
+dt2[, ratios(price, region, product, base = "b")]
 # now, region 'a' is base for product 'n2'
 
 ### (3) treatment of duplicates and missing prices (not NAs):
 
 # insert duplicates and missings:
-data3 <- rbind(data1[2,], data1[-c(1,10),])
-data3[1, "price" := data1[2,price]+abs(rnorm(1))]
-anyDuplicated(data3, by=c("region","product"))
+dt3 <- rbind(dt1[2,], dt1[-c(1,10),])
+dt3[1, "price" := dt1[2,price]+abs(rnorm(1))]
+anyDuplicated(dt3, by=c("region","product"))
 
-data3[, c("base","ratio") := data.table::as.data.table(
+dt3[, c("base","ratio") := data.table::as.data.table(
                               ratios(price, region, product),
                               keep.rownames = TRUE)]
 
 # duplicated prices are divided by the base price and
 # kept when base prices used are dropped:
-data3[, ratios(price, region, product, drop = TRUE)]
+dt3[, ratios(price, region, product, drop = TRUE)]
 }

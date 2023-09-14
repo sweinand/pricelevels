@@ -55,31 +55,32 @@ World Bank (2013). \emph{Measuring the Real Size of the World Economy: The Frame
 
 \examples{
 ### connected price data:
-data1 <- prices(R = 4, N = 3)
+set.seed(123)
+dt1 <- rdata(R=4, N=3)
 
-data1[, sparsity(r = region, n = product)]
-data1[, is.connected(r = region, n = product)] # true
-data1[, neighbors(r = region, n = product, simplify = TRUE)]
-data1[, comparisons(r = region, n = product)]
+dt1[, sparsity(r = region, n = product)]
+dt1[, is.connected(r = region, n = product)] # true
+dt1[, neighbors(r = region, n = product, simplify = TRUE)]
+dt1[, comparisons(r = region, n = product)]
 
 ### non-connected price data:
-data2 <- data.table::data.table(
+dt2 <- data.table::data.table(
           "region" = c("a","a","h","b","a","a","c","c","d","e","e","f",NA),
           "product" = c(1,1,"bla",1,2,3,3,4,4,5,6,6,7),
           "price" = runif(13,5,6),
           stringsAsFactors = TRUE)
 
-data2[, is.connected(r = region, n = product)] # false
-with(data2, neighbors(r=region, n=product))
-data2[, comparisons(region, product)]
+dt2[, is.connected(r = region, n = product)] # false
+with(dt2, neighbors(r=region, n=product))
+dt2[, comparisons(region, product)]
 # note that the region-product-combination [NA,7] is dropped
 # from the output, while [a,2] and [e,5] are not included in
 # the calculation of 'n_obs' as both are not useable in terms
 # of regional price comparisons. also sparsity() takes this
 # into account, if wanted:
-data2[, sparsity(region, product, useable=TRUE)]
-data2[, sparsity(region, product)]
+dt2[, sparsity(region, product, useable=TRUE)]
+dt2[, sparsity(region, product)]
 
 # connect the price data:
-data2[connect(r=region, n=product),]
+dt2[connect(r=region, n=product),]
 }

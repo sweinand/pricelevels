@@ -3,7 +3,7 @@
 ### (1) unique price observations; no missings for base
 
 set.seed(123)
-data1 <- prices(R = 3, N = 4)
+data1 <- rdata(R = 3, N = 4)
 levels(data1$region) <- c("a","b","c")
 
 # compute manually:

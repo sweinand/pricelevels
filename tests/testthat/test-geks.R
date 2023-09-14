@@ -6,7 +6,7 @@
 
 # example data with one region only:
 set.seed(123)
-data <- prices(R=1, N=4)
+data <- rdata(R=1, N=4)
 
 expect_error(
   data[, index.pairs(p=price, r=region, n=product, type="bla")]
@@ -23,12 +23,12 @@ expect_equal(
 
 expect_equal(
   data[, index.pairs(p=price, r=region, n=product, type="jevons")],
-  matrix(data=1, nrow=1, ncol=1, dimnames=list("r1","r1"))
+  matrix(data=1, nrow=1, ncol=1, dimnames=list("1","1"))
 )
 
 # example data with one product only:
 set.seed(123)
-data <- prices(R=4, N=1)
+data <- rdata(R=4, N=1)
 
 expect_no_error(
   data[, index.pairs(p=price, r=region, n=product, type="jevons")]
@@ -36,14 +36,14 @@ expect_no_error(
 
 # example data with gaps:
 set.seed(123)
-data <- prices(R=3, N=4, gaps=0.2)
+data <- rdata(R=3, N=4, gaps=0.2)
 
 res.expec <- rbind(
-  data[, jevons(p=price, r=region, n=product, base="r1")],
-  data[, jevons(p=price, r=region, n=product, base="r2")],
-  data[, jevons(p=price, r=region, n=product, base="r3")]
+  data[, jevons(p=price, r=region, n=product, base="1")],
+  data[, jevons(p=price, r=region, n=product, base="2")],
+  data[, jevons(p=price, r=region, n=product, base="3")]
 )
-rownames(res.expec) <- c("r1","r2","r3")
+rownames(res.expec) <- c("1","2","3")
 
 expect_equal(
   data[, index.pairs(p=price, r=region, n=product, type="jevons")],
@@ -68,7 +68,7 @@ expect_equal(
 )
 
 # no weights:
-data <- prices(R = 5, N = 10)
+data <- rdata(R = 5, N = 10)
 data[, "weights" := 1]
 
 expect_equal(
@@ -92,16 +92,16 @@ expect_equal(
 
 # example data with one region only:
 set.seed(123)
-data <- prices(R=1, N=4)
+data <- rdata(R=1, N=4)
 
 expect_equal(
   data[, geks(p=price, r=region, n=product)],
-  c("r1"=1)
+  c("1"=1)
 )
 
 # example data with one product only:
 set.seed(123)
-data <- prices(R=4, N=1)
+data <- rdata(R=4, N=1)
 
 expect_no_error(
   data[, geks(p=price, r=region, n=product)],
@@ -109,40 +109,42 @@ expect_no_error(
 
 # example data without weights and gaps:
 set.seed(123)
-data <- prices(R=3, N=4)
+data <- rdata(R=3, N=4)
 
-geks.est1 <- data[, geks(p=price, r=region, n=product, base="r1")]
+geks.est1 <- data[, geks(p=price, r=region, n=product, base="1")]
 geks.est2 <- data[, geks(p=price, r=region, n=product, base=NULL)]
-jev.est1 <- data[, jevons(p=price, r=region, n=product, base="r1")]
+jev.est1 <- data[, jevons(p=price, r=region, n=product, base="1")]
 
-expect_equal(geks.est1[1], c("r1"=1))
+expect_equal(geks.est1[1], c("1"=1))
 expect_equal(prod(geks.est2), 1)
 expect_equal(geks.est1, geks.est2/geks.est2[1])
 expect_equal(geks.est1, jev.est1)
 
 # example data without gaps, but with weights:
 set.seed(123)
-data <- prices(R=3, N=4, weights=~n)
+data <- rdata(R=3, N=4)
+data[, "weight" := rweights(r=region, n=product, type=~n)]
 
-geks.est1 <- data[, geks(p=price, r=region, n=product, w=weight, type="toernq", base="r1")]
+geks.est1 <- data[, geks(p=price, r=region, n=product, w=weight, type="toernq", base="1")]
 geks.est2 <- data[, geks(p=price, r=region, n=product, w=weight, type="toernq", base=NULL)]
-toernq.est1 <- data[, toernq(p=price, r=region, n=product, w=weight, base="r1")]
+toernq.est1 <- data[, toernq(p=price, r=region, n=product, w=weight, base="1")]
 
-expect_equal(geks.est1[1], c("r1"=1))
+expect_equal(geks.est1[1], c("1"=1))
 expect_equal(prod(geks.est2), 1)
 expect_equal(geks.est1, geks.est2/geks.est2[1])
 expect_equal(geks.est1, toernq.est1)
 
 # example data with weights and gaps:
 set.seed(123)
-data <- prices(R=3, N=4, weights=~n, gaps=0.2)
+data <- rdata(R=3, N=4, gaps=0.2)
+data[, "weight" := rweights(r=region, n=product, type=~n)]
 
-geks.est1 <- data[, geks(p=price, r=region, n=product, w=weight, type="toernq", base="r1")]
+geks.est1 <- data[, geks(p=price, r=region, n=product, w=weight, type="toernq", base="1")]
 geks.est2 <- data[, geks(p=price, r=region, n=product, w=weight, type="toernq", base=NULL)]
 
 expect_equal(is.vector(geks.est1), TRUE)
 expect_equal(is.vector(geks.est2), TRUE)
-expect_equal(geks.est1[1], c("r1"=1))
+expect_equal(geks.est1[1], c("1"=1))
 expect_equal(prod(geks.est2), 1)
 expect_equal(geks.est1, geks.est2/geks.est2[1])
 
