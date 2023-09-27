@@ -2,10 +2,15 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   11 September 2023
+# Date:   27 September 2023
 
 # compute bilateral index pairs:
-index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, as.dt=FALSE){
+index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
+
+  # define settings:
+  if(is.null(settings$type)) settings$type <- "jevons"
+  if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
+  if(is.null(settings$as.dt)) settings$as.dt <- FALSE
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -13,9 +18,9 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
   .check.char(x=n)
   .check.num(x=q, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
   .check.num(x=w, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
-  .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
-  .check.log(x=all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.log(x=as.dt, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  .check.char(x=settings$type, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  .check.log(x=settings$as.dt, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=q)
@@ -32,7 +37,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
   type.vals <- c("jevons", "carli", "dutot", "harmonic", "toernq", "laspey", "paasche", "walsh", "fisher")
 
   # check against allowed index types:
-  type <- match.arg(arg=type, choices=type.vals)
+  type <- match.arg(arg=settings$type, choices=type.vals)
 
   # set index function based on type:
   # NOTE that these are the matrix-version functions!
@@ -97,7 +102,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
   res <- matrix(data=NA_real_, nrow=R, ncol=R, dimnames=list(colnames(P), colnames(P)))
 
   # slow, but complete or quick, but only non-redundant:
-  if(!all.pairs){
+  if(!settings$all.pairs){
 
     if(is.null(q)){
       for(i in 1:R){
@@ -122,7 +127,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
   }
 
   # convert to dataframe:
-  if(as.dt){
+  if(settings$as.dt){
 
     # convert into dataframe:
     res <- as.data.table(as.table(t(res)))
@@ -144,54 +149,175 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, type="jevons", all.pairs=TRUE, 
 }
 
 # compute mutlilateral GEKS index:
-geks <- function(p, r, n, q=NULL, w=NULL, type="jevons", base=NULL){
+geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+
+  # define settings:
+  if(is.null(settings$type)) settings$type <- "jevons"
+  if(is.null(settings$method)) settings$method <- "none"
+  if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
 
   # input checks:
-  .check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
-  # -> input checks of other arguments are performed in index_pairs()
+  .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
+  .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
+  .check.char(x=settings$method, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+  # -> input checks of other arguments are performed in index.pairs()
 
-  # compute bilateral price index numbers:
-  pmat <- index.pairs(r=r, n=n, p=p, q=q, w=w, type=type, all.pairs=TRUE, as.dt=FALSE)
+  # match weighting method:
+  method <- match.arg(arg=settings$method, choices=c("none","obs","shares"))
 
-  # define position of base region in matrix:
-  if(is.null(base)){
-    idx <- 1L
-  }else{
-    if(base%in%colnames(pmat)){
-      idx <- which(base==colnames(pmat))
-    }else{
-      idx <- 1L
-      warning(paste("Base region not found and reset to", colnames(pmat)[idx]), call.=FALSE)
-    }
+  # check if weighting method can be applied:
+  if(is.null(q) && is.null(w) && settings$method=="shares"){
+    settings$method <- "none"
+    warning("No quantities 'q' or weights 'w' provided -> settings$method reset to 'none' ")
   }
 
-  # if(method=="unweighted"){
-  #   W <- matrix(data=1, nrow=nrow(pmat), ncol=ncol(pmat))
-  # }
-  #
-  # if(method=="obs.weighted"){
-  #   # this gives non-transitive index numbers
-  #   W <- as.matrix(table(n, r))>0
-  #   W <- t(W)%*%W
-  #   # W <- 0.5*(W+W[idx,])
-  #
-  # }
-  #
-  # # normalize weighting matrix:
-  # W <- W / colSums(W, na.rm=TRUE)[col(W)]
-  #
+  # compute bilateral price index numbers:
+  pdata <- index.pairs(r=r, n=n, p=p, q=q, w=w, settings=list(
+            as.dt=TRUE, type=settings$type, all.pairs=settings$all.pairs))
+
+  # no weighting in second aggregation step:
+  if(settings$method=="none"){
+    w2 <- NULL
+  }
+
+  # weighting with respect to number of intersecting items:
+  if(settings$method=="obs"){
+
+    # compute intersecting observations:
+    dtw <- crossprod(as.matrix(table(n, r, dnn=NULL))>0)
+    wdata <- as.data.table(as.table(dtw))
+    setnames(x=wdata, new=c("region","base","w"))
+    pdata <- merge(x=pdata, y=wdata, all.x=TRUE, by=c("region","base"))
+    w2 <- pdata$w
+
+  }
+
+  # weighting with respect to intersecting expenditure shares:
+  if(settings$method=="shares"){
+
+    # derive or set expenditure shares:
+    if(!is.null(q)){
+      dtw <- data.table(r, n, "s"=p*q)
+      dtw[, "s" := s/sum(s), by="r"]
+    }else{
+      dtw <- data.table(r, n, "s"=w)
+    }
+
+    # compute average intersecting expenditure shares:
+    dtw <- merge(x=dtw, y=dtw, by="n", all=TRUE, allow.cartesian=TRUE)
+    wdata <- dtw[, sum((s.x+s.y)/2), by=c("r.x","r.y")]
+    setnames(x=wdata, new=c("region","base","w"))
+    pdata <- merge(x=pdata, y=wdata, all.x=TRUE, by=c("region","base"))
+    w2 <- pdata$w
+
+  }
+
+  # set response and explanatory variables:
+  index <- pdata$index
+  r <- factor(pdata$region)
+  rb <- factor(pdata$base)
+
+  # store initial ordering of region levels:
+  r.lvl <- levels(r)
+
+  # set base region:
+  if(!base%in%r.lvl && !is.null(base)){
+    # reset base region and print warning:
+    base <- names(which.max(table(r)))[1]
+    warning(paste("Base region not found and reset to", base), call.=FALSE)
+  }
+
+  # relevel to base region:
+  if(!is.null(base)){
+    r <- relevel(x=r, ref=base)
+    rb <- relevel(x=rb, ref=base)
+  }
+
+  # define regression model if one region only:
+  if(nlevels(r) <= 1){
+
+    # empty regression formula:
+    geks_mod <- log(index) ~ 0
+    # no regional comparison of prices possible in this case
+
+  }else{
+
+    # update contrasts:
+    if(is.null(base)){
+
+      contrasts(x=r) <- contr.sum(levels(r))
+      colnames(contrasts(x=r)) <- levels(r)[-nlevels(r)]
+
+      contrasts(x=rb) <- contr.sum(levels(rb))
+      colnames(contrasts(x=rb)) <- levels(rb)[-nlevels(rb)]
+
+    }else{
+
+      contrasts(x=r) <- contr.treatment(levels(r))
+
+      contrasts(x=rb) <- contr.treatment(levels(rb))
+
+    }
+
+    # gather all region levels:
+    r.lvl.all <- unique(x=c(levels(r), levels(rb)))
+
+    # compute model matrix:
+    lnP <- model.matrix(~r, xlev=r.lvl.all)-model.matrix(~rb, xlev=r.lvl.all)
+    colnames(lnP) <- sub(pattern="^r", replacement="", x=colnames(lnP))
+    lnP <- lnP[,-1]
+
+    # GEKS regression formula:
+    geks_mod <- log(index) ~ lnP - 1
+
+  }
+
+  # estimate GEKS regression model:
+  geks_reg_out <- lm(formula=geks_mod, weights=w2, singular.ok=FALSE)
+
+  # simplify to price levels only or full regression output:
+  if(simplify){
+
+    # extract estimated regional price levels:
+    out <- coef(geks_reg_out)
+
+    # clean parameter names:
+    names(out) <- gsub(pattern="^lnP", replacement="", x=names(out))
+
+    # residual parameter name:
+    r.miss <- setdiff(x=r.lvl, y=names(out))
+
+    # residual parameter value:
+    if(is.null(base)) out.miss <- -sum(out) else out.miss <- 0
+
+    # combine estimates:
+    out <- setNames(c(out, out.miss), c(names(out), r.miss))
+
+    # match to initial ordering:
+    out <- out[match(x=r.lvl, table=names(out))]
+
+    # unlog price levels:
+    out <- exp(out)
+
+  }else{
+
+    # keep lm-object:
+    out <- geks_reg_out
+    names(out$coefficients) <- sub("^(lnP)", "\\1.", names(out$coefficients))
+
+  }
+
+  # print output to console:
+  return(out)
+
   # # compute multilateral GEKS index numbers:
-  # out <- colSums(x=W*log(pmat)+sum((W*log(pmat))[,-idx]), na.rm=TRUE)
-  # out <- out-out[idx]
-
-  # compute multilateral GEKS index numbers:
-  out <- colMeans(x=log(pmat*pmat[idx,]), na.rm=TRUE)
-
-  # scale if necessary:
-  if(is.null(base)){out <- scale(x=out, center=TRUE, scale=FALSE)[,1]}
-
-  # unlog price levels:
-  return(exp(out))
+  # out <- colMeans(x=log(pmat*pmat[idx,]), na.rm=TRUE)
+  #
+  # # scale if necessary:
+  # if(is.null(base)){out <- scale(x=out, center=TRUE, scale=FALSE)[,1]}
+  #
+  # # unlog price levels:
+  # return(exp(out))
 
 }
 
