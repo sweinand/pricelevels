@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     11 September 2023
+# Date:     28 September 2023
 
 # helper functions for comparison of two regions if
 # item sets are already matched. these will be called
@@ -366,7 +366,12 @@
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.")
+    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+  }
+
+  # stop if non-connected data:
+  if(pdata[, !is.connected(r=r, n=n)]){
+    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
   }
 
   # check for duplicated entries:

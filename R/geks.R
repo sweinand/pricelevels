@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   27 September 2023
+# Date:   28 September 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -11,6 +11,11 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(is.null(settings$type)) settings$type <- "jevons"
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
   if(is.null(settings$as.dt)) settings$as.dt <- FALSE
+
+  # this setting is not exported/visible to the user. for
+  # index.pairs() it is always FALSE, for geks() it is TRUE.
+  # therefore, no input check required:
+  if(is.null(settings$check.con)) settings$check.con <- FALSE
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -67,7 +72,12 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.")
+    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+  }
+
+  # stop if non-connected data:
+  if(settings$check.con && pdata[, !is.connected(r=r, n=n)]){
+    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
   }
 
   # check for duplicated entries:
@@ -172,8 +182,12 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
   }
 
   # compute bilateral price index numbers:
-  pdata <- index.pairs(r=r, n=n, p=p, q=q, w=w, settings=list(
-            as.dt=TRUE, type=settings$type, all.pairs=settings$all.pairs))
+  pdata <- index.pairs(r=r, n=n, p=p, q=q, w=w,
+                       settings=list(
+                         as.dt=TRUE,
+                         check.con=TRUE, # this non-exported setting is always TRUE
+                         type=settings$type,
+                         all.pairs=settings$all.pairs))
 
   # no weighting in second aggregation step:
   if(settings$method=="none"){

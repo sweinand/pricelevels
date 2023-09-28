@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   11 September 2023
+# Date:   28 September 2023
 
 # CPD method:
 cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
@@ -35,7 +35,12 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.")
+    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+  }
+
+  # stop if non-connected data:
+  if(pdata[, !is.connected(r=r, n=n)]){
+    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
   }
 
   # check for duplicated entries:
@@ -406,7 +411,12 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.")
+    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+  }
+
+  # stop if non-connected data:
+  if(pdata[, !is.connected(r=r, n=n)]){
+    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
   }
 
   # check for duplicated entries:
