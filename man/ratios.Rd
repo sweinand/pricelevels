@@ -34,7 +34,7 @@ If there are duplicated observations, only one of these duplicates is used as th
 ### (1) unique price observations; no missings
 
 set.seed(123)
-dt1 <- rdata(R=3, N=4)
+dt1 <- rdata(R=3, B=1, N=4)
 levels(dt1$region) <- c("a","b","c")
 
 # calculate price ratios by product groups:

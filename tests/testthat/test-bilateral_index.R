@@ -6,7 +6,7 @@
 
 # example data with one region only:
 set.seed(123)
-data <- rdata(R=1, N=4)
+data <- rdata(R=1, B=1, N=4)
 
 expect_equal(
   data[, jevons(p=price, r=region, n=product)],
@@ -30,7 +30,7 @@ expect_equal(
 
 # example data with one product only:
 set.seed(123)
-data <- rdata(R=4, N=1)
+data <- rdata(R=4, B=1, N=1)
 
 expect_no_error(
   data[, jevons(p=price, r=region, n=product)],
@@ -50,7 +50,7 @@ expect_no_error(
 
 # example data without weights and gaps:
 set.seed(123)
-data <- rdata(R=3, N=4)
+data <- rdata(R=3, B=1, N=4)
 
 r <- data[, list(region, price/price[region=="1"]), by="product"]
 J <- r[, exp(mean(log(V2))), by="region"]
@@ -84,8 +84,8 @@ expect_equal(
 
 
 # example data without weights and gaps:
-set.seed(1)
-data <- rdata(R=3, N=4, gaps=0.2)
+set.seed(2)
+data <- rdata(R=3, B=1, N=4, gaps=0.2)
 
 r <- data[, list(region, price/price[region=="1"]), by="product"]
 J <- r[, exp(mean(log(V2))), by="region"]
@@ -125,138 +125,138 @@ expect_equal(
 
 # example data with one region only:
 set.seed(123)
-data <- rdata(R=1, N=4)
-data[, "share" := rweights(r=region, n=product, type=~n)]
+data <- rdata(R=1, B=1, N=4)
+data[, "weight" := rweights(r=region, b=product, type=~b)]
 
 expect_equal(
-  data[, laspey(p=price, r=region, n=product, w=share)],
+  data[, laspey(p=price, r=region, n=product, w=weight)],
   c("1"=1)
 )
 
 expect_equal(
-  data[, paasche(p=price, r=region, n=product, w=share)],
+  data[, paasche(p=price, r=region, n=product, w=weight)],
   c("1"=1)
 )
 
 expect_equal(
-  data[, walsh(p=price, r=region, n=product, w=share)],
+  data[, walsh(p=price, r=region, n=product, w=weight)],
   c("1"=1)
 )
 
 expect_equal(
-  data[, fisher(p=price, r=region, n=product, w=share)],
+  data[, fisher(p=price, r=region, n=product, w=weight)],
   c("1"=1)
 )
 
 expect_equal(
-  data[, toernq(p=price, r=region, n=product, w=share)],
+  data[, toernq(p=price, r=region, n=product, w=weight)],
   c("1"=1)
 )
 
 # example data with one product only:
 set.seed(123)
-data <- rdata(R=4, N=1)
-data[, "share" := rweights(r=region, n=product, type=~n)]
+data <- rdata(R=4, B=1, N=1)
+data[, "weight" := rweights(r=region, b=product, type=~b)]
 
 expect_no_error(
-  data[, laspey(p=price, r=region, n=product, w=share)]
+  data[, laspey(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, paasche(p=price, r=region, n=product, w=share)]
+  data[, paasche(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, fisher(p=price, r=region, n=product, w=share)]
+  data[, fisher(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, walsh(p=price, r=region, n=product, w=share)]
+  data[, walsh(p=price, r=region, n=product, w=weight)]
 )
 
 expect_no_error(
-  data[, toernq(p=price, r=region, n=product, w=share)]
+  data[, toernq(p=price, r=region, n=product, w=weight)]
 )
 
 # example data with weights:
 set.seed(123)
-data <- rdata(R=3, N=4)
-data[, "share" := rweights(r=region, n=product, type=~n)]
+data <- rdata(R=3, B=1, N=4)
+data[, "weight" := rweights(r=region, b=product, type=~b)]
 
-r <- data[, list(region, price/price[region=="1"], share), by="product"]
-L <- r[, weighted.mean(V2, share), by="region"]
+r <- data[, list(region, price/price[region=="1"], weight), by="product"]
+L <- r[, weighted.mean(V2, weight), by="region"]
 L <- setNames(L$V1, L$region)
-P <- r[, 1/weighted.mean(1/V2, share), by="region"]
+P <- r[, 1/weighted.mean(1/V2, weight), by="region"]
 P <- setNames(P$V1, P$region)
 Fi <- sqrt(L*P)
-To <- r[, exp(weighted.mean(log(V2), share)), by="region"]
+To <- r[, exp(weighted.mean(log(V2), weight)), by="region"]
 To <- setNames(To$V1, To$region)
-W <- r[, weighted.mean(sqrt(V2), share)/weighted.mean(sqrt(1/V2), share), by="region"]
+W <- r[, weighted.mean(sqrt(V2), weight)/weighted.mean(sqrt(1/V2), weight), by="region"]
 W <- setNames(W$V1, W$region)
 
 expect_equal(
-  data[, laspey(p=price, r=region, n=product, w=share)],
+  data[, laspey(p=price, r=region, n=product, w=weight)],
   L
 )
 
 expect_equal(
-  data[, paasche(p=price, r=region, n=product, w=share)],
+  data[, paasche(p=price, r=region, n=product, w=weight)],
   P
 )
 
 expect_equal(
-  data[, fisher(p=price, r=region, n=product, w=share)],
+  data[, fisher(p=price, r=region, n=product, w=weight)],
   Fi
 )
 
 expect_equal(
-  data[, walsh(p=price, r=region, n=product, w=share)],
+  data[, walsh(p=price, r=region, n=product, w=weight)],
   W
 )
 
 expect_equal(
-  data[, toernq(p=price, r=region, n=product, w=share)],
+  data[, toernq(p=price, r=region, n=product, w=weight)],
   To
 )
 
 # example data with weights and gaps:
-set.seed(1)
-data <- rdata(R=3, N=4, gaps=0.2)
-data[, "share" := rweights(r=region, n=product, type=~n)]
+set.seed(2)
+data <- rdata(R=3, B=1, N=4, gaps=0.2)
+data[, "weight" := rweights(r=region, b=product, type=~b)]
 
-r <- data[, list(region, price/price[region=="1"], share), by="product"]
-L <- r[, weighted.mean(V2, share, na.rm=TRUE), by="region"]
+r <- data[, list(region, price/price[region=="1"], weight), by="product"]
+L <- r[, weighted.mean(V2, weight, na.rm=TRUE), by="region"]
 L <- setNames(L$V1, L$region)
-P <- r[, 1/weighted.mean(1/V2, share, na.rm=TRUE), by="region"]
+P <- r[, 1/weighted.mean(1/V2, weight, na.rm=TRUE), by="region"]
 P <- setNames(P$V1, P$region)
 Fi <- sqrt(L*P)
-To <- r[, exp(weighted.mean(log(V2), share, na.rm=TRUE)), by="region"]
+To <- r[, exp(weighted.mean(log(V2), weight, na.rm=TRUE)), by="region"]
 To <- setNames(To$V1, To$region)
-W <- r[, weighted.mean(sqrt(V2), share, na.rm=TRUE)/weighted.mean(sqrt(1/V2), share, na.rm=TRUE), by="region"]
+W <- r[, weighted.mean(sqrt(V2), weight, na.rm=TRUE)/weighted.mean(sqrt(1/V2), weight, na.rm=TRUE), by="region"]
 W <- setNames(W$V1, W$region)
 
 expect_equal(
-  data[, laspey(p=price, r=region, n=product, w=share, base="1")],
+  data[, laspey(p=price, r=region, n=product, w=weight, base="1")],
   L
 )
 
 expect_equal(
-  data[, paasche(p=price, r=region, n=product, w=share, base="1")],
+  data[, paasche(p=price, r=region, n=product, w=weight, base="1")],
   P
 )
 
 expect_equal(
-  data[, fisher(p=price, r=region, n=product, w=share, base="1")],
+  data[, fisher(p=price, r=region, n=product, w=weight, base="1")],
   Fi
 )
 
 expect_equal(
-  data[, toernq(p=price, r=region, n=product, w=share, base="1")],
+  data[, toernq(p=price, r=region, n=product, w=weight, base="1")],
   To
 )
 
 expect_equal(
-  data[, walsh(p=price, r=region, n=product, w=share, base="1")],
+  data[, walsh(p=price, r=region, n=product, w=weight, base="1")],
   W
 )
 
@@ -270,10 +270,9 @@ expect_equal(
 
 # sample data:
 set.seed(1)
-dt <- spin::rdata(R=5, N=7, gaps=0.25)
-# dt[, "quantity" := sample(x=50:1000, size=.N, replace=TRUE)]
-# dt[, "weight" := price*quantity/sum(price*quantity), by="region"]
-data.table::setnames(dt, c("r","n","is_sale","p","q","w"))
+dt <- spin::rdata(R=5, B=7, N=1, gaps=0.25)
+dt[, "w" := price*quantity/sum(price*quantity), by="region"]
+data.table::setnames(dt, c("group","weight","r","n","is_sale","p","q","w"))
 
 # reshape data to matrices:
 P <- as.matrix(
@@ -369,3 +368,4 @@ all.equal(PT3, PT4)
 all.equal(PT1, PT3)
 
 # END
+

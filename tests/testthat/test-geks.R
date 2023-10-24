@@ -6,7 +6,7 @@
 
 # example data with one region only:
 set.seed(123)
-data <- rdata(R=1, N=4)
+data <- rdata(R=1, B=1, N=4)
 
 expect_error(
   data[, index.pairs(p=price, r=region, n=product, settings=list(type="bla"))]
@@ -28,7 +28,7 @@ expect_equal(
 
 # example data with one product only:
 set.seed(123)
-data <- rdata(R=4, N=1)
+data <- rdata(R=4, B=1, N=1)
 
 expect_no_error(
   data[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))]
@@ -36,7 +36,7 @@ expect_no_error(
 
 # example data with gaps:
 set.seed(123)
-data <- rdata(R=3, N=4, gaps=0.2)
+data <- rdata(R=3, B=1, N=4, gaps=0.2)
 
 res.expec <- rbind(
   data[, jevons(p=price, r=region, n=product, base="1")],
@@ -68,7 +68,7 @@ expect_equal(
 )
 
 # no weights:
-data <- rdata(R = 5, N = 10)
+data <- rdata(R=5, B=1, N=10)
 data[, "weights" := 1]
 
 expect_equal(
@@ -92,7 +92,7 @@ expect_equal(
 
 # example data with one region only:
 set.seed(123)
-data <- rdata(R=1, N=4)
+data <- rdata(R=1, B=1, N=4)
 
 expect_equal(
   data[, geks(p=price, r=region, n=product)],
@@ -101,7 +101,7 @@ expect_equal(
 
 # example data with one product only:
 set.seed(123)
-data <- rdata(R=4, N=1)
+data <- rdata(R=4, B=1, N=1)
 
 expect_no_error(
   data[, geks(p=price, r=region, n=product)],
@@ -109,7 +109,7 @@ expect_no_error(
 
 # example data without weights and gaps:
 set.seed(123)
-data <- rdata(R=3, N=4)
+data <- rdata(R=3, B=1, N=4)
 
 geks.est1 <- data[, geks(p=price, r=region, n=product, base="1")]
 geks.est2 <- data[, geks(p=price, r=region, n=product, base=NULL)]
@@ -122,8 +122,8 @@ expect_equal(geks.est1, jev.est1)
 
 # example data without gaps, but with weights:
 set.seed(123)
-data <- rdata(R=3, N=4)
-data[, "weight" := rweights(r=region, n=product, type=~n)]
+data <- rdata(R=3, B=1, N=4)
+data[, "weight" := rweights(r=region, b=product, type=~b)]
 
 geks.est1 <- data[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernq"))]
 geks.est2 <- data[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernq"))]
@@ -136,8 +136,9 @@ expect_equal(geks.est1, toernq.est1)
 
 # example data with weights and gaps:
 set.seed(123)
-data <- rdata(R=3, N=4, gaps=0.2)
-data[, "weight" := rweights(r=region, n=product, type=~n)]
+data <- rdata(R=3, B=1, N=4, gaps=0.2)
+data[, "share" := price*quantity/sum(price*quantity), by="region"]
+data[, "weight" := rweights(r=region, b=product, type=~b)]
 
 geks.est1 <- data[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernq"))]
 geks.est2 <- data[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernq"))]

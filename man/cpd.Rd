@@ -63,8 +63,9 @@ Summers, R. (1973). International Price Comparisons based upon Incomplete Data. 
 ### (1) connected price data:
 set.seed(123)
 R <- 3 # number of regions
+B <- 1 # number of product groups
 N <- 4 # number of products
-dt1 <- rdata(R=R, N=N)
+dt1 <- rdata(R=R, B=B, N=N)
 
 dt1[, cpd(price, region, product, base="1")] # switch to specific base region
 dt1[, cpd(price, region, product)]
@@ -99,7 +100,7 @@ dt2[!is.na(group_id),
 
 ### (3) computational speed in nlcpd() usually increases if use.jac=TRUE
 set.seed(123)
-dt3 <- rdata(R=20, N=30)
+dt3 <- rdata(R=20, B=1, N=30)
 system.time(m1 <- dt3[, nlcpd(p=price, r=region, n=product, q=quantity,
                               settings=list(use.jac=FALSE), simplify=FALSE,
                               control=minpack.lm::nls.lm.control("maxiter"=200))])

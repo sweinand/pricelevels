@@ -56,7 +56,7 @@ World Bank (2013). \emph{Measuring the Real Size of the World Economy: The Frame
 \examples{
 ### connected price data:
 set.seed(123)
-dt1 <- rdata(R=4, N=3)
+dt1 <- rdata(R=4, B=1, N=3)
 
 dt1[, sparsity(r = region, n = product)]
 dt1[, is.connected(r = region, n = product)] # true

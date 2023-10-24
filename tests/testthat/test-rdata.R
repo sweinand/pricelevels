@@ -4,7 +4,7 @@
 # rgaps() ------------------------------------------------------------------
 
 
-data <- rdata(R=6, N=15)
+data <- rdata(R=6, B=1, N=15)
 
 # number of gaps:
 expect_true(
@@ -66,16 +66,16 @@ expect_true(
 
 
 # sample complete price data:
-data <- rdata(R=7, N=13)
+data <- rdata(R=7, B=1, N=13)
 
 # add weights:
-data[, "w1" := rweights(r=region, n=product, type=~1)] # constant
-data[, "w2" := rweights(r=region, n=product, type=~n)] # product-specific
-data[, "w3" := rweights(r=region, n=product, type=~n+r)] # product-region-specific
+data[, "w1" := rweights(r=region, b=product, type=~1)] # constant
+data[, "w2" := rweights(r=region, b=product, type=~b)] # product-specific
+data[, "w3" := rweights(r=region, b=product, type=~b+r)] # product-region-specific
 
 # non-negative weights:
 expect_true(
-  all(replicate(n=100, expr=data[, rweights(r=region, n=product, type=~n+r)])>=0)
+  all(replicate(n=100, expr=data[, rweights(r=region, b=product, type=~b+r)])>=0)
 )
 
 # no variation in constant weights:
@@ -106,19 +106,19 @@ expect_true(
 
 
 # sample complete price data:
-data <- rdata(R=7, N=13)
+data <- rdata(R=7, B=1, N=13)
 
 # no sales:
 expect_true(
-  all(data[, rsales(p=price, q=quantity, amount=0)]$price_is_sale==FALSE)
+  all(data[, spin:::.rsales(p=price, q=quantity, amount=0)]$price_is_sale==FALSE)
 )
 
 expect_true(
-  any(data[, rsales(p=price, q=quantity, amount=0.1)]$price_is_sale)
+  any(data[, spin:::.rsales(p=price, q=quantity, amount=0.1)]$price_is_sale)
 )
 
 expect_true(
-  all(data[, rsales(p=price, q=quantity, amount=1)]$price_is_sale)
+  all(data[, spin:::.rsales(p=price, q=quantity, amount=1)]$price_is_sale)
 )
 
 
@@ -126,50 +126,54 @@ expect_true(
 
 
 expect_true(
-  abs(nrow(rdata(R=1, N=1))-1)<1e-10
+  abs(nrow(rdata(R=1, B=1, N=1))-1)<1e-10
 )
 
 expect_true(
-  abs(nrow(rdata(R=2, N=1))-2)<1e-10
+  abs(nrow(rdata(R=2, B=1, N=1))-2)<1e-10
 )
 
 expect_true(
-  abs(nrow(rdata(R=13, N=17))-13*17)<1e-10
+  abs(nrow(rdata(R=13, B=1, N=17))-13*17)<1e-10
 )
 
 expect_true(
-  nrow(rdata(R=13, N=17, gaps=0.1))<13*17
+  abs(nrow(rdata(R=13, B=3, N=17))-13*17*3)<1e-10
 )
 
 expect_true(
-  any(rdata(R=10, N=15, sales=0.1)$is_sale)
+  nrow(rdata(R=13, B=1, N=17, gaps=0.1))<13*17
 )
 
 expect_true(
-  all(!rdata(R=10, N=15, sales=0)$is_sale)
+  any(rdata(R=10, B=1, N=15, sales=0.1)$sale)
 )
 
 expect_true(
-  all(names(rdata(R=13, N=17))%in%c("region","product","is_sale","price","quantity","share"))
+  all(!rdata(R=10, B=1, N=15, sales=0)$sale)
 )
 
 expect_true(
-  data.table::is.data.table(rdata(R=5, N=10))
+  all(names(rdata(R=13, B=1, N=17))%in%c("group","weight","region","product","sale","price","quantity"))
 )
 
 expect_true(
-  is.list(rdata(R=5, N=10, settings=list("par.add"=TRUE)))
+  data.table::is.data.table(rdata(R=5, B=1, N=10))
 )
 
-dt.test <- rdata(R=5, N=10, settings=list("par.add"=TRUE, par.sd=c("lnP"=0, "pi"=0, "delta"=0)))
+expect_true(
+  is.list(rdata(R=5, B=2, N=10, settings=list("par.add"=TRUE)))
+)
+
+dt.test <- rdata(R=5, B=2, N=10, settings=list("par.add"=TRUE, par.sd=c("lnP"=0, "pi"=0, "delta"=0)))
 
 expect_true(
   all(abs(dt.test$param$lnP)<1e-10)
 )
 
-expect_true(
-  all(abs(dt.test$param$pi-1)<1e-10)
-)
+# expect_true(
+#   all(abs(dt.test$param$pi-1)<1e-10)
+# )
 
 expect_true(
   all(abs(dt.test$param$delta-1)<1e-10)

@@ -64,7 +64,7 @@ Before calculations start, missing values are excluded and duplicated observatio
 \examples{
 # example data:
 set.seed(1)
-dt <- rdata(R=5, N=7)
+dt <- rdata(R=5, B=1, N=7)
 
 ### Index pairs
 

@@ -2,7 +2,7 @@
 
 # example data with one region only:
 set.seed(123)
-data <- rdata(R=1, N=4)
+data <- rdata(R=1, B=1, N=4)
 
 expect_equal(
   data[, cpd(p=price, r=region, n=product)],
@@ -16,7 +16,7 @@ expect_equal(
 
 # example data with one product only:
 set.seed(123)
-data <- rdata(R=4, N=1)
+data <- rdata(R=4, B=1, N=1)
 
 expect_no_error(
   data[, cpd(p=price, r=region, n=product)],
@@ -33,8 +33,7 @@ expect_equal(
 
 # example data without weights and gaps:
 set.seed(123)
-data <- rdata(R=3, N=4)
-
+data <- rdata(R=3, B=1, N=4)
 
 # CPD method:
 cpd.est1 <- data[, cpd(p=price, r=region, n=product, base="1")]
@@ -49,7 +48,7 @@ expect_equal(cpd.est1, jev)
 
 # example data with weights and gaps:
 set.seed(123)
-data <- rdata(R=3, N=4, gaps=0.1)
+data <- rdata(R=3, B=1, N=4, gaps=0.1)
 data[, "share" := price*quantity / sum(price*quantity), by="region"]
 
 # CPD method:

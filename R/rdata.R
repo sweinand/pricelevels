@@ -2,7 +2,7 @@
 
 # Title:    Sampling of random price and quantity data
 # Author:   Sebastian Weinand
-# Date:     14 September 2023
+# Date:     24 October 2023
 
 # non-visible helper functions:
 .rpi <- function(n, mean=exp(1), sd=exp(1), min=log(1), max=Inf){
@@ -34,27 +34,37 @@
   # sd    integer, standard deviation of distribution
   # w     numeric, vector of weights, or NULL
 
+  # set mean and sd if negative standard deviation provided:
   if(sd<=0){mean <- 1; sd <- 0}
 
-  # sample weights if w=NULL or w missing:
-  if(is.null(w) | missing(w)) w <- rep(1, n)
+  # set weights if w=NULL:
+  if(is.null(w)) w <- rep(1, n)
   w <- w/sum(w)
 
   # initialize check sum:
   dw.sum <- 0
+  i <- 1
 
   # loop until check sum is in between 1/2 and 2.
   # if dw.sum is allowed to be out of this interval
   # it impacts sampled d-values by normalization
   # too strong. resulting delta-values could
   # take unwanted extreme values:
-  while(dw.sum < 1/2 | dw.sum > 2){
+  while(i<100 && (dw.sum < 1/2 || dw.sum > 2)){
     d <- rnorm(n=n, mean=mean, sd=sd)
     dw.sum <- sum(d*w)
   }
 
-  # normalize:
-  d / dw.sum
+  if(i<100){
+    # normalize:
+    res <- d / dw.sum
+  }else{
+    warning("No valid delta-parameters found -> reset to delta=1")
+    res <- rep(1, n)
+  }
+
+  # return output:
+  return(res)
 
 }
 .min_obs <- function(r0, n0, pairs=FALSE, exclude=NULL){
@@ -156,6 +166,43 @@
 
   # print output:
   return(data.min)
+
+}
+.rsales <- function(p, q, amount=0, max.rebate=1/4, max.qi=2){
+
+  # simulate random random sales
+
+  ### @args:
+  # p, q          vector of prices and quantities
+  # sales         percentage amount of sales
+  # max.rebate    maximum allowed percentage price reduction for sales
+  # maxqi         maximum allowed percentage quantity increase for sales
+
+  # input checks:
+  .check.num(x=p, int=c(0, Inf))
+  .check.num(x=q, int=c(0, Inf))
+  .check.num(x=amount, null.ok=FALSE, int=c(0, 1))
+  .check.num(x=max.rebate, null.ok=FALSE, int=c(0.001, 1))
+  .check.num(x=max.qi, null.ok=FALSE, int=c(1, Inf))
+  .check.lengths(x=p, y=q)
+
+  # sales flag:
+  sf <- sample(x=c(TRUE,FALSE), size=length(p), replace=TRUE, prob=c(amount, 1-amount))
+
+  # sales price reduction factors and quantity increase factors:
+  spf <- runif(n=sum(sf), min=(1-max.rebate), max=0.999)
+  sqf <- runif(n=sum(sf), min=1, max=max.qi)
+
+  # adjust prices and quantities:
+  p[sf] <- p[sf]*spf
+  q[sf] <- q[sf]*sqf
+
+  # output:
+  res <- list("price_is_sale"=sf, "price"=p, "quantity"=q)
+
+  # return output:
+  return(res)
+
 
 }
 
@@ -273,33 +320,33 @@ rgaps <- function(r, n, amount=0, prob=NULL, pairs=FALSE, exclude=NULL){
 }
 
 # sample random expenditure share weights:
-rweights <- function(r, n, type=~1){
+rweights <- function(r, b, type=~1){
 
   ### @args:
   # r      vector of regions
-  # n      vector of products
+  # b      vector of product groups
   # type   formula, defining the weights:
   #        o type=~1    # constant weights
-  #        o type=~n    # product-specific weights constant among regions
-  #        o type=~n+r  # product-specific weights varying among regions
+  #        o type=~b    # product group-specific weights constant among regions
+  #        o type=~b+r  # product group-specific weights varying among regions
 
   # input checks:
   .check.char(x=r)
-  .check.char(x=n)
-  .check.lengths(x=r, y=n)
+  .check.char(x=b)
+  .check.lengths(x=r, y=b)
   if(!inherits(type, "formula")) stop("type must be a formula", call.=FALSE)
 
   # parse variables from formula:
   rhs.vars <- labels(terms(type))
 
   # gather initial data and set default weights:
-  dt <- data.table(r, n, stringsAsFactors=FALSE)
+  dt <- data.table(r, b, stringsAsFactors=FALSE)
 
   # full data with no gaps:
   dt.full <- as.data.table(
     expand.grid(
       "r"=unique(dt$r, na.rm=TRUE),
-      "n"=unique(dt$n, na.rm=TRUE)))
+      "b"=unique(dt$b, na.rm=TRUE)))
 
   # set default weights:
   dt.full[, "w" := 1]
@@ -307,10 +354,10 @@ rweights <- function(r, n, type=~1){
   # sample weights according to formula:
   if(length(rhs.vars) > 0){
 
-    # dt.full[, "w" := runif(n=1, min=1, max=100), by="n"]
-    dt.full[, "w" := rlnorm(n=1), by="n"]
+    # dt.full[, "w" := runif(n=1, min=1, max=100), by="b"]
+    dt.full[, "w" := rlnorm(n=1), by="b"]
 
-    if(all(c("r","n") %in% rhs.vars)){
+    if(all(c("r","b") %in% rhs.vars)){
       dt.full[, "w_adj":= rnorm(.N, mean=1, sd=0.1)]
       dt.full[, "w" := pmax(0, w*w_adj)] # non-negative weights
     }
@@ -320,58 +367,23 @@ rweights <- function(r, n, type=~1){
   dt.full[, "w" := w/sum(w), by="r"]
 
   # add weights to initial data:
-  dt <- merge(x=dt, y=dt.full, by=c("r","n"), all.x=TRUE, sort=FALSE)
+  dt <- merge(x=dt, y=dt.full, by=c("r","b"), all.x=TRUE, sort=FALSE)
 
   # return output:
   return(dt$w)
 
 }
 
-# random random sales:
-rsales <- function(p, q, amount=0, max.rebate=1/4, max.qi=2){
-
-  ### @args:
-  # p, q          vector of prices and quantities
-  # sales         percentage amount of sales
-  # max.rebate    maximum allowed percentage price reduction for sales
-  # maxqi         maximum allowed percentage quantity increase for sales
-
-  # input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.num(x=q, int=c(0, Inf))
-  .check.num(x=amount, null.ok=FALSE, int=c(0, 1))
-  .check.num(x=max.rebate, null.ok=FALSE, int=c(0.001, 1))
-  .check.num(x=max.qi, null.ok=FALSE, int=c(1, Inf))
-  .check.lengths(x=p, y=q)
-
-  # sales flag:
-  sf <- sample(x=c(TRUE,FALSE), size=length(p), replace=TRUE, prob=c(amount, 1-amount))
-
-  # sales price reduction factors and quantity increase factors:
-  spf <- runif(n=sum(sf), min=(1-max.rebate), max=0.999)
-  sqf <- runif(n=sum(sf), min=1, max=max.qi)
-
-  # adjust prices and quantities:
-  p[sf] <- p[sf]*spf
-  q[sf] <- q[sf]*sqf
-
-  # output:
-  res <- list("price_is_sale"=sf, "price"=p, "quantity"=q)
-
-  # return output:
-  return(res)
-
-
-}
-
 # sample random price and quantity data:
-rdata <- function(R, N, gaps=0, sales=0, settings=list()){
+rdata <- function(R, B, N, gaps=0, weights=~b+r, sales=0, settings=list()){
 
   ### @args:
-  # R           integer, number of regions
-  # N           integer, number of products
+  # R           integer, number of regions r=1,...,R
+  # B           integer, number of product groups/basic headings b=1,...,B
+  # N           integer, number of products i=1,...,N[b] per product group b
   # gaps        see rgaps()
-  # sales       see rsales()
+  # weights     see rweights()
+  # sales       relative amount of sales
   # settings    list of
   #             o gaps.prob: see argument 'prob' in rgaps()
   #             o gaps.pairs: see argument 'pairs' in rgaps()
@@ -382,10 +394,12 @@ rdata <- function(R, N, gaps=0, sales=0, settings=list()){
   #             o par.sd: numeric, named vector of standard deviations of
   #               parameters and error term. standard deviation of delta
   #               currently cant be set if weights=~n+r
+  #             o round: round prices to two decimals or keep all decimals
 
   # input checks:
   .check.num(x=R, min.len=1, max.len=1, na.ok=FALSE, int=c(1,Inf))
-  .check.num(x=N, min.len=1, max.len=1, na.ok=FALSE, int=c(1,Inf))
+  .check.num(x=B, min.len=1, max.len=1, na.ok=FALSE, int=c(1,Inf))
+  .check.num(x=N, min.len=1, max.len=B, na.ok=FALSE, int=c(1,Inf))
 
   # set settings if necessary:
   if(is.null(settings$gaps.prob)) settings$gaps.prob <- NULL
@@ -394,76 +408,104 @@ rdata <- function(R, N, gaps=0, sales=0, settings=list()){
   if(is.null(settings$sales.max.rebate)) settings$sales.max.rebate <- 1/4
   if(is.null(settings$sales.max.qi)) settings$sales.max.qi <- 2
   if(is.null(settings$par.add)) settings$par.add <- FALSE
+  if(is.null(settings$round)) settings$round <- TRUE
   sd.defaults <- c("lnP"=1/10, "pi"=exp(1), "delta"=sqrt(1/2), "error"=1/100)
   if(is.null(settings$par.sd)) settings$par.sd <- sd.defaults
   settings$par.sd <- c(settings$par.sd, sd.defaults[!names(sd.defaults) %in% names(settings$par.sd)])
   settings$par.sd <- as.list(settings$par.sd)
 
-  # coerce to integer:
+  # number of regions, product groups and products:
   R <- as.integer(R)
-  N <- as.integer(N)
+  B <- as.integer(B)
+  NB <- as.integer(N) # number of products per basic heading
+  if(length(NB)<=1) NB <- rep(x=NB, times=B)
+  N <- sum(NB) # number of products over all basic headings
 
-  # region and product identifier:
+  # region, group, and product identifier:
   r <- formatC(x=1:R, width=log10(R)+1, format="d", flag="0")
+  b <- formatC(x=1:B, width=log10(B)+1, format="d", flag="0")
   n <- formatC(x=1:N, width=log10(N)+1, format="d", flag="0")
-  dt <- data.table("region"=factor(rep(r, each=N)), "product"=factor(rep(n, times=R)))
 
-  # sample region-product-specific expenditure share weights:
-  dt[, "share" := spin::rweights(r=region, n=product, type=~r+n)]
+  # data:
+  dt <- data.table(
+    "group"=factor(rep(b, times=R*NB)),
+    "region"=factor(unlist(lapply(X=NB, FUN=function(z) rep(x=r, times=z)))),
+    "product"=factor(rep(n, each=R)))
 
-  # true regional price spreads across products:
-  w <- dt[, list("w"=mean(share)), by="product"]$w
-  delta <- .rdelta(n=N, mean=1, sd=settings$par.sd$delta, w=w)
-  names(delta) <- n
-  # sum(w*delta)=1
+  # sample expenditure share weights for product groups:
+  dt[, "weight" := spin::rweights(r=region, b=group, type=weights)]
 
   # true product prices:
-  pi <- .rpi(n=N, mean=exp(0), sd=settings$par.sd$pi, min=log(1), max=log(10000))
-  pi <- pi[order(delta)]
+  piB <- spin:::.rpi(n=B, mean=1, sd=settings$par.sd$pi, min=-1, max=10)
+  pi <- unlist(mapply(FUN=spin:::.rpi, n=NB, mean=piB, sd=0.15, min=-1, max=10, SIMPLIFY=FALSE))
   names(pi) <- n
+
+  # true regional price spreads across products:
+  # w <- dt[, list("w"=weight[1]), by=c("group","product")][, list(product, "w"=w/uniqueN(product)), by="group"]$w
+  w <- dt[, list("w"=mean(weight)), by="product"]$w
+  delta <- spin:::.rdelta(n=N, mean=1, sd=settings$par.sd$delta, w=w) # sum(w*delta)=1
+  names(delta) <- n
+  # currently, the deltas can be very different for products
+  # within the same product group
+
+  # # true regional price spreads across product groups:
+  # w <- unique(x=dt, by=c("group","region"))[, list("w"=mean(weight)), by="group"]$w
+  # delta <- spin:::.rdelta(n=B, mean=1, sd=settings$par.sd$delta, w=w)
+  # names(delta) <- b
 
   # true regional price levels:
   lnP <- rnorm(n=R, mean=0, sd=settings$par.sd$lnP)
   lnP <- lnP-mean(lnP) # sum(lnP)=0
   names(lnP) <- r
 
+  # add true parameters to data:
+  dt$delta <- delta[match(x=dt$product, table=names(delta))]
+  dt$lnP <- lnP[match(x=dt$region, table=names(lnP))]
+  dt$pi <- pi[match(x=dt$product, table=names(pi))]
+
   # add logarithmic prices and random noise:
-  dt[, "price" := as.vector(pi + outer(X=delta, Y=lnP, FUN="*"))]
+  dt[, "price" := as.vector(pi + delta*lnP)]
   dt[, "error" := rnorm(n=.N, mean=0, sd=settings$par.sd$error)]
 
   # unlog prices:
-  dt[, "price" := round(x=exp(price + error), digits=2L)]
-  # boxplot(price~product,df)
+  dt[, "price" := exp(price + error)]
+  # boxplot(price~paste(group,product,sep=":"), data=dt)
 
-  # sample overall expenditure for each region:
-  dt[, "expenditure" := runif(n=1, min=max(price/share), max=max(c(price/share, 999999))), by="region"]
+  # random product shares within each product group:
+  dt[, "prod_share" := as.numeric(sample(x=1:3, size=.N, replace=TRUE)), by=c("region","group")]
+  dt[, "prod_share" := prod_share/sum(prod_share), by=c("region","group")]
 
-  # derive quantities and expensiture share weights:
-  dt[, "quantity" := expenditure*share/price]
+  # sample overall turnover for each region:
+  dt[, "turnover" := runif(n=1, min=max(price/(weight*prod_share)), max=max(c(price/(weight*prod_share), 9999999))), by="region"]
+
+  # subdivide turnover by product group and product (in one step):
+  dt[, "prod_turnover" := turnover*weight*prod_share]
+
+  # derive non-negative quantities:
+  dt[, "quantity" := pmax(0, prod_turnover/price)]
+
+  # introduce sales:
+  dt[, "sale" := FALSE]
+  if(sales>0){
+    dt[, c("sale","price","quantity") := spin:::.rsales(p=price, q=quantity, amount=sales, max.rebate=settings$sales.max.rebate, max.qi=settings$sales.max.qi)]
+  }
 
   # introduce gaps:
   if(gaps>0){
-    dt <- dt[!rgaps(r=region, n=product, amount=gaps, prob=settings$gaps.prob, pairs=settings$gaps.pairs, exclude=settings$gaps.exclude), ]
+    dt <- dt[!spin::rgaps(r=region, n=product, amount=gaps, prob=settings$gaps.prob, pairs=settings$gaps.pairs, exclude=settings$gaps.exclude), ]
   }
 
-  # introduce sales:
-  dt[, "is_sale" := FALSE]
-  if(sales>0){
-    dt[, c("is_sale","price","quantity") := rsales(p=price, q=quantity, amount=sales, max.rebate=settings$sales.max.rebate, max.qi=settings$sales.max.qi)]
-  }
-
-  # round quantities:
+  # round prices and quantites:
   dt[, "quantity" := round(x=quantity, digits=0)]
+  if(settings$round) dt[, "price" := round(x=price, digits=2L)]
+  # if the error variance is set to zero and there are no gaps,
+  # cpd() and nlcpd() should provide estimates identical to
+  # the true values. however, there will be small differences
+  # when the prices are rounded
 
-  # derive expenditure share weights:
-  dt[, "share" := price*quantity/sum(price*quantity), by="region"]
-
-  # drop columns:
-  dt[, c("error","expenditure") := NULL]
-
-  # set column order and key:
-  setcolorder(x=dt, c("region", "product", "is_sale", "price", "quantity", "share"))
-  setkeyv(x=dt, cols=c("product", "region"))
+  # select columns and set key:
+  dt <- subset(x=dt, select=c("group","weight","region","product","sale","price","quantity"))
+  setkeyv(x=dt, cols=c("group","product","region"))
 
   # add parameter values to data:
   out <- list(

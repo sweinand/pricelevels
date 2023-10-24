@@ -52,8 +52,8 @@ The weights in \code{w} are normalized internally for each regional comparison, 
 
 \examples{
 # sample complete price data with product-specific weights:
-dt <- rdata(R=7, N=15)
-dt[, "weight" := rweights(r=region, n=product, type=~n)]
+dt <- rdata(R=7, B=1, N=15)
+dt[, "weight" := rweights(r=region, b=product, type=~b)]
 
 # jevons:
 (P1.jev <- dt[, jevons(p=price, r=region, n=product, base="1")])
