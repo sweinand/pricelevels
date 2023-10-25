@@ -36,15 +36,17 @@ set.seed(123)
 data <- rdata(R=3, B=1, N=4)
 
 # CPD method:
+cpd.est <- data[, cpd(p=price, r=region, n=product, base=NULL)]
 cpd.est1 <- data[, cpd(p=price, r=region, n=product, base="1")]
-cpd.est2 <- data[, cpd(p=price, r=region, n=product, base=NULL)]
+cpd.est2 <- data[, cpd(p=price, r=region, n=product, base="2")]
 jev <- data[, jevons(p=price, r=region, n=product, base="1")]
 
 expect_equal(cpd.est1[1], c("1"=1))
-expect_equal(prod(cpd.est2), 1)
+expect_equal(cpd.est2[2], c("2"=1))
+expect_equal(prod(cpd.est), 1)
 expect_equal(cpd.est1, cpd.est2/cpd.est2[1])
+expect_equal(cpd.est1, cpd.est/cpd.est[1])
 expect_equal(cpd.est1, jev)
-
 
 # example data with weights and gaps:
 set.seed(123)
@@ -78,8 +80,9 @@ expect_equal(
 )
 
 # NLCPD method:
+nlcpd.est <- data[, nlcpd(p=price, r=region, n=product, w=share, base=NULL)]
 nlcpd.est1 <- data[, nlcpd(p=price, r=region, n=product, w=share, base="1")]
-nlcpd.est2 <- data[, nlcpd(p=price, r=region, n=product, w=share, base=NULL)]
+nlcpd.est2 <- data[, nlcpd(p=price, r=region, n=product, w=share, base="2")]
 nlcpd.est3 <- data[, nlcpd(p=price, r=region, n=product, w=share, simplify=FALSE)]
 
 # basic functionality:
@@ -87,8 +90,10 @@ expect_equal(is.vector(nlcpd.est1), TRUE)
 expect_equal(is.vector(nlcpd.est2), TRUE)
 expect_equal(is.list(nlcpd.est3), TRUE)
 expect_equal(nlcpd.est1[1], c("1"=1))
-expect_equal(prod(nlcpd.est2), 1)
-expect_equal(nlcpd.est1, nlcpd.est2/nlcpd.est2[1])
+expect_equal(nlcpd.est2[2], c("2"=1))
+expect_equal(prod(nlcpd.est), 1)
+expect_equal(nlcpd.est1, nlcpd.est2/nlcpd.est2[1], tolerance=1e-6)
+expect_equal(nlcpd.est1, nlcpd.est/nlcpd.est[1], tolerance=1e-6)
 
 # expenditure share weighted:
 expect_equal(

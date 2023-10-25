@@ -37,17 +37,19 @@ expect_equal(
 # example data with gaps:
 set.seed(123)
 data <- rdata(R=3, B=1, N=4, gaps=0.2)
-data[, "quantity" := 1]
 
+gk.est <- data[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
 gk.est1 <- data[, gk(p=price, q=quantity, r=region, n=product, base="1")]
-gk.est2 <- data[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
+gk.est2 <- data[, gk(p=price, q=quantity, r=region, n=product, base="2")]
 gk.est3 <- data[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
 
 expect_equal(is.vector(gk.est1), TRUE)
 expect_equal(is.vector(gk.est2), TRUE)
 expect_equal(is.vector(gk.est3), TRUE)
 expect_equal(gk.est1[1], c("1"=1))
-expect_equal(mean(gk.est2), 1)
+expect_equal(gk.est2[2], c("2"=1))
+expect_equal(mean(gk.est), 1)
+expect_equal(gk.est1, gk.est/gk.est[1])
 expect_equal(gk.est1, gk.est2/gk.est2[1])
 
 # settings:

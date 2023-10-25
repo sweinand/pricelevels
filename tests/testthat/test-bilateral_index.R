@@ -1,6 +1,101 @@
 # START
 
 
+# example data with gaps:
+set.seed(123)
+data <- rdata(R=5, B=1, N=4)
+
+expect_equal(
+  data[, jevons(p=price, r=region, n=product, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, jevons(p=price, r=region, n=product, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, carli(p=price, r=region, n=product, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, carli(p=price, r=region, n=product, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, harmonic(p=price, r=region, n=product, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, harmonic(p=price, r=region, n=product, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, dutot(p=price, r=region, n=product, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, dutot(p=price, r=region, n=product, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, laspey(p=price, r=region, n=product, q=quantity, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, laspey(p=price, r=region, n=product, q=quantity, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, paasche(p=price, r=region, n=product, q=quantity, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, paasche(p=price, r=region, n=product, q=quantity, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, fisher(p=price, r=region, n=product, q=quantity, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, fisher(p=price, r=region, n=product, q=quantity, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, walsh(p=price, r=region, n=product, q=quantity, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, walsh(p=price, r=region, n=product, q=quantity, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  data[, toernq(p=price, r=region, n=product, q=quantity, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  data[, toernq(p=price, r=region, n=product, q=quantity, base="2")][2],
+  c("2"=1)
+)
+
+
 # Unweighted indices ------------------------------------------------------
 
 

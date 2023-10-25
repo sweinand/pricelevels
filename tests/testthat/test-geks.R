@@ -111,12 +111,14 @@ expect_no_error(
 set.seed(123)
 data <- rdata(R=3, B=1, N=4)
 
+geks.est <- data[, geks(p=price, r=region, n=product, base=NULL)]
 geks.est1 <- data[, geks(p=price, r=region, n=product, base="1")]
-geks.est2 <- data[, geks(p=price, r=region, n=product, base=NULL)]
+geks.est2 <- data[, geks(p=price, r=region, n=product, base="2")]
 jev.est1 <- data[, jevons(p=price, r=region, n=product, base="1")]
 
 expect_equal(geks.est1[1], c("1"=1))
-expect_equal(prod(geks.est2), 1)
+expect_equal(geks.est2[2], c("2"=1))
+expect_equal(prod(geks.est), 1)
 expect_equal(geks.est1, geks.est2/geks.est2[1])
 expect_equal(geks.est1, jev.est1)
 
@@ -140,14 +142,17 @@ data <- rdata(R=3, B=1, N=4, gaps=0.2)
 data[, "share" := price*quantity/sum(price*quantity), by="region"]
 data[, "weight" := rweights(r=region, b=product, type=~b)]
 
+geks.est <- data[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernq"))]
 geks.est1 <- data[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernq"))]
-geks.est2 <- data[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernq"))]
+geks.est2 <- data[, geks(p=price, r=region, n=product, w=weight, base="2", settings=list(type="toernq"))]
 
 expect_equal(is.vector(geks.est1), TRUE)
 expect_equal(is.vector(geks.est2), TRUE)
 expect_equal(geks.est1[1], c("1"=1))
-expect_equal(prod(geks.est2), 1)
+expect_equal(geks.est2[2], c("2"=1))
+expect_equal(prod(geks.est), 1)
 expect_equal(geks.est1, geks.est2/geks.est2[1])
+expect_equal(geks.est1, geks.est/geks.est[1])
 
 geks.est3 <- data[, geks(p=price, r=region, n=product, w=share, base="1", settings=list(type="toernq"))]
 geks.est4 <- data[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernq"))]

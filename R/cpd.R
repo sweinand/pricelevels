@@ -562,12 +562,13 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
       # extract estimated regional price levels:
       out <- coef(nlcpd_reg_out)
       out <- out[grepl("^lnP\\.", names(out))]
+      names(out) <- gsub(pattern="^lnP\\.", replacement="", x=names(out))
 
       # add price level of base (region):
-      if(is.null(base)) out <- c(out, -sum(out)) else out <- c(0, out)
-
-      # set names:
-      names(out) <- r.lvl
+      r.miss <- setdiff(x=r.lvl, y=names(out))
+      if(is.null(base)) out.miss <- -sum(out) else out.miss <- 0
+      names(out.miss) <- r.miss
+      out <- c(out, out.miss)
 
       # match to initial ordering and unlog:
       out <- exp(out)[match(x=r.lvl, table=names(out))]
