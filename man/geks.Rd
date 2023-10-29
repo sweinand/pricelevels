@@ -52,7 +52,7 @@ For \code{geks()}, a named vector of (unlogged) regional price levels if \code{s
 }
 
 \details{
-The GEKS index is a two-step approach. First, prices are aggregated into bilateral index numbers using the index given in \code{type}. This is done for all pairs of regions via function \code{\link{index.pairs}()}. Second, these bilateral index numbers are transformed into a set of multilateral, transitive index numbers.
+The GEKS index is a two-step approach. First, prices are aggregated into bilateral index numbers using the index given in \code{type}. This is done for all pairs of regions via function \code{index.pairs()}. Second, these bilateral index numbers are transformed into a set of multilateral, transitive index numbers.
 
 Note that the quantities \code{q} or weights \code{w} are used within the aggregation of prices into index numbers (first stage) while the subsequent transformation of these index numbers (second stage) usually does not rely on any weights (but can if specified in \code{settings$method}).
 

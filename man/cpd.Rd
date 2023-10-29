@@ -1,4 +1,4 @@
-\name{stochastic_index}
+\name{stochastic.index}
 
 \alias{cpd}
 \alias{nlcpd}

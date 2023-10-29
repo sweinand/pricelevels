@@ -1,4 +1,4 @@
-\name{price_matrix}
+\name{price.matrix}
 
 \alias{neighbors}
 \alias{connect}
