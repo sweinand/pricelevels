@@ -6,7 +6,7 @@ Package `spin` provides methods which can be used for price comparisons between 
 Currently, the following index number methods are implemented:
 1. Elementary price indices:  Jevons, Dutot, Carli, Harmonic
 2. Weighted price indices:    Laspeyres, Paasche, Fisher, Toernqvist, Walsh
-3. Multilateral price indices:  CPD, NLCPD, GEKS, Geary-Khamis
+3. Multilateral price indices:  CPD, NLCPD, GEKS, Geary-Khamis, Iklé-Dikhanov-Balk, Geradi, Rao
 
 Moreover, `spin` provides additional functionalities for sampling and characterizing (incomplete) price data.
 

@@ -1,4 +1,4 @@
-\name{bilateral_index}
+\name{bilateral.index}
 
 \alias{jevons}
 \alias{carli}
