@@ -7,16 +7,6 @@
 
 \description{
 Function \code{cpd()} estimates regional price levels by the Country-Product-Dummy (CPD) method, originally developed by Summers (1973). Auer and Weinand (2022) recently proposed a generalization of the CPD method. This nonlinear CPD method (NLCPD method) is implemented in \code{nlcpd()}.
-
-The CPD method is a linear regression model that explains the logarithmic price of product \eqn{i} in region \eqn{r}, \eqn{\ln p_i^r}, by the general product price, \eqn{\ln \pi_i}, and the overall price level, \eqn{\ln P^r}:
-
-\deqn{\ln p_i^r = \ln \pi_i + \ln P^r + u_i^r}
-
-The NLCPD method inflates the CPD model by product-specific elasticities \eqn{\delta_i}:
-
-\deqn{\ln p_i^r = \ln \pi_i + \delta_i \ln P^r + u_i^r}
-
-Note that both the CPD and the NLCPD method require a normalization of the estimated price levels \eqn{\widehat{\ln P^r}} to avoid multicollinearity. If \code{base=NULL}, normalization \eqn{\sum_{r=1}^{R} \widehat{\ln P^r}=0} is used in both functions; otherwise, one price level is set to 0. The NLCPD method additionaly imposes the restriction \eqn{\sum_{i=1}^{N} w_i \widehat{\delta_i}=1}, which is satisfied by the CPD method by definiton.
 }
 
 \usage{
@@ -36,12 +26,22 @@ nlcpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list
    \item \code{par.start} : A named list of start values for the NLCPD coefficients: \eqn{\ln P^r} (\eqn{R-1} region price levels), \eqn{\ln \pi_i} (\eqn{N} general product prices), and \eqn{\delta_i} (\eqn{N-1} product-specific elasticities). Must have names \code{lnP}, \code{pi}, and \code{delta}. By default, \code{par.start=NULL}, meaning that start values are internally derived by \code{self.start}.
    \item \code{self.start} : Only if \code{par.start=NULL}, the strategy how parameter start values are internally derived. Currently, values \code{s1}, \code{s2} and \code{s3} are allowed. For \code{s1}, simple price averages across products and regions are used as start values, while these are derived by the CPD method for strategies \code{s2} and \code{s3}. Start values for \code{delta} are either set to 1 or derived by their first-order condition if \code{s3}. By default, \code{self.start='s1'}.
    \item \code{use.jac} : A logical indicating if the jacobian should be used or not.
-   \item \code{w.delta} : A named vector of weights for the \code{delta}-parameter. Vector length must be equal to the number of products, while names must match product names. If not supplied, \eqn{\delta_i} weights are derived internally from weights \code{w}.
+   \item \code{w.delta} : A named vector of weights for the \code{delta}-parameter (see Details). Vector length must be equal to the number of products, while names must match product names. If not supplied, \eqn{\delta_i} weights are derived internally from weights \code{w}.
    }}
    \item{...}{Further arguments passed to \code{\link{nls.lm}}, typically arguments \code{control}, \code{upper} and \code{lower}.}
 }
 
 \details{
+The CPD method is a linear regression model that explains the logarithmic price of product \eqn{i} in region \eqn{r}, \eqn{\ln p_i^r}, by the general product price, \eqn{\ln \pi_i}, and the overall price level, \eqn{\ln P^r}:
+
+\deqn{\ln p_i^r = \ln \pi_i + \ln P^r + u_i^r}
+
+The NLCPD method inflates the CPD model by product-specific elasticities \eqn{\delta_i}:
+
+\deqn{\ln p_i^r = \ln \pi_i + \delta_i \ln P^r + u_i^r}
+
+Note that both the CPD and the NLCPD method require a normalization of the estimated price levels \eqn{\widehat{\ln P^r}} to avoid multicollinearity. If \code{base=NULL}, normalization \eqn{\sum_{r=1}^{R} \widehat{\ln P^r}=0} is used in both functions; otherwise, one price level is set to 0. The NLCPD method additionaly imposes the restriction \eqn{\sum_{i=1}^{N} w_i \widehat{\delta_i}=1}, which is satisfied by the CPD method by definiton. The \eqn{w_i} can be defined by \code{w.delta}.
+
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 }
 
