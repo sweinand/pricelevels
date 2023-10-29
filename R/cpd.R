@@ -61,6 +61,8 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   # compute expenditure share weights for each region:
   if(!is.null(q)){
     pdata[, "w" := (p*z)/sum(p*z, na.rm=TRUE), by="r"]
+  }else{
+    pdata[, "w" := z]
   }
 
   # coerce to factor:
