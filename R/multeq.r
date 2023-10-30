@@ -1,6 +1,6 @@
 # START
 
-# Title:    Quality-adjusted unit value methods
+# Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
 # Date:     30 October 2023
 
