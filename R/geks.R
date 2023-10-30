@@ -12,15 +12,11 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(is.null(settings$type)) settings$type <- "jevons"
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
   if(is.null(settings$as.dt)) settings$as.dt <- FALSE
-
-  # this setting is always FALSE for index.pairs() and
-  # depends on the user input for geks():
   if(is.null(settings$connect)) settings$connect <- FALSE
 
   # the setting 'setting$base' is only used by geks() but not
   # exported/visible. it is needed to derive the block of
   # connected regions
-
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
