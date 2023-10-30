@@ -1,4 +1,4 @@
-\name{qauv}
+\name{multeq}
 
 \alias{gk}
 \alias{geradi}
@@ -36,7 +36,9 @@ geradi(...)
    \item{simplify}{A logical indicating whether a named vector of estimated regional price levels (\code{TRUE}) should be returned, or also the average product prices.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
-   \item \code{method} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gk()}, the analyitical solution proposed by Diewert (1999) is also allowed.
+   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
+   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{method} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gk()}, the analytical solution proposed by Diewert (1999) is also allowed by setting to \code{solve}.
    \item \code{tol} : the tolerance level when convergence is achieved if \code{type="iterative"}. The default is \code{1e-9}.
    \item \code{max.iter} : the maximum number of iterations if \code{type="iterative"}. The default is \code{99}.
    }}
@@ -71,7 +73,7 @@ Purposes. \emph{Journal of the Royal Statistical Society. Series A (General)},
 Rao, D. S. P. (1990). A system of log-change index numbers for multilateral comparisons. In: \emph{Comparisons of prices and real products in Latin America. Contributions to Economic Analysis Series}, edited by Salazar-Carrillo and Rao. Amsterdam: North-Holland Publishing Company.
 }
 
-\value{For \code{simplify=TRUE}, a named vector of regional price levels. Otherwise, for \code{simplify=FALSE}, a named vector of average product prices and regional price levels.
+\value{For \code{simplify=TRUE}, a named vector of regional price levels. Otherwise, for \code{simplify=FALSE}, a list containing the named vector of international product prices and regional price levels, the number of iterations until convergence, and the achieved difference at convergence.
 }
 
 \examples{
@@ -79,20 +81,30 @@ require(data.table)
 
 # example data:
 set.seed(123)
-dt <- rdata(R=3, B=1, N=4, gaps=0)
-dt[, "share" := price*quantity/sum(price*quantity), by="region"]
+dt1 <- rdata(R=3, B=1, N=5)
 
-# Gery-Khamis price index:
-dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
-dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+# Gery-Khamis price index can be obtained in two ways:
+dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
+dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+
+# gk(), idb() and geradi() yield same results if quantites the same:
+dt1[, "quantity2" := 1000*rleidv(product)]
+dt1[, gk(p=price, r=region, n=product, q=quantity2)]
+dt1[, geradi(p=price, r=region, n=product, q=quantity2)]
+dt1[, idb(p=price, r=region, n=product, q=quantity2)]
+dt1[, "quantity2":=NULL]
+
+# add price data:
+dt2 <- rdata(R=4, B=1, N=4)
+dt2[, "region":=factor(region, labels=4:7)]
+dt2[, "product":=factor(product, labels=6:9)]
+dt <- rbind(dt1, dt2)
+dt[, is.connected(r=region, n=product)] # non-connected now
+
+# compute expenditure share weights:
+dt[, "share" := price*quantity/sum(price*quantity), by="region"]
 
 # Geradi index with quantites or expenditure share weights:
 dt[, geradi(p=price, q=quantity, r=region, n=product)]
 dt[, geradi(p=price, w=share, r=region, n=product)]
-
-# gk(), idb() and geradi() yield same results if quantites the same:
-dt[, "quantity2" := 1000*rleidv(product)]
-dt[, gk(p=price, r=region, n=product, q=quantity2)]
-dt[, geradi(p=price, r=region, n=product, q=quantity2)]
-dt[, idb(p=price, r=region, n=product, q=quantity2)]
 }

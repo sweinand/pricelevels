@@ -21,6 +21,8 @@ geks(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
+   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
+   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
    \item \code{all.pairs} : Logical indicating whether index numbers should be computed for all region pairs (\code{TRUE}) or only for non-redundant ones (\code{FALSE}), e.g. the index number of regions \code{AB} should be the same as the inverse of \code{BA}. The default is \code{TRUE}.
    \item \code{type} : A character specifying the index method used to aggregate prices into bilateral price indices for each pair of regions (first step of GEKS). See \code{\link{bilateral.index}} for allowed values. The default is \code{jevons}.
    \item \code{method} : the weighting method (second step of GEKS). Allowed values are \code{none} for equal weighting of all bilateral price indices, \code{obs} for weighting the bilateral price indices according to the underlying number of intersecting observations, or \code{shares} for weighting according to the intersecting expenditure shares. The default is \code{none}. Used only by \code{geks()}
@@ -63,13 +65,13 @@ Before calculations start, missing values are excluded and duplicated observatio
 
 \examples{
 # example data:
-set.seed(1)
-dt <- rdata(R=5, B=1, N=7)
+set.seed(123)
+dt1 <- rdata(R=3, B=1, N=5)
 
 ### Index pairs
 
 # matrix of bilateral index numbers:
-Pje <- dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))]
+Pje <- dt1[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))]
 # if the underlying index satisfies the country-reversal
 # test (like the Jevons index), the price index numbers of
 # the upper-right triangle are the same as the inverse of
@@ -78,7 +80,7 @@ all.equal(Pje[3,1], 1/Pje[1,3]) # true
 # hence, one could set all.pairs=FALSE without loosing any
 # information. however, this is no longer true for indices
 # that do not satisfy this test (like the Carli index):
-Pca <- dt[, index.pairs(p=price, r=region, n=product, settings=list(type="carli"))]
+Pca <- dt1[, index.pairs(p=price, r=region, n=product, settings=list(type="carli"))]
 all.equal(Pca[3,1], 1/Pca[1,3]) # false
 
 ### GEKS method
@@ -86,18 +88,29 @@ all.equal(Pca[3,1], 1/Pca[1,3]) # false
 # for complete price data (no gaps), the jevons index is transitive.
 # hence, no adjustment is needed by the geks approach, which is
 # why the index numbers are the same:
-dt[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
-dt[, jevons(p=price, r=region, n=product, base="1")]
+dt1[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
+dt1[, jevons(p=price, r=region, n=product, base="1")]
 # -> identical
 
 # this is no longer true when there are gaps in the data:
-dt.gaps <- dt[!rgaps(region, product, amount=0.25), ]
-dt.gaps[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
-dt.gaps[, jevons(p=price, r=region, n=product, base="1")]
+dt1.gaps <- dt1[!rgaps(region, product, amount=0.25), ]
+dt1.gaps[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
+dt1.gaps[, jevons(p=price, r=region, n=product, base="1")]
 # -> now, differences
 
 # weighting at the second step of GEKS can be done with respect
-# to the intersection of productfor each pair of region:
-dt.gaps[, geks(p=price, r=region, n=product, base="1",
-          settings=list(type="jevons", method="obs"))]
+# to the intersection of products for each pair of region:
+dt1.gaps[, geks(p=price, r=region, n=product, base="1",
+                settings=list(type="jevons", method="obs"))]
+
+# add price data:
+dt2 <- rdata(R=4, B=1, N=4)
+dt2[, "region":=factor(region, labels=4:7)]
+dt2[, "product":=factor(product, labels=6:9)]
+dt <- rbind(dt1, dt2)
+dt[, is.connected(r=region, n=product)] # non-connected now
+
+# compute all index pairs and geks:
+dt[, index.pairs(p=price, r=region, n=product)]
+dt[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
 }

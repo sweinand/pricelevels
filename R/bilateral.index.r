@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     28 September 2023
+# Date:     30 October 2023
 
 # helper functions for comparison of two regions if
 # item sets are already matched. these will be called
@@ -307,10 +307,14 @@
 # main function to be called, used for input checking
 # and data preparation, which is the same for each
 # bilateral index
-.bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL){
+.bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()){
 
   # set default if missing:
   if(missing(q)) q <- NULL
+
+  # set default settings if missing:
+  if(is.null(settings$connect)) settings$connect <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- TRUE
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -320,6 +324,8 @@
   .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
   .check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=q)
@@ -366,12 +372,32 @@
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
   }
 
-  # stop if non-connected data:
-  if(pdata[, !is.connected(r=r, n=n)]){
-    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
+  # store initial ordering of region levels:
+  r.lvl <- levels(factor(pdata$r))
+
+  # subset to connected data:
+  if(settings$connect){
+
+    if(pdata[, !spin::is.connected(r=r, n=n)]){
+
+      # subset based on input:
+      if(!base%in%r.lvl || is.null(base)){
+        pdata <- pdata[spin::connect(r=r, n=n), ]
+      }else{
+        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
+        pdata <- pdata[ng%in%pdata[r%in%base, unique(ng)], ]
+      }
+
+      # warning message:
+      if(settings$chatty){
+        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
+      }
+
+    }
+
   }
 
   # check for duplicated entries:
@@ -385,7 +411,9 @@
     }
 
     # print warning:
-    warning("Duplicated observations found and aggregated.", call.=FALSE)
+    if(settings$chatty){
+      warning("Duplicated observations found and aggregated", call.=FALSE)
+    }
 
   }
 
@@ -393,14 +421,18 @@
   pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
-  # store initial ordering of region levels:
-  r.lvl <- levels(pdata$r)
-
   # set default base if necessary:
-  if(is.null(base)){base <- names(which.max(table(pdata$r)))[1]} # when base is NULL
-  if(!(base%in%r.lvl)){ # when base is no valid region
+  if(is.null(base)){
     base <- names(which.max(table(pdata$r)))[1]
-    warning(paste("Base region not found and reset to", base), call.=FALSE)
+    if(settings$chatty){
+      warning(paste0("Base region set to base='", base, "'"), call.=FALSE)
+    }
+  }
+  if(!(base%in%levels(pdata$r))){ # when base is no valid region
+    base <- names(which.max(table(pdata$r)))[1]
+    if(settings$chatty){
+      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
+    }
   }
 
   # intersection with base region prices and weights:
@@ -430,49 +462,49 @@
 }
 
 # package functions:
-walsh <- function(p, r, n, q, w=NULL, base=NULL){
+walsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="walsh", base=base)
-
-}
-toernq <- function(p, r, n, q, w=NULL, base=NULL){
-
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="toernq", base=base)
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="walsh", base=base, settings=settings)
 
 }
-laspey <- function(p, r, n, q, w=NULL, base=NULL){
+toernq <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="laspey", base=base)
-
-}
-paasche <- function(p, r, n, q, w=NULL, base=NULL){
-
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="paasche", base=base)
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="toernq", base=base, settings=settings)
 
 }
-fisher <- function(p, r, n, q, w=NULL, base=NULL){
+laspey <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="fisher", base=base)
-
-}
-jevons <- function(p, r, n, base=NULL){
-
-  .bilateral.index(r=r, n=n, p=p, q=NULL, type="jevons", base=base)
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="laspey", base=base, settings=settings)
 
 }
-dutot <- function(p, r, n, base=NULL){
+paasche <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
-  .bilateral.index(r=r, n=n, p=p, q=NULL, type="dutot", base=base)
-
-}
-carli <- function(p, r, n, base=NULL){
-
-  .bilateral.index(r=r, n=n, p=p, q=NULL, type="carli", base=base)
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="paasche", base=base, settings=settings)
 
 }
-harmonic <- function(p, r, n, base=NULL){
+fisher <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
-  .bilateral.index(r=r, n=n, p=p, q=NULL, type="harmonic", base=base)
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="fisher", base=base, settings=settings)
+
+}
+jevons <- function(p, r, n, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=NULL, type="jevons", base=base, settings=settings)
+
+}
+dutot <- function(p, r, n, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=NULL, type="dutot", base=base, settings=settings)
+
+}
+carli <- function(p, r, n, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=NULL, type="carli", base=base, settings=settings)
+
+}
+harmonic <- function(p, r, n, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=NULL, type="harmonic", base=base, settings=settings)
 
 }
 

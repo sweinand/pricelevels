@@ -1,6 +1,10 @@
 # START
 
-# example data with one region only:
+
+# Data with one region only -----------------------------------------------
+
+
+# example data:
 set.seed(123)
 dt <- rdata(R=1, B=1, N=4)
 
@@ -29,7 +33,11 @@ expect_equal(
   c("1"=1)
 )
 
-# example data with one product only:
+
+# Data with one product only ----------------------------------------------
+
+
+# example data:
 set.seed(123)
 dt <- rdata(R=4, B=1, N=1)
 
@@ -58,7 +66,11 @@ expect_no_error(
   dt[, geradi(p=price, q=quantity, r=region, n=product)]
 )
 
-# example data with gaps to test output and rebasing:
+
+# Data with gaps ----------------------------------------------------------
+
+
+# example data:
 set.seed(123)
 dt <- rdata(R=3, B=1, N=4, gaps=0.2)
 
@@ -148,27 +160,9 @@ expect_equal(
   dt[, geradi(p=price, w=share, r=region, n=product, base=NULL)]
 )
 
-# test if ikd(), gk(), and geradi() identical if no gaps
-# and quantities are the same across regions:
-dt <- rdata(R=5, B=1, N=9, gaps=0)
-dt[, "quantity" := 1000*rleidv(product)]
 
-expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
-)
+# Settings ----------------------------------------------------------------
 
-expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, geradi(p=price, q=quantity, r=region, n=product, base=NULL)]
-)
-
-expect_equal(
-  dt[, geradi(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
-)
-
-# test inputs:
 
 # quantities missing:
 expect_error(
@@ -224,5 +218,91 @@ expect_error(
 expect_error(
   dt[, geradi(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
 )
+
+
+# Non-connected data ------------------------------------------------------
+
+
+# example data:
+set.seed(123)
+dt1 <- spin::rdata(R=3, B=1, N=5)
+dt2 <- spin::rdata(R=4, B=1, N=4)
+dt2[, "region":=factor(region, labels=4:7)]
+dt2[, "product":=factor(product, labels=6:9)]
+dt <- rbind(dt1, dt2)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+           settings=list(chatty=FALSE, connect=TRUE))][1],
+  c("1"=1)
+)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+           settings=list(chatty=FALSE, connect=TRUE))][4:7],
+  setNames(rep(NA_real_, 4), 4:7)
+)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+           settings=list(chatty=FALSE, connect=TRUE))][1:3],
+  setNames(rep(NA_real_, 3), 1:3)
+)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+           settings=list(chatty=FALSE, connect=TRUE))][4],
+  c("4"=1)
+)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][1],
+  c("1"=1)
+)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][4:7],
+  setNames(rep(NA_real_, 4), 4:7)
+)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][1:3],
+  setNames(rep(NA_real_, 3), 1:3)
+)
+
+expect_equal(
+  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][4],
+  c("4"=1)
+)
+
+
+# Misc --------------------------------------------------------------------
+
+
+# test if ikd(), gk(), and geradi() identical if no gaps
+# and quantities are the same across regions:
+set.seed(123)
+dt <- rdata(R=5, B=1, N=9, gaps=0)
+dt[, "quantity" := 1000*rleidv(product)]
+
+expect_equal(
+  dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
+)
+
+expect_equal(
+  dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, geradi(p=price, q=quantity, r=region, n=product, base=NULL)]
+)
+
+expect_equal(
+  dt[, geradi(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
+)
+
 
 # END

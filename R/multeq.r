@@ -2,19 +2,26 @@
 
 # Title:    Quality-adjusted unit value methods
 # Author:   Sebastian Weinand
-# Date:     29 October 2023
+# Date:     30 October 2023
 
-# print output for quality-adjusted unit value indices:
-print.qauv <- function(x){
+# print output for class 'multeq':
+print.multeq <- function(x){
   print(x$par)
   invisible(x)
 }
 
 # solve interrelated equations:
-.solveq <- function(p, r, n, q, w, P.FUN, v.FUN, base=NULL, simplify=TRUE, settings=list()){
+.solvemulteq <- function(p, r, n, q, w, P.FUN, v.FUN, base=NULL, simplify=TRUE, settings=list()){
 
   # set default if missing:
   if(missing(q)) q <- NULL
+
+  # set default settings if missing:
+  if(is.null(settings$connect)) settings$connect <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$method)) settings$method <- "iterative"
+  if(is.null(settings$tol)) settings$tol <- 1e-9
+  if(is.null(settings$max.iter)) settings$max.iter <- 99L
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -24,19 +31,14 @@ print.qauv <- function(x){
   .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
   .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+  .check.num(x=settings$tol, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
+  .check.num(x=settings$max.iter, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=q)
   .check.lengths(x=r, y=w)
-
-  # define settings:
-  if(is.null(settings$method)) settings$method <- "iterative"
-  if(is.null(settings$tol)) settings$tol <- 1e-9
-  if(is.null(settings$max.iter)) settings$max.iter <- 99L
-
-  # check settings:
-  .check.num(x=settings$tol, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
-  .check.num(x=settings$max.iter, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
 
   # set quantities or weights if available:
   if(is.null(q) && is.null(w)){
@@ -53,12 +55,32 @@ print.qauv <- function(x){
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
   }
 
-  # stop if non-connected data:
-  if(pdata[, !spin::is.connected(r=r, n=n)]){
-    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
+  # store initial ordering of region levels:
+  r.lvl <- levels(factor(pdata$r))
+
+  # subset to connected data:
+  if(settings$connect){
+
+    if(pdata[, !spin::is.connected(r=r, n=n)]){
+
+      # subset based on input:
+      if(!base%in%r.lvl || is.null(base)){
+        pdata <- pdata[spin::connect(r=r, n=n), ]
+      }else{
+        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
+        pdata <- pdata[ng%in%pdata[r%in%base, unique(ng)], ]
+      }
+
+      # warning message:
+      if(settings$chatty){
+        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
+      }
+
+    }
+
   }
 
   # check for duplicated entries:
@@ -72,7 +94,9 @@ print.qauv <- function(x){
     }
 
     # print warning:
-    warning("Duplicated observations found and aggregated.", call.=FALSE)
+    if(settings$chatty){
+      warning("Duplicated observations found and aggregated", call.=FALSE)
+    }
 
   }
 
@@ -84,18 +108,20 @@ print.qauv <- function(x){
   }
 
   # set base region:
-  if(!base%in%pdata$r && !is.null(base)){
+  if(!base%in%levels(factor(pdata$r)) && !is.null(base)){
     # reset base region and print warning:
     base <- names(which.max(table(pdata$r)))[1]
-    warning(paste("Base region not found and reset to", base), call.=FALSE)
+    if(settings$chatty){
+      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
+    }
   }
 
   # Diewert (1999) solution for geary-khamis:
   if(settings$method=="solve"){
 
     # define matrices:
-    Q <- pdata[, tapply(X=q, INDEX=list(r, n), FUN=mean, default=0)]
-    E <- pdata[, tapply(X=p*q, INDEX=list(r, n), FUN=mean, default=0)]
+    Q <- pdata[, tapply(X=z, INDEX=list(r, n), FUN=mean, default=0)]
+    E <- pdata[, tapply(X=p*z, INDEX=list(r, n), FUN=mean, default=0)]
     E <- E/rowSums(E)
     C <- diag(1/colSums(Q), ncol=ncol(Q), nrow=ncol(Q))%*%t(E)%*%Q
 
@@ -109,7 +135,7 @@ print.qauv <- function(x){
     names(b) <- colnames(C)
 
     # compute price levels:
-    Ptmp <- pdata[, P.FUN(p=p, q=q, r=r, v=b[match(x=n, names(b))])]
+    Ptmp <- pdata[, P.FUN(p=p, q=z, r=r, v=b[match(x=n, names(b))])]
 
   }
 
@@ -123,8 +149,8 @@ print.qauv <- function(x){
 
       # compute price levels:
       Ptmp0 <- Ptmp
-      vtmp <- pdata[, v.FUN(p=p, q=q, w=w, n=n, P=Ptmp)]
-      Ptmp <- pdata[, P.FUN(p=p, q=q, w=w, r=r, v=vtmp)]
+      vtmp <- pdata[, v.FUN(p=p, q=z, w=w, n=n, P=Ptmp)]
+      Ptmp <- pdata[, P.FUN(p=p, q=z, w=w, r=r, v=vtmp)]
 
       # check differences to previous price levels:
       check <- any(abs(Ptmp-Ptmp0)>settings$tol)
@@ -133,7 +159,7 @@ print.qauv <- function(x){
     }
 
     # print warning if maximum iterations exceeded:
-    if(check && i>settings$max.iter){
+    if(check && i>settings$max.iter && settings$chatty){
       warning("Iterative procedure stopped at 'max.iter' without reaching convergence.", call.=FALSE)
     }
 
@@ -152,7 +178,9 @@ print.qauv <- function(x){
 
   if(simplify){
 
-    res <- P
+    # match to initial ordering:
+    res <- P[match(x=r.lvl, table=names(P))]
+    names(res) <- r.lvl
 
   }else{
 
@@ -168,7 +196,7 @@ print.qauv <- function(x){
       Ptol <- sapply(X=split(x=Ptol, f=names(Ptol)), "[[", 1L)
       res <- c(res, "niter"=i, list("tol"=c("P"=Ptol)))
     }
-    res <- structure(res, class="qauv")
+    res <- structure(res, class="multeq")
 
   }
 
@@ -204,7 +232,7 @@ gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
   }
 
   # compute index:
-  res <- .solveq(p=p, r=r, n=n, q=q, w=NULL, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=NULL, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
 
   # return output:
   return(res)
@@ -236,7 +264,7 @@ idb <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
   }
 
   # compute index:
-  res <- .solveq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
 
   # return output:
   return(res)
@@ -267,7 +295,7 @@ rao <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
   }
 
   # compute index:
-  res <- .solveq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
 
   # return output:
   return(res)
@@ -299,7 +327,7 @@ geradi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()
   }
 
   # compute index:
-  res <- .solveq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
 
   # return output:
   return(res)

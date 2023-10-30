@@ -2,10 +2,14 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   28 September 2023
+# Date:   30 October 2023
 
 # CPD method:
-cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
+cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+
+  # set default settings if missing:
+  if(is.null(settings$connect)) settings$connect <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- TRUE
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -15,6 +19,8 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
   .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=w)
@@ -35,12 +41,32 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
   }
 
-  # stop if non-connected data:
-  if(pdata[, !is.connected(r=r, n=n)]){
-    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
+  # store initial ordering of region levels:
+  r.lvl <- levels(factor(pdata$r))
+
+  # subset to connected data:
+  if(settings$connect){
+
+    if(pdata[, !spin::is.connected(r=r, n=n)]){
+
+      # subset based on input:
+      if(!base%in%r.lvl || is.null(base)){
+        pdata <- pdata[spin::connect(r=r, n=n), ]
+      }else{
+        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
+        pdata <- pdata[ng%in%pdata[r%in%base, unique(ng)], ]
+      }
+
+      # warning message:
+      if(settings$chatty){
+        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
+      }
+
+    }
+
   }
 
   # check for duplicated entries:
@@ -54,7 +80,9 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
     }
 
     # print warning:
-    warning("Duplicated observations found and aggregated.", call.=FALSE)
+    if(settings$chatty){
+      warning("Duplicated observations found and aggregated", call.=FALSE)
+    }
 
   }
 
@@ -69,14 +97,13 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
   pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
-  # store initial ordering of region levels:
-  r.lvl <- levels(pdata$r)
-
   # relevel to base region:
-  if(!base%in%r.lvl && !is.null(base)){
+  if(!base%in%levels(pdata$r) && !is.null(base)){
     # reset base region and print warning:
     base <- names(which.max(table(pdata$r)))[1]
-    warning(paste("Base region not found and reset to", base), call.=FALSE)
+    if(settings$chatty){
+      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
+    }
   }
   if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
@@ -136,10 +163,11 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
     # usage of 'dummy.coef' requires dummy variables of class 'factor'
 
     # set price level if there is only one region:
-    if(is.null(out)) out <- setNames(0, r.lvl)
+    if(is.null(out)) out <- setNames(0, levels(pdata$lnP))
 
     # match to initial ordering:
     out <- out[match(x=r.lvl, table=names(out))]
+    names(out) <- r.lvl
 
     # unlog price levels:
     out <- exp(out)
@@ -359,7 +387,14 @@ cpd <- function(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE){
 }
 
 # NLCPD method:
-nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...){
+nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list(), ...){
+
+  # set default settings if missing:
+  if(is.null(settings$connect)) settings$connect <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$use.jac)) settings$use.jac <- FALSE
+  if(is.null(settings$par.start)) settings$par.start <- NULL
+  if(is.null(settings$self.start)) settings$self.start <- "s1"
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -369,15 +404,14 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
   .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
   .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
   .check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$use.jac, min.len=1, max.len=1, na.ok=FALSE)
+  .check.char(x=settings$self.start, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=w)
   .check.lengths(x=r, y=q)
-
-  # set settings if necessary:
-  if(is.null(settings$use.jac)) settings$use.jac <- FALSE
-  if(is.null(settings$par.start)) settings$par.start <- NULL
-  if(is.null(settings$self.start)) settings$self.start <- "s1"
 
   # overwrite defaults by ellipsis elements:
   defaults <- formals(minpack.lm::nls.lm)
@@ -413,12 +447,32 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
   }
 
-  # stop if non-connected data:
-  if(pdata[, !is.connected(r=r, n=n)]){
-    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
+  # store initial ordering of region levels:
+  r.lvl <- levels(factor(pdata$r))
+
+  # subset to connected data:
+  if(settings$connect){
+
+    if(pdata[, !spin::is.connected(r=r, n=n)]){
+
+      # subset based on input:
+      if(!base%in%r.lvl || is.null(base)){
+        pdata <- pdata[spin::connect(r=r, n=n), ]
+      }else{
+        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
+        pdata <- pdata[ng%in%pdata[r%in%base, unique(ng)], ]
+      }
+
+      # warning message:
+      if(settings$chatty){
+        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
+      }
+
+    }
+
   }
 
   # check for duplicated entries:
@@ -432,7 +486,9 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
     }
 
     # print warning:
-    warning("Duplicated observations found and aggregated.", call.=FALSE)
+    if(settings$chatty){
+      warning("Duplicated observations found and aggregated", call.=FALSE)
+    }
 
   }
 
@@ -447,25 +503,24 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
   pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
-  # store initial ordering of region levels:
-  r.lvl <- levels(pdata$r)
+  # relevel to base region:
+  if(!base%in%levels(pdata$r) && !is.null(base)){
+    # reset base region and print warning:
+    base <- names(which.max(table(pdata$r)))[1]
+    if(settings$chatty){
+      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
+    }
+  }
+  if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # number of regions:
   R <- nlevels(pdata$r)
-
-  # relevel to base region:
-  if(!base%in%r.lvl && !is.null(base)){
-    # reset base region and print warning:
-    base <- names(which.max(table(pdata$r)))[1]
-    warning(paste("Base region not found and reset to", base), call.=FALSE)
-  }
-  if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # output if there is only one region:
   if(R<=1){
 
     if(simplify){
-      out <- setNames(1, r.lvl)
+      out <- setNames(1, levels(pdata$r))
     }else{
       out <- NULL
     }
@@ -487,9 +542,9 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
       w.delta <- pdata[, tapply(X=w, INDEX=n, FUN=mean)]
       w.delta <- w.delta/sum(w.delta) # normalisation of weights
     }else{
-      if(is.null(names(settings$w.delta))) stop("Please provide names for 'settings$w.delta'.")
-      if(!all(levels(pdata$n)%in%names(settings$w.delta), na.rm=TRUE)) stop("Please provide delta weights for all products 'n'.")
-      if(abs(sum(settings$w.delta)-1)>1e-5) warning("Sum of 'settings$w.delta' not 1.")
+      if(is.null(names(settings$w.delta))) stop("Please provide names for 'settings$w.delta'")
+      if(!all(levels(pdata$n)%in%names(settings$w.delta), na.rm=TRUE)) stop("Please provide delta weights for all products 'n'")
+      if(abs(sum(settings$w.delta)-1)>1e-5 && settings$chatty) warning("Sum of 'settings$w.delta' not 1")
       w.delta <- settings$w.delta
     }
 
@@ -566,14 +621,15 @@ nlcpd <- function(p, r, n, q= NULL, w = NULL, base = NULL, simplify = TRUE, sett
       out <- out[grepl("^lnP\\.", names(out))]
       names(out) <- gsub(pattern="^lnP\\.", replacement="", x=names(out))
 
-      # add price level of base (region):
-      r.miss <- setdiff(x=r.lvl, y=names(out))
+      # add price level of base region:
+      r.miss <- setdiff(x=levels(pdata$r), y=names(out))
       if(is.null(base)) out.miss <- -sum(out) else out.miss <- 0
       names(out.miss) <- r.miss
       out <- c(out, out.miss)
 
       # match to initial ordering and unlog:
       out <- exp(out)[match(x=r.lvl, table=names(out))]
+      names(out) <- r.lvl
 
     }else{
 

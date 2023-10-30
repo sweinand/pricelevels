@@ -2,20 +2,25 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   28 September 2023
+# Date:   30 October 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
 
-  # define settings:
+  # set default settings if missing:
+  if(is.null(settings$chatty)) settings$chatty <- TRUE
   if(is.null(settings$type)) settings$type <- "jevons"
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
   if(is.null(settings$as.dt)) settings$as.dt <- FALSE
 
-  # this setting is not exported/visible to the user. for
-  # index.pairs() it is always FALSE, for geks() it is TRUE.
-  # therefore, no input check required:
-  if(is.null(settings$check.con)) settings$check.con <- FALSE
+  # this setting is always FALSE for index.pairs() and
+  # depends on the user input for geks():
+  if(is.null(settings$connect)) settings$connect <- FALSE
+
+  # the setting 'setting$base' is only used by geks() but not
+  # exported/visible. it is needed to derive the block of
+  # connected regions
+
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -26,6 +31,8 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   .check.char(x=settings$type, min.len=1, max.len=1, na.ok=FALSE)
   .check.log(x=settings$all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   .check.log(x=settings$as.dt, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
   .check.lengths(x=r, y=n)
   .check.lengths(x=r, y=p)
   .check.lengths(x=r, y=q)
@@ -72,17 +79,39 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
 
   # stop if no observations left:
   if(nrow(pdata)<=0L){
-    stop("No complete cases available. All data pairs contain at least one NA.", call.=FALSE)
+    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
   }
 
-  # stop if non-connected data:
-  if(settings$check.con && pdata[, !is.connected(r=r, n=n)]){
-    stop("Regions not connected -> see spin::neighbors() for details.", call.=FALSE)
+  # store initial ordering of region levels:
+  r.lvl <- levels(factor(pdata$r))
+
+  # subset to connected data:
+  if(settings$connect){
+
+    if(pdata[, !spin::is.connected(r=r, n=n)]){
+
+      # subset based on input:
+      if(!settings$base%in%r.lvl || is.null(settings$base)){
+        pdata <- pdata[spin::connect(r=r, n=n), ]
+      }else{
+        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
+        pdata <- pdata[ng%in%pdata[r%in%settings$base, unique(ng)], ]
+      }
+
+      # warning message:
+      if(settings$chatty){
+        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
+      }
+
+    }
+
   }
 
   # check for duplicated entries:
   if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
-    warning("Duplicated observations found and aggregated.", call.=FALSE)
+    if(settings$chatty){
+      warning("Duplicated observations found and aggregated", call.=FALSE)
+    }
   }
 
   # convert prices into matrix:
@@ -162,6 +191,8 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
 geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
   # define settings:
+  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$connect)) settings$connect <- TRUE
   if(is.null(settings$type)) settings$type <- "jevons"
   if(is.null(settings$method)) settings$method <- "none"
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
@@ -178,14 +209,21 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
   # check if weighting method can be applied:
   if(is.null(q) && is.null(w) && settings$method=="shares"){
     settings$method <- "none"
-    warning("No quantities 'q' or weights 'w' provided -> settings$method reset to 'none' ")
+    if(settings$chatty){
+      warning("No quantities 'q' or weights 'w' provided -> settings$method reset to 'none'")
+    }
   }
+
+  # store initial ordering of region levels:
+  r.lvl <- levels(factor(r))
 
   # compute bilateral price index numbers:
   pdata <- index.pairs(r=r, n=n, p=p, q=q, w=w,
                        settings=list(
+                         base=base, # this setting is not visible/exported
+                         chatty=settings$chatty,
                          as.dt=TRUE,
-                         check.con=TRUE, # this non-exported setting is always TRUE
+                         connect=settings$connect,
                          type=settings$type,
                          all.pairs=settings$all.pairs))
 
@@ -231,14 +269,13 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
   r <- factor(pdata$region)
   rb <- factor(pdata$base)
 
-  # store initial ordering of region levels:
-  r.lvl <- levels(r)
-
   # set base region:
-  if(!base%in%r.lvl && !is.null(base)){
+  if(!base%in%levels(r) && !is.null(base)){
     # reset base region and print warning:
     base <- names(which.max(table(r)))[1]
-    warning(paste("Base region not found and reset to", base), call.=FALSE)
+    if(settings$chatty){
+      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
+    }
   }
 
   # relevel to base region:
@@ -294,24 +331,17 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
 
     # extract estimated regional price levels:
     out <- coef(geks_reg_out)
-
-    # clean parameter names:
     names(out) <- gsub(pattern="^lnP", replacement="", x=names(out))
 
-    # residual parameter name:
-    r.miss <- setdiff(x=r.lvl, y=names(out))
-
-    # residual parameter value:
+    # add price level of base region:
+    r.miss <- setdiff(x=levels(r), y=names(out))
     if(is.null(base)) out.miss <- -sum(out) else out.miss <- 0
+    names(out.miss) <- r.miss
+    out <- c(out, out.miss)
 
-    # combine estimates:
-    out <- setNames(c(out, out.miss), c(names(out), r.miss))
-
-    # match to initial ordering:
-    out <- out[match(x=r.lvl, table=names(out))]
-
-    # unlog price levels:
-    out <- exp(out)
+    # match to initial ordering and unlog:
+    out <- exp(out)[match(x=r.lvl, table=names(out))]
+    names(out) <- r.lvl
 
   }else{
 

@@ -6,7 +6,7 @@
 \title{CPD and NLCPD methods}
 
 \description{
-Function \code{cpd()} estimates regional price levels by the Country-Product-Dummy (CPD) method, originally developed by Summers (1973). Auer and Weinand (2022) recently proposed a generalization of the CPD method. This nonlinear CPD method (NLCPD method) is implemented in \code{nlcpd()}.
+Function \code{cpd()} estimates regional price levels by the Country-Product-Dummy (CPD) method, originally developed by Summers (1973). Auer and Weinand (2022) recently proposed a generalization of the CPD method. This nonlinear CPD method (NLCPD method) is implemented in function \code{nlcpd()}.
 }
 
 \usage{
@@ -23,6 +23,8 @@ nlcpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
+   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
+   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
    \item \code{par.start} : A named list of start values for the NLCPD coefficients: \eqn{\ln P^r} (\eqn{R-1} region price levels), \eqn{\ln \pi_i} (\eqn{N} general product prices), and \eqn{\delta_i} (\eqn{N-1} product-specific elasticities). Must have names \code{lnP}, \code{pi}, and \code{delta}. By default, \code{par.start=NULL}, meaning that start values are internally derived by \code{self.start}.
    \item \code{self.start} : Only if \code{par.start=NULL}, the strategy how parameter start values are internally derived. Currently, values \code{s1}, \code{s2} and \code{s3} are allowed. For \code{s1}, simple price averages across products and regions are used as start values, while these are derived by the CPD method for strategies \code{s2} and \code{s3}. Start values for \code{delta} are either set to 1 or derived by their first-order condition if \code{s3}. By default, \code{self.start='s1'}.
    \item \code{use.jac} : A logical indicating if the jacobian should be used or not.
@@ -60,45 +62,41 @@ Summers, R. (1973). International Price Comparisons based upon Incomplete Data. 
 \seealso{\code{\link{lm}}, \code{\link{dummy.coef}}, \code{\link{nls.lm}}}
 
 \examples{
-### (1) connected price data:
+# sample complete price data:
 set.seed(123)
 R <- 3 # number of regions
 B <- 1 # number of product groups
-N <- 4 # number of products
+N <- 5 # number of products
 dt1 <- rdata(R=R, B=B, N=N)
 
-dt1[, cpd(price, region, product, base="1")] # switch to specific base region
-dt1[, cpd(price, region, product)]
-dt1[, nlcpd(price, region, product)]
+# compute expenditure share weighted cpd and nlcpd index:
+dt1[, cpd(p=price, r=region, n=product, q=quantity)]
+dt1[, nlcpd(p=price, r=region, n=product, q=quantity)]
 
 # set individual start values in nlcpd():
 par.init <- list("lnP"=rep(0, R-1), "pi"=rep(2, N), "delta"=rep(1, N-1))
-dt1[, nlcpd(price, region, product, settings=list(par.start=par.init))]
-# -> no impact on solution
+dt1[, nlcpd(p=price, r=region, n=product, q=quantity,
+            settings=list(par.start=par.init))]
 
 # change internal calculation of start values:
-dt1[, nlcpd(price, region, product, settings=list(self.start="s2"))]
+dt1[, nlcpd(p=price, r=region, n=product, q=quantity,
+            settings=list(self.start="s2"))]
 
-### (2) working with non-connected price data:
-dt2 <- data.table::data.table(
-   "region" = c("a","a","h","b","a","a","c","c","d","e","e","f",NA),
-   "product" = c(1,1,"bla",1,2,3,3,4,4,5,6,6,7),
-   "price" = runif(13,5,6))
+# add price data:
+dt2 <- rdata(R=4, B=1, N=4)
+dt2[, "region":=factor(region, labels=4:7)]
+dt2[, "product":=factor(product, labels=6:9)]
+dt <- rbind(dt1, dt2)
+dt[, is.connected(r=region, n=product)] # non-connected now
 
-is.connected(dt2$region, dt2$product) # false
-dt2$groups <- neighbors(dt2$region, dt2$product, TRUE)
-lapply(X = split(dt2, dt2$groups),
-       FUN = function(z) cpd(z$price, z$region, z$product))
+# compute expenditure share weighted cpd and nlcpd index:
+dt[, cpd(p=price, r=region, n=product, q=quantity, base="1")]
+dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="1")]
 
-dt2[, "group_id" := neighbors(region, product, TRUE)]
-dt2[!is.na(group_id),
-    data.table::as.data.table(cpd(price, region, product), keep.rownames = TRUE),
-    by = "group_id"]
-dt2[!is.na(group_id),
-    .("output" = list(cpd(price, region, product, simplify = FALSE))),
-    by = "group_id"]
+# compare with toernqvist index:
+dt[, toernq(p=price, r=region, n=product, q=quantity, base="1")]
 
-### (3) computational speed in nlcpd() usually increases if use.jac=TRUE
+# computational speed in nlcpd() usually increases if use.jac=TRUE:
 set.seed(123)
 dt3 <- rdata(R=20, B=1, N=30)
 system.time(m1 <- dt3[, nlcpd(p=price, r=region, n=product, q=quantity,

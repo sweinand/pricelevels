@@ -1,7 +1,7 @@
 Package: spin
 Type: Package
 Title: Spatial Index Numbers
-Version: 0.7.0
+Version: 1.0.0
 Author: Sebastian Weinand
 Maintainer: Sebastian Weinand <s.weinand90@googlemail.com>
 Description: Index number methods for spatial price comparisons.

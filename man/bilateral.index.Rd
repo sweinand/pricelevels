@@ -16,13 +16,13 @@
 
 \usage{
 # unweighted indices:
-jevons(p, r, n, base = NULL)
+jevons(p, r, n, base = NULL, settings = list())
 carli(...)
 harmonic(...)
 dutot(...)
 
 # weighted indices:
-laspey(p, r, n, q, w = NULL, base = NULL)
+laspey(p, r, n, q, w = NULL, base = NULL, settings = list())
 paasche(...)
 fisher(...)
 toernq(...)
@@ -34,6 +34,11 @@ walsh(...)
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
    \item{q, w}{A numeric vector of non-negative quantities \code{q} or weights \code{w} to be used. Either \code{q} or \code{w} must be provided for weighted indices. If \code{q} and \code{w} are both given, \code{q} will be used in the calculations.}
    \item{base}{A character specifying the base region to which all price levels are expressed. If \code{NULL}, base region is set internally.}
+   \item{settings}{A list of control settings to be used. The following settings are supported:
+   \itemize{
+   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
+   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   }}
 }
 
 \author{Sebastian Weinand}
@@ -51,30 +56,24 @@ The weights in \code{w} are normalized internally for each regional comparison, 
 \value{A named vector of price levels.}
 
 \examples{
-# sample complete price data with product-specific weights:
-dt <- rdata(R=7, B=1, N=15)
-dt[, "weight" := rweights(r=region, b=product, type=~b)]
+# sample complete price data:
+set.seed(123)
+dt1 <- rdata(R=3, B=1, N=5)
 
-# jevons:
-(P1.jev <- dt[, jevons(p=price, r=region, n=product, base="1")])
-(P2.jev <- dt[, jevons(p=price, r=region, n=product, base="2")])
-all.equal(P1.jev, P2.jev/P2.jev[1]) # true
+# compute jevons and toernqvist index:
+dt1[, jevons(p=price, r=region, n=product, base="1")]
+dt1[, toernq(p=price, r=region, n=product, q=quantity, base="1")]
 
-# toernqvist:
-(P1.toern <- dt[, toernq(p=price, r=region, n=product, w=weight, base="1")])
-(P2.toern <- dt[, toernq(p=price, r=region, n=product, w=weight, base="2")])
-all.equal(P1.toern, P2.toern/P2.toern[1]) # true
+# add price data:
+dt2 <- rdata(R=4, B=1, N=4)
+dt2[, "region":=factor(region, labels=4:7)]
+dt2[, "product":=factor(product, labels=6:9)]
+dt <- rbind(dt1, dt2)
+dt[, is.connected(r=region, n=product)] # non-connected now
 
-# introduce gaps:
-dt.gaps <- dt[!rgaps(region, product, amount=0.2), ]
+# compute jevons and toernqvist index:
+dt[, jevons(p=price, r=region, n=product, base="1")]
 
-# jevons:
-(P1.jev <- dt.gaps[, jevons(p=price, r=region, n=product, base="1")])
-(P2.jev <- dt.gaps[, jevons(p=price, r=region, n=product, base="2")])
-all.equal(P1.jev, P2.jev/P2.jev[1]) # false, transitivity gets lost
-
-# toernqvist:
-(P1.toern <- dt.gaps[, toernq(p=price, r=region, n=product, w=weight, base="1")])
-(P2.toern <- dt.gaps[, toernq(p=price, r=region, n=product, w=weight, base="2")])
-all.equal(P1.toern, P2.toern/P2.toern[1]) # false, transitivity gets lost
+# change base region:
+dt[, jevons(p=price, r=region, n=product, base="4")]
 }
