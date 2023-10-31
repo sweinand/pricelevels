@@ -13,7 +13,7 @@ Calculation of regional price levels using the
   \item Geary-Khamis method \code{gk()} proposed by Geary (1958) and Khamis (1972);
   \item Geradi method \code{geradi()} used by Eurostat (1978);
   \item Rao method \code{rao()} proposed by Rao (1990);
-  \item Ikle-Dikhaov-Balk method \code{idb()} developed by Ikle (1972), Dikhanov (1994), and Balk (1996).
+  \item Ikle-Dikhanov-Balk method \code{idb()} developed by Ikle (1972), Dikhanov (1997), and Balk (1996).
 }
 All methods have in common that they set up a system of interrelated equations of international product prices and price levels, which must be solved iteratively. It is only the definition of the international product prices and price levels that differ between the methods (see package vignette).
 }

@@ -1,25 +1,15 @@
-# Spatial Index Numbers (spin)
+# Spatial Index Number Methods (spin)
 
-## Introduction
-Package `spin` provides methods which can be used for price comparisons between spatial entities. Its functions are designed based on `R`'s [`data.table`](https://github.com/Rdatatable/data.table) package.
+The `spin`-package provides index number methods for price comparisons within a country. As price comparisons between countries or other geographical entities usually rely on the same index number methods, the package has been denoted more generally as `spin` (for spatial index number methods). Currently, the following index number methods (or price indices) are implemented.
 
-Currently, the following index number methods are implemented:
-1. Elementary price indices:  Jevons, Dutot, Carli, Harmonic
-2. Weighted price indices:    Laspeyres, Paasche, Fisher, Toernqvist, Walsh
-3. Multilateral price indices:  CPD, NLCPD, GEKS, Geary-Khamis, Iklé-Dikhanov-Balk, Geradi, Rao
+1. Bilateral price indices:
+    - Non-weighted: Jevons, Dutot, Carli, Harmonic
+    - Weighted: Laspeyres, Paasche, Fisher, Toernqvist, Walsh
+2. Multilateral price indices: 
+    - CPD and NLCPD methods
+    - (Weighted) GEKS method
+    - Multilateral systems of equations: Geary-Khamis, Iklé-Dikhanov-Balk, Geradi, Rao
 
-Moreover, `spin` provides additional functionalities for sampling and characterizing (incomplete) price data.
+Moreover, the package offers functions for sampling and characterizing price data. Details can be found in the package vignette.
 
-## Working with Git
-
-### Setting up Git
-Guidelines for installing and setting up Git together with RStudio can be found, for example, [`here`](http://www.geo.uzh.ch/microsite/reproducible_research/post/rr-rstudio-git/). Connecting to the `spin` repository can be done in `RStudio` by clicking `File -> New Project -> Version Control -> Git`. The repository will be cloned to your local machine, and by virtue of it being a `RStudio` project, all relative directory paths will correctly resolve.
-
-### Naming branches
-To maintain a uniform naming scheme for branches, please regard the following rules. Branch names should be composed of two parts, separated by a `/`. First, one of `dev`, `bug`, `feat`, depending on whether you are `dev`eloping the code, fixing a `bug`, or implementing a new `feat`ure. Second, give a concise name with words separated by `_`.
-
-**Examples**
-* The branch `dev/update_geks` updates the code underlying the GEKS index.
-* `bug/jevons_calculations` fixes a bug in the calculation of Jevons indices.
-
-These are preliminary rules of 2020-05-22.
+The `spin`-functions are designed based on `R`'s [`data.table`](https://github.com/Rdatatable/data.table) package.

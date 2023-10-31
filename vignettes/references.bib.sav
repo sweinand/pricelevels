@@ -467,9 +467,55 @@
   institution = {Deutsche Bundesbank},
   title       = {{A} {N}onlinear {G}eneralization of the {C}ountry-{P}roduct-{D}ummy {M}ethod},
   year        = {2022},
-  month       = jan,
-  number      = {forthcoming},
+  number      = {45},
   type        = {Discussion Paper},
+}
+
+@Article{Balk1996,
+  author  = {Bert Balk},
+  journal = {Journal of Official Statistics},
+  title   = {{A comparison of ten methods for multilateral international price and volume comparisons}},
+  year    = {1996},
+  number  = {1},
+  pages   = {199--222},
+  volume  = {12},
+}
+
+@Book{Eurostat1978,
+  author    = {Eurostat},
+  publisher = {Publications Office of the European Commission},
+  title     = {{Comparison in real values of the aggregates of ESA 1975}},
+  year      = {1978},
+  address   = {Luxembourg},
+}
+
+@Proceedings{Dikhanov1994,
+  title  = {{Sensitivity of PPP-based income estimates to the choice of aggregation procedures}},
+  year   = {1994},
+  note   = {{23rd General Conference of the International Association for Research in Income and Wealth, St. Andrews, Canada}},
+  author = {Yuri Dikhanov},
+}
+
+@InBook{Rao1990,
+  author    = {Rao, D. S. Prasada},
+  editor    = {Salazar-Carrillo and Rao},
+  publisher = {Amsterdam: North-Holland Publishing Company},
+  title     = {A system of log-change index numbers for multilateral comparisons},
+  year      = {1990},
+  booktitle = {Comparisons of prices and real products in Latin America. Contributions to Economic Analysis Series},
+}
+
+@Article{Ikle1972,
+  author    = {Doris M. Ikle},
+  journal   = {The Quarterly Journal of Economics},
+  title     = {A New Approach to the Index Number Problem},
+  year      = {1972},
+  month     = {may},
+  number    = {2},
+  pages     = {188},
+  volume    = {86},
+  doi       = {10.2307/1880559},
+  publisher = {Oxford University Press ({OUP})},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}
