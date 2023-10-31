@@ -2,7 +2,7 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     30 October 2023
+# Date:     21 October 2023
 
 # print output for class 'multeq':
 print.multeq <- function(x){
@@ -11,7 +11,7 @@ print.multeq <- function(x){
 }
 
 # solve interrelated equations:
-.solvemulteq <- function(p, r, n, q, w, P.FUN, v.FUN, base=NULL, simplify=TRUE, settings=list()){
+.solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, type, settings=list()){
 
   # set default if missing:
   if(missing(q)) q <- NULL
@@ -22,6 +22,9 @@ print.multeq <- function(x){
   if(is.null(settings$method)) settings$method <- "iterative"
   if(is.null(settings$tol)) settings$tol <- 1e-9
   if(is.null(settings$max.iter)) settings$max.iter <- 99L
+
+  # set type:
+  type <- match.arg(arg=type, choices=list("gk","idb","geradi","rao"))
 
   # input checks:
   .check.num(x=p, int=c(0, Inf))
@@ -117,7 +120,7 @@ print.multeq <- function(x){
   }
 
   # Diewert (1999) solution for geary-khamis:
-  if(settings$method=="solve"){
+  if(type=="gk" && settings$method=="solve"){
 
     # define matrices:
     Q <- pdata[, tapply(X=z, INDEX=list(r, n), FUN=mean, default=0)]
@@ -171,7 +174,11 @@ print.multeq <- function(x){
 
   # normalization:
   if(is.null(base)){
-    P <- P/mean(P)
+    if(type=="rao"){
+      P <- P/exp(mean(log(P)))
+    }else{
+      P <- P/mean(P)
+    }
   }else{
     P <- P/P[names(P)==base]
   }
@@ -232,7 +239,10 @@ gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
   }
 
   # compute index:
-  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=NULL, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(
+    p=p, r=r, n=n, q=q, w=NULL,
+    base=base, simplify=simplify, settings=settings,
+    P.FUN=P.def, v.FUN=v.def, type="gk")
 
   # return output:
   return(res)
@@ -264,7 +274,10 @@ idb <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
   }
 
   # compute index:
-  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(
+    p=p, r=r, n=n, q=q, w=w,
+    base=base, simplify=simplify, settings=settings,
+    P.FUN=P.def, v.FUN=v.def, type="idb")
 
   # return output:
   return(res)
@@ -295,7 +308,10 @@ rao <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
   }
 
   # compute index:
-  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(
+    p=p, r=r, n=n, q=q, w=w,
+    base=base, simplify=simplify, settings=settings,
+    P.FUN=P.def, v.FUN=v.def, type="rao")
 
   # return output:
   return(res)
@@ -327,7 +343,10 @@ geradi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()
   }
 
   # compute index:
-  res <- .solvemulteq(p=p, r=r, n=n, q=q, w=w, P.FUN=P.def, v.FUN=v.def, base=base, simplify=simplify, settings=settings)
+  res <- .solvemulteq(
+    p=p, r=r, n=n, q=q, w=w,
+    base=base, simplify=simplify, settings=settings,
+    P.FUN=P.def, v.FUN=v.def, type="geradi")
 
   # return output:
   return(res)

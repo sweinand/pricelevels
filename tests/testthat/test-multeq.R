@@ -304,5 +304,30 @@ expect_equal(
   dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
 )
 
+# test if rao() is identical to cpd() even if there are gaps:
+# see http://www.roiw.org/2005/2005-24.pdf
+set.seed(123)
+dt <- rdata(R=5, B=1, N=9, gaps=0.3)
+dt[, "share":=price*quantity/sum(price*quantity), by="region"]
+
+expect_equal(
+  dt[, rao(p=price, q=quantity, r=region, n=product, base="1")],
+  dt[, cpd(p=price, q=quantity, r=region, n=product, base="1")]
+)
+
+expect_equal(
+  dt[, rao(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, cpd(p=price, q=quantity, r=region, n=product, base=NULL)]
+)
+
+expect_equal(
+  dt[, rao(p=price, w=share, r=region, n=product, base="1")],
+  dt[, cpd(p=price, w=share, r=region, n=product, base="1")]
+)
+
+expect_equal(
+  dt[, rao(p=price, w=share, r=region, n=product, base=NULL)],
+  dt[, cpd(p=price, w=share, r=region, n=product, base=NULL)]
+)
 
 # END
