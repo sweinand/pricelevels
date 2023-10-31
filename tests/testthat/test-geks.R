@@ -231,4 +231,25 @@ expect_equal(prod(geks.est2), 1)
 expect_equal(geks.est1, geks.est2/geks.est2[1])
 expect_equal(geks.est1, toernq.est1)
 
+# example data with gaps:
+set.seed(123)
+dt <- rdata(R=5, B=1, N=9)
+
+# reciprocal of paasche identical to laspeyres:
+expect_equal(
+  t(1/dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="paasche"))]),
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="laspey"))]
+)
+
+# hence, geks-fisher, geks-laspeyres, and geks-paasche identical:
+expect_equal(
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="fisher"))],
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="laspey"))]
+)
+
+expect_equal(
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="fisher"))],
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="paasche"))]
+)
+
 # END
