@@ -142,6 +142,33 @@ expect_error(
              settings=list(w.delta=c("1"=0.2)))]
 )
 
+# valid parameter start values:
+par.start <- list("lnP"=setNames(rep(1, nlevels(dt$region)-1), levels(dt$region)[-1]),
+                  "pi"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)),
+                  "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
+
+expect_no_error(
+  dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
+)
+
+# missing names:
+par.start <- list("lnP"=rep(1, nlevels(dt$region)-1),
+                  "pi"=rep(1, nlevels(dt$product)),
+                  "delta"=rep(1, nlevels(dt$product)-1))
+
+expect_error(
+  dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
+)
+
+# wrong length of 'lnP':
+par.start <- par.start <- list("lnP"=setNames(rep(1, nlevels(dt$region)-2), levels(dt$region)[-c(1:2)]),
+                               "pi"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)),
+                               "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
+
+expect_error(
+  dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
+)
+
 
 # Non-connected data ------------------------------------------------------
 

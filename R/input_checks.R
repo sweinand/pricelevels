@@ -2,7 +2,7 @@
 
 # Title:  Input checks
 # Author: Sebastian Weinand
-# Date:   2023-07-10
+# Date:   2023-11-03
 
 # check character and factor inputs:
 .check.char <- function(x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=TRUE){
@@ -104,24 +104,38 @@
 }
 
 # check start values in nlcpd():
-.check.nlcpd.start <- function(x, len=NULL){
+.check.nlcpd.start <- function(x, r, n, min.len=NULL){
 
   input <- deparse(substitute(x))
   msg_prefix <- paste("Non-valid input for", input, "->")
+  n <- factor(n)
+  r <- factor(r)
 
+  # check list:
   if(!is.list(x)) stop(paste(msg_prefix, "must be a list"), call. = FALSE)
   if(length(x) != 3L) stop(paste(msg_prefix, "must be of length 3L"), call. = FALSE)
-  if(!all(c("lnP","pi","delta") %in% names(x))) stop(paste(msg_prefix, "names must be 'lnP', 'pi', 'delta'"), call. = FALSE)
+  if(!all(c("lnP","pi","delta") %in% names(x))) stop(paste(msg_prefix, "list names must be 'lnP', 'pi', 'delta'"), call. = FALSE)
 
-  if(length(x$lnP)>0) .check.num(x=x$lnP, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
-  if(length(x$pi)>0) .check.num(x=x$pi, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
-  if(length(x$delta)>0) .check.num(x=x$delta, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
+  # check elements:
+  if(length(x$lnP)>0) spin:::.check.num(x=x$lnP, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
+  if(length(x$pi)>0) spin:::.check.num(x=x$pi, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
+  if(length(x$delta)>0) spin:::.check.num(x=x$delta, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
 
-  if(length(x$lnP) != len[1]) stop(paste(msg_prefix, "'lnP' must be of length", len[1]), call. = FALSE)
-  if(length(x$pi) != len[2]) stop(paste(msg_prefix, "'pi' must be of length", len[2]), call. = FALSE)
-  if(length(x$delta) != len[3]) stop(paste(msg_prefix, "'delta' must be of length", len[3]), call. = FALSE)
+  # check lengths:
+  if(length(x$lnP)<min.len[["lnP"]]) stop(paste(msg_prefix, "'lnP' must be of length greater or equal to", min.len[["lnP"]]), call. = FALSE)
+  if(length(x$pi)<min.len[["pi"]]) stop(paste(msg_prefix, "'pi' must be of length greater or equal to", min.len[["pi"]]), call. = FALSE)
+  if(length(x$delta)<min.len[["delta"]]) stop(paste(msg_prefix, "'delta' must be of length greater or equal to", min.len[["delta"]]), call. = FALSE)
+
+  # check element names:
+  if(is.null(names(x$lnP))) stop(paste(msg_prefix, "'lnP' must have names"), call. = FALSE)
+  if(is.null(names(x$pi))) stop(paste(msg_prefix, "'pi' must have names"), call. = FALSE)
+  if(is.null(names(x$delta))) stop(paste(msg_prefix, "'delta' must have names"), call. = FALSE)
+
+  # check elements' availability:
+  if(length(setdiff(names(x$lnP), levels(r)))>0) stop("Not all 'names(par.start$lnP)' present in 'levels(r)'", call.=FALSE)
+  if(length(setdiff(names(x$pi), levels(n)))>0) stop("Not all 'names(par.start$pi)' present in 'levels(n)'", call.=FALSE)
+  if(length(setdiff(names(x$delta), levels(n)))>0) stop("Not all 'names(par.start$delta)' present in 'levels(n)'", call.=FALSE)
 
 }
-
 
 # END

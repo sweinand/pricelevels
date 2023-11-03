@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   30 October 2023
+# Date:   3 November 2023
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
@@ -542,8 +542,8 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
       w.delta <- pdata[, tapply(X=w, INDEX=n, FUN=mean)]
       w.delta <- w.delta/sum(w.delta) # normalisation of weights
     }else{
-      if(is.null(names(settings$w.delta))) stop("Please provide names for 'settings$w.delta'")
-      if(!all(levels(pdata$n)%in%names(settings$w.delta), na.rm=TRUE)) stop("Please provide delta weights for all products 'n'")
+      if(is.null(names(settings$w.delta))) stop("Non-valid input for 'settings$w.delta' -> Must have names")
+      if(!all(levels(pdata$n)%in%names(settings$w.delta), na.rm=TRUE)) stop("Non-valid input for 'settings$w.delta' -> weights for all products 'levels(n)' required")
       if(abs(sum(settings$w.delta)-1)>1e-5 && settings$chatty) warning("Sum of 'settings$w.delta' not 1")
       w.delta <- settings$w.delta
     }
@@ -557,17 +557,9 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
     }
 
     # input checks on start:
-    .check.nlcpd.start(x = start, len = c(R-1, N, N-1))
+    .check.nlcpd.start(x=start, r=pdata$r, n=pdata$n, min.len=c("lnP"=R-1, "pi"=N, "delta"=N-1))
 
-    # adjust names of start parameters:
-    if(length(names(start$lnP)) <= 0) names(start$lnP) <- levels(pdata$r)[-ifelse(is.null(base), R, 1)]
-    if(length(names(start$pi)) <= 0) names(start$pi) <- levels(pdata$n)
-    if(length(names(start$delta)) <= 0 && N>1) names(start$delta) <- levels(pdata$n)[-1]
-
-    # align coefficient names to output of cpd():
-    # names(start)[names(start) == "lnP"] <- "r"
-    # names(start)[names(start) == "pi"] <- "n"
-    # names(start)[names(start) == "delta"] <- "delta"
+    # reorder start parameters:
     start <- start[c("pi", "lnP", "delta")] # important if use.jac=TRUE
     par.start <- unlist(start, use.names=TRUE)
 
