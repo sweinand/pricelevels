@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   3 November 2023
+# Date:   5 November 2023
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
@@ -185,7 +185,7 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
 
 }
 
-# helper function for NLCPD starting values:
+# helper function to derive NLCPD parameter start values:
 .nlcpd_self_start <- function(p, r, n, w, w.delta, base=NULL, strategy="s1"){
 
   # gather data:
@@ -242,6 +242,49 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
   }
 
   list("lnP"=lnP, "pi"=pi, "delta"=delta)
+
+}
+
+# helper function to check NLCPD parameter start values:
+.nlcpd_start_check <- function(x, r, n, len=NULL){
+
+  input <- deparse(substitute(x))
+  msg_prefix <- paste("Non-valid input for", input, "->")
+  n <- factor(n)
+  r <- factor(r)
+
+  # check list:
+  if(!is.list(x)) stop(paste(msg_prefix, "must be a list"), call. = FALSE)
+  if(length(x) != 3L) stop(paste(msg_prefix, "must be of length 3L"), call. = FALSE)
+  if(!all(c("lnP","pi","delta") %in% names(x))) stop(paste(msg_prefix, "list names must be 'lnP', 'pi', 'delta'"), call. = FALSE)
+
+  # check elements:
+  if(length(x$lnP)>0) spin:::.check.num(x=x$lnP, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
+  if(length(x$pi)>0) spin:::.check.num(x=x$pi, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
+  if(length(x$delta)>0) spin:::.check.num(x=x$delta, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
+
+  # check element names:
+  if(is.null(names(x$lnP))) stop(paste(msg_prefix, "'lnP' must have names"), call. = FALSE)
+  if(is.null(names(x$pi))) stop(paste(msg_prefix, "'pi' must have names"), call. = FALSE)
+  if(is.null(names(x$delta))) stop(paste(msg_prefix, "'delta' must have names"), call. = FALSE)
+
+  # subset to matches:
+  x$lnP <- x$lnP[names(x$lnP)%in%levels(r)]
+  x$pi <- x$pi[names(x$pi)%in%levels(n)]
+  x$delta <- x$delta[names(x$delta)%in%levels(n)]
+
+  # check matching lengths:
+  if(length(x$lnP)<len[["lnP"]]) stop(paste(msg_prefix, "'names(par.start$lnP) %in% levels(r)' must be of length greater or equal to", len[["lnP"]]), call.=FALSE)
+  if(length(x$pi)<len[["pi"]]) stop(paste(msg_prefix, "'names(par.start$pi) %in% levels(n)' must be of length greater or equal to", len[["pi"]]), call.=FALSE)
+  if(length(x$delta)<len[["delta"]]) stop(paste(msg_prefix, "'names(par.start$delta) %in% levels(n)' must be of length greater or equal to", len[["delta"]]), call.=FALSE)
+
+  # subset to required lengths:
+  x$lnP <- x$lnP[1:len[["lnP"]]]
+  x$pi <- x$pi[1:len[["pi"]]]
+  x$delta <- x$delta[1:len[["delta"]]]
+
+  # return output:
+  return(x)
 
 }
 
@@ -542,7 +585,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
       w.delta <- pdata[, tapply(X=w, INDEX=n, FUN=mean)]
       w.delta <- w.delta/sum(w.delta) # normalisation of weights
     }else{
-      if(is.null(names(settings$w.delta))) stop("Non-valid input for 'settings$w.delta' -> Must have names")
+      if(is.null(names(settings$w.delta))) stop("Non-valid input for 'settings$w.delta' -> vector must have names")
       if(!all(levels(pdata$n)%in%names(settings$w.delta), na.rm=TRUE)) stop("Non-valid input for 'settings$w.delta' -> weights for all products 'levels(n)' required")
       if(abs(sum(settings$w.delta)-1)>1e-5 && settings$chatty) warning("Sum of 'settings$w.delta' not 1")
       w.delta <- settings$w.delta
@@ -553,11 +596,11 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
       settings$self.start <- match.arg(arg=settings$self.start, choices=paste0("s", 1:3))
       start <- with(pdata, .nlcpd_self_start(p=p, r=r, n=n, w=w, w.delta=w.delta, base=base, strategy=settings$self.start))
     }else{
-      start <- settings$par.start
+      start <- with(pdata, .nlcpd_start_check(x=settings$par.start, r=r, n=n, len=c("lnP"=R-1, "pi"=N, "delta"=N-1)))
     }
 
-    # input checks on start:
-    .check.nlcpd.start(x=start, r=pdata$r, n=pdata$n, min.len=c("lnP"=R-1, "pi"=N, "delta"=N-1))
+    # # input checks on start:
+    # .check.nlcpd.start(x=start, r=pdata$r, n=pdata$n, min.len=c("lnP"=R-1, "pi"=N, "delta"=N-1))
 
     # reorder start parameters:
     start <- start[c("pi", "lnP", "delta")] # important if use.jac=TRUE

@@ -25,7 +25,13 @@ nlcpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list
    \itemize{
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
-   \item \code{par.start} : A named list of start values for the  NLCPD coefficients: \eqn{\ln P^r} (\eqn{R-1} region price levels), \eqn{\ln \pi_i} (\eqn{N} general product prices), and \eqn{\delta_i} (\eqn{N-1} product-specific elasticities). Must have names \code{lnP}, \code{pi}, and \code{delta}. By default, \code{par.start=NULL}, meaning that start values are internally derived by \code{nlcpd()} according to \code{self.start}.
+   \item \code{par.start} : A named list of start values for the NLCPD coefficients, where:
+   \itemize{
+   \item \code{lnP} is a named numeric vector of the \eqn{R-1} region price levels, \eqn{\ln P^r} ;
+   \item \code{pi} is a named numeric vector of the \eqn{N} general product prices, \eqn{\ln \pi_i} ;
+   \item \code{delta} is a named numeric vector of the \eqn{N-1} product-specific elasticities, \eqn{\delta_i} .
+   }
+   By default, the start values are internally derived by \code{nlcpd()} according to \code{self.start}.
    \item \code{self.start} : Only if \code{par.start=NULL}, the strategy how parameter start values are internally derived by \code{nlcpd()}. Currently, values \code{s1}, \code{s2} and \code{s3} are allowed. For \code{s1}, simple price averages across products and regions are used as start values, while these are derived by the CPD method for strategies \code{s2} and \code{s3}. Start values for \code{delta} are either set to 1 or derived by their first-order condition if \code{s3}. By default, \code{self.start='s1'}.
    \item \code{use.jac} : A logical indicating if the jacobian matrix should be used by \code{nlcpd()} for the nonlinear optimization or not. The default is \code{FALSE}.
    \item \code{w.delta} : A named vector of weights for the \code{delta}-parameter (see Details). Vector length must be equal to the number of products, while names must match product names. If not supplied, \eqn{\delta_i} weights are derived internally by \code{nlcpd()} from the weights \code{w}.
@@ -74,7 +80,9 @@ dt1[, cpd(p=price, r=region, n=product, q=quantity)]
 dt1[, nlcpd(p=price, r=region, n=product, q=quantity)]
 
 # set individual start values in nlcpd():
-par.init <- list("lnP"=rep(0, R-1), "pi"=rep(2, N), "delta"=rep(1, N-1))
+par.init <- list("lnP"=setNames(rep(0, R-1), c(1,2)),
+                 "pi"=setNames(rep(2, N), 1:N),
+                 "delta"=setNames(rep(1, N-1), 1:(N-1)))
 dt1[, nlcpd(p=price, r=region, n=product, q=quantity,
             settings=list(par.start=par.init))]
 

@@ -138,12 +138,11 @@ expect_no_error(
 )
 
 expect_error(
-  dt[, nlcpd(p=price, r=region, n=product,
-             settings=list(w.delta=c("1"=0.2)))]
+  dt[, nlcpd(p=price, r=region, n=product, settings=list(w.delta=c("1"=0.2)))]
 )
 
 # valid parameter start values:
-par.start <- list("lnP"=setNames(rep(1, nlevels(dt$region)-1), levels(dt$region)[-1]),
+par.start <- list("lnP"=setNames(rep(0, nlevels(dt$region)-1), levels(dt$region)[-1]),
                   "pi"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)),
                   "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
 
@@ -152,7 +151,7 @@ expect_no_error(
 )
 
 # missing names:
-par.start <- list("lnP"=rep(1, nlevels(dt$region)-1),
+par.start <- list("lnP"=rep(0, nlevels(dt$region)-1),
                   "pi"=rep(1, nlevels(dt$product)),
                   "delta"=rep(1, nlevels(dt$product)-1))
 
@@ -160,12 +159,21 @@ expect_error(
   dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
 )
 
-# wrong length of 'lnP':
-par.start <- par.start <- list("lnP"=setNames(rep(1, nlevels(dt$region)-2), levels(dt$region)[-c(1:2)]),
-                               "pi"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)),
-                               "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
+# length of 'lnP' smaller than R-1:
+par.start <- list("lnP"=setNames(rep(0, nlevels(dt$region)-2), levels(dt$region)[-c(1:2)]),
+                  "pi"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)),
+                  "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
 
 expect_error(
+  dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
+)
+
+# length of 'lnP' greater than R-1 but all names present in 'levels(r)':
+par.start <- list("lnP"=setNames(rep(0, nlevels(dt$region)+1), c(levels(dt$region),"test")),
+                  "pi"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)),
+                  "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
+
+expect_no_error(
   dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
 )
 

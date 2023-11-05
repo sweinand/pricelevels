@@ -161,48 +161,4 @@ expect_error(
   .check.lengths(x=1:10, y=1:8)
 )
 
-
-# .check.nlcpd_start() ----------------------------------------------------
-
-
-set.seed(123)
-r <- sample(letters[1:9])
-n <- as.character(sample(1:5))
-
-# wrong length:
-expect_error(
-  .check.nlcpd.start(x=list("abc"=1, "pi"=1:2, "delta"=1:2), r=r, n=n,
-                     min.len=c("abc"=1,"pi"=2,"delta"=3))
-)
-
-# missing 'lnP':
-expect_error(
-  .check.nlcpd.start(x=list("pi"=1:2, "delta"=1:2), r=r, n=n,
-                     min.len=c("lnP"=1,"pi"=2,"delta"=3))
-)
-
-# wrong lengths:
-expect_error(
-  .check.nlcpd.start(x=list("lnP"=1, "pi"=1:2, "delta"=1:2), r=r, n=n,
-                     min.len=c("lnP"=1,"pi"=2,"delta"=3))
-)
-
-# no names:
-expect_error(
-  .check.nlcpd.start(x=list("lnP"=1, "pi"=1:2, "delta"=1:3), r=r, n=n,
-                     min.len=c("lnP"=1,"pi"=2,"delta"=3))
-)
-
-# correct input:
-pars <- list("lnP"=c("a"=1), "pi"=c("1"=1,"3"=2), "delta"=c("1"=1,"2"=1,"3"=1))
-expect_no_error(
-  .check.nlcpd.start(x=pars, r=r, n=n, min.len=c("lnP"=1,"pi"=2,"delta"=2))
-)
-
-# different order:
-pars <- list("pi"=c("1"=1,"3"=2), "delta"=c("1"=1,"2"=1,"3"=1), "lnP"=c("a"=1))
-expect_no_error(
-  .check.nlcpd.start(x=pars, r=r, n=n, min.len=c("lnP"=1,"pi"=2,"delta"=2))
-)
-
 # END
