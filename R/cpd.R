@@ -97,14 +97,8 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
   pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
-  # relevel to base region:
-  if(!base%in%levels(pdata$r) && !is.null(base)){
-    # reset base region and print warning:
-    base <- names(which.max(table(pdata$r)))[1]
-    if(settings$chatty){
-      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
-    }
-  }
+  # set base region:
+  base <- set.base(r=pdata$r, base=base, null.ok=TRUE, chatty=settings$chatty)
   if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # change coefficient names:
@@ -546,14 +540,8 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
   pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
-  # relevel to base region:
-  if(!base%in%levels(pdata$r) && !is.null(base)){
-    # reset base region and print warning:
-    base <- names(which.max(table(pdata$r)))[1]
-    if(settings$chatty){
-      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
-    }
-  }
+  # set base region:
+  base <- set.base(r=pdata$r, base=base, null.ok=TRUE, chatty=settings$chatty)
   if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # number of regions:

@@ -266,13 +266,7 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
   rb <- factor(pdata$base)
 
   # set base region:
-  if(!base%in%levels(r) && !is.null(base)){
-    # reset base region and print warning:
-    base <- names(which.max(table(r)))[1]
-    if(settings$chatty){
-      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
-    }
-  }
+  base <- set.base(r=r, base=base, null.ok=TRUE, chatty=settings$chatty)
 
   # relevel to base region:
   if(!is.null(base)){

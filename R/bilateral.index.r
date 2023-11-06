@@ -421,19 +421,8 @@
   pdata[, c("r","n") := list(factor(r), factor(n))]
   # do not use "as.factor()" because this does not drop unused factor levels
 
-  # set default base if necessary:
-  if(is.null(base)){
-    base <- names(which.max(table(pdata$r)))[1]
-    if(settings$chatty){
-      warning(paste0("Base region set to base='", base, "'"), call.=FALSE)
-    }
-  }
-  if(!(base%in%levels(pdata$r))){ # when base is no valid region
-    base <- names(which.max(table(pdata$r)))[1]
-    if(settings$chatty){
-      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
-    }
-  }
+  # set base region:
+  base <- set.base(r=pdata$r, base=base, null.ok=FALSE, chatty=settings$chatty)
 
   # intersection with base region prices and weights:
   pdata <- merge(x=pdata, y=pdata[r==base,], by="n", all=FALSE, suffixes=c("","_base"))
