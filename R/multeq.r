@@ -56,7 +56,7 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
   }
 
   # set type:
-  type <- match.arg(arg=type, choices=list("gk","idb","geradi","rao"))
+  type <- match.arg(arg=type, choices=list("gk","idb","gerardi","rao"))
 
   # set solve method:
   if(type=="gk"){
@@ -267,8 +267,8 @@ rao <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
 }
 
-# geradi:
-geradi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+# gerardi:
+gerardi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
   # see Balk (1996, p. 208)
   # https://www.scb.se/contentassets/ca21efb41fee47d293bbee5bf7be7fb3/a-comparison-of-ten-methods-for-multilateral-international-price-and-volume-comparison.pdf
@@ -292,7 +292,7 @@ geradi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()
   res <- spin:::solvemulteq(
     p=p, r=r, n=n, q=q, w=w,
     base=base, simplify=simplify, settings=settings,
-    P.FUN=P.def, v.FUN=v.def, type="geradi")
+    P.FUN=P.def, v.FUN=v.def, type="gerardi")
 
   # return output:
   return(res)

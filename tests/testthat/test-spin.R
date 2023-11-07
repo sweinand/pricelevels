@@ -4,7 +4,7 @@
 Punw <- c("carli","dutot","harmonic","jevons")
 Punw <- sort(c(Punw, paste("geks", Punw, sep="-"),"cpd","nlcpd"))
 Pw <- c("fisher","laspey","paasche","toernq","walsh")
-Pw <- sort(c(Pw, paste("geks", Pw, sep="-"),"cpd","nlcpd","geradi","idb","rao"))
+Pw <- sort(c(Pw, paste("geks", Pw, sep="-"),"cpd","nlcpd","gerardi","idb","rao"))
 Pq <- c("geary-khamis")
 Pall <- sort(unique(c(Punw, Pw, Pq)))
 

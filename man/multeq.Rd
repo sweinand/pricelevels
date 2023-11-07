@@ -1,7 +1,7 @@
 \name{multeq}
 
 \alias{gk}
-\alias{geradi}
+\alias{gerardi}
 \alias{idb}
 \alias{rao}
 
@@ -11,7 +11,7 @@
 Calculation of regional price levels using the
 \itemize{
   \item Geary-Khamis method \code{gk()} proposed by Geary (1958) and Khamis (1972);
-  \item Geradi method \code{geradi()} used by Eurostat (1978);
+  \item Gerardi method \code{gerardi()} used by Eurostat (1978);
   \item Rao method \code{rao()} proposed by Rao (1990);
   \item Ikle-Dikhanov-Balk method \code{idb()} developed by Ikle (1972), Dikhanov (1997), and Balk (1996).
 }
@@ -22,10 +22,10 @@ All methods have in common that they set up a system of interrelated equations o
 # geary-khamis index requires quantities:
 gk(p, r, n, q, base = NULL, simplify = TRUE, settings = list())
 
-# ikle-dikhanov-balk, rao, and geradi indices:
+# ikle-dikhanov-balk, rao, and gerardi indices:
 idb(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
 rao(...)
-geradi(...)
+gerardi(...)
 }
 
 \arguments{
@@ -89,10 +89,10 @@ dt1 <- rdata(R=3, B=1, N=5)
 dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="iterative"))]
 dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 
-# gk(), idb() and geradi() yield same results if quantites the same:
+# gk(), idb() and gerardi() yield same results if quantites the same:
 dt1[, "quantity2" := 1000*rleidv(product)]
 dt1[, gk(p=price, r=region, n=product, q=quantity2)]
-dt1[, geradi(p=price, r=region, n=product, q=quantity2)]
+dt1[, gerardi(p=price, r=region, n=product, q=quantity2)]
 dt1[, idb(p=price, r=region, n=product, q=quantity2)]
 dt1[, "quantity2":=NULL]
 
@@ -106,7 +106,7 @@ dt[, is.connected(r=region, n=product)] # non-connected now
 # compute expenditure share weights:
 dt[, "share" := price*quantity/sum(price*quantity), by="region"]
 
-# Geradi index with quantites or expenditure share weights:
-dt[, geradi(p=price, q=quantity, r=region, n=product)]
-dt[, geradi(p=price, w=share, r=region, n=product)]
+# Gerardi index with quantites or expenditure share weights:
+dt[, gerardi(p=price, q=quantity, r=region, n=product)]
+dt[, gerardi(p=price, w=share, r=region, n=product)]
 }

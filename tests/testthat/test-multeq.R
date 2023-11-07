@@ -29,7 +29,7 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, geradi(p=price, q=quantity, r=region, n=product)],
+  dt[, gerardi(p=price, q=quantity, r=region, n=product)],
   c("1"=1)
 )
 
@@ -63,7 +63,7 @@ expect_no_error(
 )
 
 expect_no_error(
-  dt[, geradi(p=price, q=quantity, r=region, n=product)]
+  dt[, gerardi(p=price, q=quantity, r=region, n=product)]
 )
 
 
@@ -126,21 +126,21 @@ expect_equal(mean(rao.est), 1)
 expect_equal(rao.est1, rao.est/rao.est[1])
 expect_equal(rao.est1, rao.est2/rao.est2[1])
 
-# geradi():
-geradi.est <- dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
-geradi.est1 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="1")]
-geradi.est2 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="2")]
-geradi.est3 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+# gerardi():
+gerardi.est <- dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
+gerardi.est1 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="1")]
+gerardi.est2 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="2")]
+gerardi.est3 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
 
-expect_equal(is.vector(geradi.est1), TRUE)
-expect_equal(is.vector(geradi.est2), TRUE)
-expect_equal(is.list(geradi.est3), TRUE)
-expect_equal(names(geradi.est3), c("par","niter","tol"))
-expect_equal(geradi.est1[1], c("1"=1))
-expect_equal(geradi.est2[2], c("2"=1))
-expect_equal(mean(geradi.est), 1)
-expect_equal(geradi.est1, geradi.est/geradi.est[1])
-expect_equal(geradi.est1, geradi.est2/geradi.est2[1])
+expect_equal(is.vector(gerardi.est1), TRUE)
+expect_equal(is.vector(gerardi.est2), TRUE)
+expect_equal(is.list(gerardi.est3), TRUE)
+expect_equal(names(gerardi.est3), c("par","niter","tol"))
+expect_equal(gerardi.est1[1], c("1"=1))
+expect_equal(gerardi.est2[2], c("2"=1))
+expect_equal(mean(gerardi.est), 1)
+expect_equal(gerardi.est1, gerardi.est/gerardi.est[1])
+expect_equal(gerardi.est1, gerardi.est2/gerardi.est2[1])
 
 # test quantities versus shares as weights:
 dt[, "share" := (price*quantity)/sum(price*quantity), by="region"]
@@ -156,8 +156,8 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, geradi(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, geradi(p=price, w=share, r=region, n=product, base=NULL)]
+  dt[, gerardi(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, gerardi(p=price, w=share, r=region, n=product, base=NULL)]
 )
 
 
@@ -181,7 +181,7 @@ expect_error(
 
 # weights and quantities missing:
 expect_error(
-  dt[, geradi(p=price, r=region, n=product)]
+  dt[, gerardi(p=price, r=region, n=product)]
 )
 
 # wrong setting:
@@ -216,7 +216,7 @@ expect_error(
 
 # solve-method not allowed:
 expect_error(
-  dt[, geradi(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
+  dt[, gerardi(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 
@@ -283,7 +283,7 @@ expect_equal(
 # Misc --------------------------------------------------------------------
 
 
-# test if ikd(), gk(), and geradi() identical if no gaps
+# test if ikd(), gk(), and gerardi() identical if no gaps
 # and quantities are the same across regions:
 set.seed(123)
 dt <- rdata(R=5, B=1, N=9, gaps=0)
@@ -296,11 +296,11 @@ expect_equal(
 
 expect_equal(
   dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, geradi(p=price, q=quantity, r=region, n=product, base=NULL)]
+  dt[, gerardi(p=price, q=quantity, r=region, n=product, base=NULL)]
 )
 
 expect_equal(
-  dt[, geradi(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, gerardi(p=price, q=quantity, r=region, n=product, base=NULL)],
   dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
 )
 

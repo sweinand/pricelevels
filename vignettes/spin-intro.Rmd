@@ -30,7 +30,7 @@ The `spin`-package provides index number methods for price comparisons within a 
 2. Multilateral price indices: 
     - CPD and NLCPD methods
     - (Weighted) GEKS method
-    - Multilateral systems of equations: Geary-Khamis, Iklé-Dikhanov-Balk, Geradi, Rao
+    - Multilateral systems of equations: Geary-Khamis, Iklé-Dikhanov-Balk, Gerardi, Rao
 
 Moreover, the package offers functions for sampling and characterizing price data. This vignette highlights the main package features. It contains three sections on price data, bilateral indices, and multilateral indices.
 
@@ -403,7 +403,7 @@ dt.gaps[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="toe
 # GEKS using Jevons so quantities have no impact:
 dt.gaps[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="jevons"))]
 ```
-The `geks()`-function internally calls the function `index.pairs()` to compute the bilateral indices of all region pairs. The quantities `q` or weights `w` are used within this aggregation of prices into bilateral index numbers (first stage) while the subsequent transformation of these index numbers (second stage) usually does not rely on any weights (but can if specified in `settings$method`). In this case, the solution to the regression model above simplifies to
+The `geks()`-function internally calls the function `index.pairs()` to compute the bilateral indices of all region pairs. The quantities `q` or weights `w` are used within this aggregation of prices into bilateral index numbers (first stage) while the subsequent transformation of these index numbers (second stage) usually does not rely on any weights (but can if specified in `settings$wmethod`). In this case, the solution to the regression model above simplifies to
 $$P_{\text{GEKS-J}}^{1r} = \prod_{s=1}^{R} \left( \dot{P}^{1s}_{\text{J}} \dot{P}^{sr}_{\text{J}} \right)^{1/R} \ ,$$
 if the Jevons index is used and region `1` serves as the base region [@ILO2020 p. 448].
 
@@ -412,9 +412,9 @@ Again, the following checks show that the price index numbers derived with the G
 # estimate GEKS-Törnqvist using different base regions and 
 # applying weights in second aggregation stage:
 P1.geks <- dt.gaps[, geks(p=price, r=region, n=product, q=quantity, base="1",
-                          settings=list(type="toernq", method="obs"))]
+                          settings=list(type="toernq", wmethod="obs"))]
 P3.geks <- dt.gaps[, geks(p=price, r=region, n=product, q=quantity, base="3",
-                          settings=list(type="toernq", method="obs"))]
+                          settings=list(type="toernq", wmethod="obs"))]
 
 # check transitivity:
 all.equal(P1.geks[2], P1.geks[3]*P3.geks[2], check.attributes=FALSE)
@@ -425,7 +425,7 @@ all.equal(P1.geks[2], P1.geks[3]*P3.geks[2], check.attributes=FALSE)
 The following price indices belong to this very general class of multilateral price indices and are implemented in the `spin`-package.
 
 - Geary-Khamis method `gk()` proposed by  @Geary1958 and @Khamis1972;
-- Geradi method `geradi()` used by @Eurostat1978;
+- Gerardi method `gerardi()` used by @Eurostat1978;
 - Rao method `rao()` proposed by @Rao1990;
 - Ikle-Dikhanov-Balk method `idb()` developed by @Ikle1972, @Dikhanov1994, and @Balk1996.
 
@@ -443,23 +443,23 @@ dt.big <- rdata(R=99, B=1, N=50, gaps=0.25)
 
 # iterative processing:
 system.time(m1 <- dt.big[, gk(p=price, r=region, n=product, q=quantity,
-                              settings=list(method="iterative"), simplify=FALSE)])
+                              settings=list(solve="iterative"), simplify=FALSE)])
 
 # matrix algebra:
 system.time(m2 <- dt.big[, gk(p=price, r=region, n=product, q=quantity,
-                              settings=list(method="solve"), simplify=FALSE)])
+                              settings=list(solve="matrix"), simplify=FALSE)])
 
 # compare results and computation time:
 all.equal(m1, m2, tol=1e-05)
 ```
 
-The *Geradi index* and the *Iklé-Dikhanov-Balk (IDB) index* define the price levels exactly in the same way as the Geary-Khamis index. However, they define the international product prices differently. For the Geradi index, the $\pi_n$'s are computed as simple geometric averages of the prices,
+The *Gerardi index* and the *Iklé-Dikhanov-Balk (IDB) index* define the price levels exactly in the same way as the Geary-Khamis index. However, they define the international product prices differently. For the Gerardi index, the $\pi_n$'s are computed as simple geometric averages of the prices,
 $$\pi_n = \left( \prod_{r=1}^{R} p_i^r \right)^{1/R} \quad n=1,\ldots,N \ , $$
 while they rely on expenditure shares in the IDB index:
 $$\pi_n = \left[ \frac{\sum_{r=1}^{R} w_n^r \left( p_n^r / P^r \right)^{-1}}{\sum_{r=1}^{R} w_n^r} \right]^{-1} \quad n=1,\ldots,N \ . $$
 The IDB index uses the expenditure shares instead of quantity shares as the Geary-Khamis. Therefore, it suffers less from the *Gerschenkorn effect* as bigger countries do not receive more influence in the calculations than smaller countries. 
 
-In contrast to the Geary-Khamis index, the Geradi and IDB indices can be computed with quantities $q_n^r$ *or* expenditure share weights $w_n^r$. This also applies to the *Rao index*, which derives the international product prices, $\pi_n \ (n=1,\ldots,N)$, and regional price levels, $P^r \ (r=1,\ldots,R)$, from the following system of interrelated equations:
+In contrast to the Geary-Khamis index, the Gerardi and IDB indices can be computed with quantities $q_n^r$ *or* expenditure share weights $w_n^r$. This also applies to the *Rao index*, which derives the international product prices, $\pi_n \ (n=1,\ldots,N)$, and regional price levels, $P^r \ (r=1,\ldots,R)$, from the following system of interrelated equations:
 
 $$\pi_n = \prod_{r=1}^{R} \left( p_n^r / P^r \right)^{w_n^r / \sum_{s=1}^{R} w_n^s} \quad \text{and} \quad P^r = \prod_{n=1}^{N} \left( p_n^r / \pi_n \right)^{w_n^r} \ . $$ 
 Also the price indices belonging to this class of multilateral systems of equations produce transitive price levels.
@@ -475,7 +475,9 @@ P3.rao <- dt.gaps[, rao(p=price, r=region, n=product, q=quantity, base="3")]
 all.equal(P1.rao[2], P1.rao[3]*P3.rao[2], check.attributes=FALSE)
 ```
 
-# Some further package specifics
+# Some further package features
+
+## Price indices with non-connected price data
 
 Bilateral price indices use solely the direct matches or links between two regions. Hence, indirect links between two regions via a third one are not taken into account. This is different for multilateral price indices, which make use of these indirect links. Consequently, the function output between these indices may differ.
 ```{r}
@@ -543,5 +545,35 @@ dt[1, "price" := NA_real_]
 dt[, cpd(p=price, r=region, n=product)]
 ```
 
+## Calculation of multiple price indices at once
+
+In some situations it is useful to compute the price levels of the regions using multiple price indices. This could be done by calculating, for example, the CPD index, the GEKS-Jevons index, and the Jevons index, separately using the corresponding package functions.
+```{r}
+# example data:
+set.seed(123)
+dt <- rdata(R=5, B=1, N=7, gaps=0.2)
+
+# cpd:
+dt[, cpd(p=price, r=region, n=product, base="1")]
+
+# geks-jevons:
+dt[, geks(p=price, r=region, n=product, base="1", setting=list(type="jevons"))]
+
+# jevons:
+dt[, jevons(p=price, r=region, n=product, base="1")]
+```
+However, this approach is not convenient and also not efficient as each price index function checks the same user inputs, removes the same missing values and duplicated observations, and connects the same data if needed. This can be time consuming for bigger datasets. The `spin`-package therefore offers the `spin()`-function, which can be used to efficiently calculate multiple price indices at once.
+```{r}
+dt[, spin(p=price, r=region, n=product, base="1", settings=list(type=c("jevons","cpd","geks-jevons")))]
+```
+If the user wants to compute all unweighted price indices available in the `spin`-package, this can be achieved by setting `settings$type=NULL`:
+```{r}
+dt[, spin(p=price, r=region, n=product, base="1")]
+```
+Similarly, if there are quantities or weights available in the data, all weighted and unweighted price indices available in the `spin`-package are computed at once:
+```{r}
+dt[, spin(p=price, r=region, n=product, q=quantity, base="1")]
+```
+It is important to note that only the simplified output including the regions' price levels is returned. Moreover, the user has to provide a specific base reigon as bilateral indices do not allow a compartison to the average regional price level. However, any additional settings of some price index function (e.g., `settings$use.jac=TRUE` for `nlcpd()`) can be used in `spin()` as well.
 
 # References

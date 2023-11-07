@@ -48,7 +48,7 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   type.vals <- c("jevons","carli","harmonic","dutot","laspey","paasche",
                  "fisher","walsh","toernq")
   type.vals <- c(type.vals, paste("geks", type.vals, sep="-"), "cpd", "nlcpd",
-                 "rao","geradi","geary-khamis","idb")
+                 "rao","gerardi","geary-khamis","idb")
 
   # check against allowed index types:
   if(is.null(type)){
@@ -166,8 +166,8 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
         pdata[, spin::idb(p=p, r=r, n=n, q=z, base=base, settings=settings)]
       },
 
-      "geradi"=if("geradi"%in%type){
-        pdata[, spin::geradi(p=p, r=r, n=n, q=z, base=base, settings=c(settings, method="iterative"))]
+      "gerardi"=if("gerardi"%in%type){
+        pdata[, spin::gerardi(p=p, r=r, n=n, q=z, base=base, settings=c(settings, method="iterative"))]
       }
 
     )
@@ -251,8 +251,8 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
           pdata[, spin::idb(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
-        "geradi"=if("geradi"%in%type){
-          pdata[, spin::geradi(p=p, r=r, n=n, w=w, base=base, settings=c(settings, method="iterative"))]
+        "gerardi"=if("gerardi"%in%type){
+          pdata[, spin::gerardi(p=p, r=r, n=n, w=w, base=base, settings=c(settings, method="iterative"))]
         }
 
       )
