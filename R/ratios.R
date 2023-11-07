@@ -29,7 +29,7 @@ ratios <- function(p, r, n, base=NULL, static=FALSE, drop=FALSE){
   }
 
   # set base region:
-  base <- set.base(r=factor(r), base=base, null.ok=FALSE, chatty=TRUE)
+  base <- set.base(r=factor(r), base=base, null.ok=FALSE, settings=list(chatty=TRUE))
 
   # gather data into data.table:
   dt <- data.table("region"=r, "product"=n, "price"=p)

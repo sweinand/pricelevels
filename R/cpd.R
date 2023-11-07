@@ -2,103 +2,51 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   5 November 2023
+# Date:   6 November 2023
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+
+  # set default if missing:
+  if(missing(q)) q <- NULL
+  if(missing(w)) w <- NULL
 
   # set default settings if missing:
   if(is.null(settings$connect)) settings$connect <- TRUE
   if(is.null(settings$chatty)) settings$chatty <- TRUE
 
+  # non-exported settings:
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+
   # input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
-  .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
-  .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
-  .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
-  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
-  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=p)
-  .check.lengths(x=r, y=w)
-  .check.lengths(x=r, y=q)
+  if(settings$check.inputs){
 
-  # set quantities or weights if available:
-  if(is.null(q) && is.null(w)){
-    z <- rep(1, length(p))
-  }else{
-    if(is.null(q)) z <- w else z <- q
-  }
+    # main inputs:
+    .check.num(x=p, int=c(0, Inf))
+    .check.char(x=r)
+    .check.char(x=n)
+    .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+    .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+    .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+    .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
+    .check.lengths(x=r, y=n)
+    .check.lengths(x=r, y=p)
+    .check.lengths(x=r, y=w)
+    .check.lengths(x=r, y=q)
 
-  # gather in data.table:
-  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "z"=as.numeric(z))
-
-  # if both q and w are provided, q will be checked:
-  pdata <- pdata[complete.cases(r, n, p, z), ]
-
-  # stop if no observations left:
-  if(nrow(pdata)<=0L){
-    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
-  }
-
-  # store initial ordering of region levels:
-  r.lvl <- levels(factor(pdata$r))
-
-  # subset to connected data:
-  if(settings$connect){
-
-    if(pdata[, !spin::is.connected(r=r, n=n)]){
-
-      # subset based on input:
-      if(!base%in%r.lvl || is.null(base)){
-        pdata <- pdata[spin::connect(r=r, n=n), ]
-      }else{
-        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
-        pdata <- pdata[ng%in%pdata[r%in%base, unique(ng)], ]
-      }
-
-      # warning message:
-      if(settings$chatty){
-        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
-      }
-
-    }
+    # settings:
+    .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+    .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
 
   }
 
-  # check for duplicated entries:
-  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
-
-    # average duplicated prices and weights, sum duplicated quantities:
-    if(is.null(q)){
-      pdata <- pdata[, list("p"=mean(p), "z"=mean(z)), by=c("r","n")]
-    }else{
-      pdata <- pdata[, list("p"=mean(p), "z"=sum(z)), by=c("r","n")]
-    }
-
-    # print warning:
-    if(settings$chatty){
-      warning("Duplicated observations found and aggregated", call.=FALSE)
-    }
-
-  }
-
-  # compute expenditure share weights for each region:
-  if(!is.null(q)){
-    pdata[, "w" := (p*z)/sum(p*z, na.rm=TRUE), by="r"]
-  }else{
-    pdata[, "w" := z]
-  }
-
-  # coerce to factor:
-  pdata[, c("r","n") := list(factor(r), factor(n))]
-  # do not use "as.factor()" because this does not drop unused factor levels
+  # initialize data:
+  pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
 
   # set base region:
-  base <- set.base(r=pdata$r, base=base, null.ok=TRUE, chatty=settings$chatty)
+  base <- spin:::set.base(r=pdata$r, base=base, null.ok=TRUE, settings=settings)
   if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # change coefficient names:
@@ -160,6 +108,7 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
     if(is.null(out)) out <- setNames(0, levels(pdata$lnP))
 
     # match to initial ordering:
+    r.lvl <- levels(factor(r))
     out <- out[match(x=r.lvl, table=names(out))]
     names(out) <- r.lvl
 
@@ -426,29 +375,47 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
 # NLCPD method:
 nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list(), ...){
 
+  # set default if missing:
+  if(missing(q)) q <- NULL
+  if(missing(w)) w <- NULL
+
   # set default settings if missing:
   if(is.null(settings$connect)) settings$connect <- TRUE
   if(is.null(settings$chatty)) settings$chatty <- TRUE
   if(is.null(settings$use.jac)) settings$use.jac <- FALSE
   if(is.null(settings$par.start)) settings$par.start <- NULL
   if(is.null(settings$self.start)) settings$self.start <- "s1"
+  if(is.null(settings$w.delta)) settings$w.delta <- NULL
+
+  # non-exported settings:
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
 
   # input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
-  .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
-  .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
-  .check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
-  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
-  .check.log(x=settings$use.jac, min.len=1, max.len=1, na.ok=FALSE)
-  .check.char(x=settings$self.start, min.len=1, max.len=1, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=p)
-  .check.lengths(x=r, y=w)
-  .check.lengths(x=r, y=q)
+  if(settings$check.inputs){
+
+    # main inputs:
+    .check.num(x=p, int=c(0, Inf))
+    .check.char(x=r)
+    .check.char(x=n)
+    .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+    .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+    .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
+    .check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+    .check.lengths(x=r, y=n)
+    .check.lengths(x=r, y=p)
+    .check.lengths(x=r, y=w)
+    .check.lengths(x=r, y=q)
+
+    # settings:
+    .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+    .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+    .check.log(x=settings$use.jac, min.len=1, max.len=1, na.ok=FALSE)
+    .check.char(x=settings$self.start, min.len=1, max.len=1, na.ok=FALSE)
+    # settings$w.delta and settings$par.start are checked later
+
+  }
 
   # overwrite defaults by ellipsis elements:
   defaults <- formals(minpack.lm::nls.lm)
@@ -469,79 +436,11 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
     jacobi_fun <- defaults$jac
   }
 
-  # set quantities or weights if available:
-  if(is.null(q) && is.null(w)){
-    z <- rep(1, length(p))
-  }else{
-    if(is.null(q)) z <- w else z <- q
-  }
-
-  # gather in data.table:
-  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "z"=as.numeric(z))
-
-  # if both q and w are provided, q will be checked:
-  pdata <- pdata[complete.cases(r, n, p, z), ]
-
-  # stop if no observations left:
-  if(nrow(pdata)<=0L){
-    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
-  }
-
-  # store initial ordering of region levels:
-  r.lvl <- levels(factor(pdata$r))
-
-  # subset to connected data:
-  if(settings$connect){
-
-    if(pdata[, !spin::is.connected(r=r, n=n)]){
-
-      # subset based on input:
-      if(!base%in%r.lvl || is.null(base)){
-        pdata <- pdata[spin::connect(r=r, n=n), ]
-      }else{
-        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
-        pdata <- pdata[ng%in%pdata[r%in%base, unique(ng)], ]
-      }
-
-      # warning message:
-      if(settings$chatty){
-        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
-      }
-
-    }
-
-  }
-
-  # check for duplicated entries:
-  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
-
-    # average duplicated prices and weights, sum duplicated quantities:
-    if(is.null(q)){
-      pdata <- pdata[, list("p"=mean(p), "z"=mean(z)), by=c("r","n")]
-    }else{
-      pdata <- pdata[, list("p"=mean(p), "z"=sum(z)), by=c("r","n")]
-    }
-
-    # print warning:
-    if(settings$chatty){
-      warning("Duplicated observations found and aggregated", call.=FALSE)
-    }
-
-  }
-
-  # compute expenditure share weights for each region:
-  if(!is.null(q)){
-    pdata[, "w" := (p*z)/sum(p*z, na.rm=TRUE), by="r"]
-  }else{
-    if(is.null(w)) pdata[, "w" := 1] else pdata[, "w" := z]
-  }
-
-  # coerce to factor:
-  pdata[, c("r","n") := list(factor(r), factor(n))]
-  # do not use "as.factor()" because this does not drop unused factor levels
+  # initialize data:
+  pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
 
   # set base region:
-  base <- set.base(r=pdata$r, base=base, null.ok=TRUE, chatty=settings$chatty)
+  base <- spin:::set.base(r=pdata$r, base=base, null.ok=TRUE, settings=settings)
   if(!is.null(base)) pdata[, "r" := relevel(x=r, ref=base)]
 
   # number of regions:
@@ -651,6 +550,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
       out <- c(out, out.miss)
 
       # match to initial ordering and unlog:
+      r.lvl <- levels(factor(r))
       out <- exp(out)[match(x=r.lvl, table=names(out))]
       names(out) <- r.lvl
 

@@ -14,7 +14,7 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list("method"="solve"))],
+  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))],
   c("1"=1)
 )
 
@@ -46,12 +46,12 @@ expect_no_error(
 )
 
 expect_no_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list("method"="solve"))]
+  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 expect_equal(
   dt[, gk(p=price, q=quantity, r=region, n=product)],
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list("method"="solve"))]
+  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 expect_no_error(
@@ -79,7 +79,7 @@ gk.est <- dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
 gk.est1 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="1")]
 gk.est2 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="2")]
 gk.est3 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
-gk.est4 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE, settings=list(method="solve"))]
+gk.est4 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE, settings=list(solve="matrix"))]
 
 expect_equal(is.vector(gk.est1), TRUE)
 expect_equal(is.vector(gk.est2), TRUE)
@@ -166,32 +166,32 @@ expect_equal(
 
 # quantities missing:
 expect_error(
-  dt[, gk(p=price, r=region, n=product, settings=list(method="abc"))]
+  dt[, gk(p=price, r=region, n=product, w=quantity)]
 )
 
 # weights and quantities missing:
 expect_error(
-  dt[, rao(p=price, r=region, n=product, settings=list(method="abc"))]
+  dt[, rao(p=price, r=region, n=product)]
 )
 
 # weights and quantities missing:
 expect_error(
-  dt[, idb(p=price, r=region, n=product, settings=list(method="abc"))]
+  dt[, idb(p=price, r=region, n=product)]
 )
 
 # weights and quantities missing:
 expect_error(
-  dt[, geradi(p=price, r=region, n=product, settings=list(method="abc"))]
+  dt[, geradi(p=price, r=region, n=product)]
 )
 
 # wrong setting:
 expect_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="abc"))]
+  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="abc"))]
 )
 
 # abbreviated setting ok:
 expect_no_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iter"))]
+  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="iter"))]
 )
 
 # negative tolerance not allowed:
@@ -206,17 +206,17 @@ expect_error(
 
 # solve-method not allowed:
 expect_error(
-  dt[, idb(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+  dt[, idb(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 # solve-method not allowed:
 expect_error(
-  dt[, rao(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+  dt[, rao(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 # solve-method not allowed:
 expect_error(
-  dt[, geradi(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+  dt[, geradi(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 
@@ -257,25 +257,25 @@ expect_equal(
 
 expect_equal(
   dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
-             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][1],
+             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][1],
   c("1"=1)
 )
 
 expect_equal(
   dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
-             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][4:7],
+             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
   dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
-             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][1:3],
+             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
   dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
-             settings=list(chatty=FALSE, connect=TRUE, method="solve"))][4],
+             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][4],
   c("4"=1)
 )
 

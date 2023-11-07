@@ -51,6 +51,8 @@ The NLCPD method inflates the CPD model by product-specific elasticities \eqn{\d
 Note that both the CPD and the NLCPD method require a normalization of the estimated price levels \eqn{\widehat{\ln P^r}} to avoid multicollinearity. If \code{base=NULL}, normalization \eqn{\sum_{r=1}^{R} \widehat{\ln P^r}=0} is used in both functions; otherwise, one price level is set to 0. The NLCPD method additionaly imposes the restriction \eqn{\sum_{i=1}^{N} w_i \widehat{\delta_i}=1}, which is satisfied by the CPD method by definiton. The \eqn{w_i} can be defined by \code{w.delta}.
 
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+
+The weights \code{w} are (re-)normalized internally such that they add up to 1 for each region \code{r}.
 }
 
 \author{Sebastian Weinand}

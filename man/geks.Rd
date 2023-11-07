@@ -25,7 +25,7 @@ geks(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
    \item \code{all.pairs} : Logical indicating whether index numbers should be computed for all region pairs (\code{TRUE}) or only for non-redundant ones (\code{FALSE}), e.g. the index number of regions \code{AB} should be the same as the inverse of \code{BA}. The default is \code{TRUE}.
    \item \code{type} : A character specifying the index method used to aggregate prices into bilateral price indices for each pair of regions (first step of GEKS). See \code{\link{bilateral.index}} for allowed values. The default is \code{jevons}.
-   \item \code{method} : the weighting method (second step of GEKS). Allowed values are \code{none} for equal weighting of all bilateral price indices, \code{obs} for weighting the bilateral price indices according to the underlying number of intersecting observations, or \code{shares} for weighting according to the intersecting expenditure shares. The default is \code{none}. Used only by \code{geks()}
+   \item \code{wmethod} : the weighting method (second step of GEKS). Allowed values are \code{none} for equal weighting of all bilateral price indices, \code{obs} for weighting the bilateral price indices according to the underlying number of intersecting observations, or \code{shares} for weighting according to the intersecting expenditure shares. The default is \code{none}. Used only by \code{geks()}
    \item \code{as.dt} : A logical indicating whether the results should be transformed to a data.table or not. The default is \code{FALSE}. Used only by \code{index.pairs()}.
    }}
 }
@@ -56,9 +56,11 @@ For \code{geks()}, a named vector of (unlogged) regional price levels if \code{s
 \details{
 The GEKS index is a two-step approach. First, prices are aggregated into bilateral index numbers using the index given in \code{type}. This is done for all pairs of regions via function \code{index.pairs()}. Second, these bilateral index numbers are transformed into a set of multilateral, transitive index numbers.
 
-Note that the quantities \code{q} or weights \code{w} are used within the aggregation of prices into index numbers (first stage) while the subsequent transformation of these index numbers (second stage) usually does not rely on any weights (but can if specified in \code{settings$method}).
+Note that the quantities \code{q} or weights \code{w} are used within the aggregation of prices into index numbers (first stage) while the subsequent transformation of these index numbers (second stage) usually does not rely on any weights (but can if specified in \code{settings$wmethod}).
 
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+
+The weights \code{w} are (re-)normalized internally such that they add up to 1 for each region \code{r}.
 }
 
 \seealso{\code{\link{bilateral.index}}}
@@ -101,7 +103,7 @@ dt1.gaps[, jevons(p=price, r=region, n=product, base="1")]
 # weighting at the second step of GEKS can be done with respect
 # to the intersection of products for each pair of region:
 dt1.gaps[, geks(p=price, r=region, n=product, base="1",
-                settings=list(type="jevons", method="obs"))]
+                settings=list(type="jevons", wmethod="obs"))]
 
 # add price data:
 dt2 <- rdata(R=4, B=1, N=4)

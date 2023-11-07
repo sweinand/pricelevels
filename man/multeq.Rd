@@ -38,7 +38,7 @@ geradi(...)
    \itemize{
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
-   \item \code{method} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gk()}, the analytical solution proposed by Diewert (1999) is also allowed by setting to \code{solve}.
+   \item \code{solve} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gk()}, the analytical solution proposed by Diewert (1999) is also allowed by setting to \code{matrix}.
    \item \code{tol} : the tolerance level when convergence is achieved if \code{type="iterative"}. The default is \code{1e-9}.
    \item \code{max.iter} : the maximum number of iterations if \code{type="iterative"}. The default is \code{99}.
    }}
@@ -46,6 +46,8 @@ geradi(...)
 
 \details{
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+
+The weights \code{w} are (re-)normalized internally such that they add up to 1 for each region \code{r}.
 }
 
 \author{Sebastian Weinand}
@@ -84,8 +86,8 @@ set.seed(123)
 dt1 <- rdata(R=3, B=1, N=5)
 
 # Gery-Khamis price index can be obtained in two ways:
-dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="iterative"))]
-dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(method="solve"))]
+dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="iterative"))]
+dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 
 # gk(), idb() and geradi() yield same results if quantites the same:
 dt1[, "quantity2" := 1000*rleidv(product)]

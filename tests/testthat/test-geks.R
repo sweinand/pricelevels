@@ -105,9 +105,9 @@ geks.est3 <- dt[, geks(p=price, r=region, n=product, w=share, base="1", settings
 geks.est4 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernq"))]
 expect_equal(geks.est3, geks.est4)
 
-# method='shares' still transitive:
-geks.est5 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernq", method="shares"))]
-geks.est6 <- dt[, geks(p=price, r=region, n=product, q=quantity, base=NULL, settings=list(type="toernq", method="shares"))]
+# wmethod='shares' still transitive:
+geks.est5 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernq", wmethod="shares"))]
+geks.est6 <- dt[, geks(p=price, r=region, n=product, q=quantity, base=NULL, settings=list(type="toernq", wmethod="shares"))]
 expect_equal(geks.est5, geks.est6/geks.est6[1])
 
 
@@ -121,7 +121,7 @@ expect_no_error(
 
 expect_error(
   dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
-            settings=list(type="toernq", method="bla", chatty=FALSE))]
+            settings=list(type="toernq", wmethod="bla", chatty=FALSE))]
 )
 
 expect_error(

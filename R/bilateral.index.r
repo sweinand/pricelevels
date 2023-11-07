@@ -311,31 +311,37 @@
 
   # set default if missing:
   if(missing(q)) q <- NULL
+  if(missing(w)) w <- NULL
 
   # set default settings if missing:
   if(is.null(settings$connect)) settings$connect <- TRUE
   if(is.null(settings$chatty)) settings$chatty <- TRUE
 
-  # input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
-  .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
-  .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
-  .check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
-  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
-  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=p)
-  .check.lengths(x=r, y=q)
-  .check.lengths(x=r, y=w)
+  # non-exported settings:
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
 
-  # set quantities or weights if available:
-  if(is.null(q) && is.null(w)){
-    z <- rep(1, length(p))
-  }else{
-    if(is.null(q)) z <- w else z <- q
+  # input checks:
+  if(settings$check.inputs){
+
+    # main inputs:
+    .check.num(x=p, int=c(0, Inf))
+    .check.char(x=r)
+    .check.char(x=n)
+    .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+    .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+    .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
+    .check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+    .check.lengths(x=r, y=n)
+    .check.lengths(x=r, y=p)
+    .check.lengths(x=r, y=q)
+    .check.lengths(x=r, y=w)
+
+    # settings:
+    .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+    .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+
   }
 
   # allowed index types:
@@ -344,85 +350,32 @@
   # check against allowed index types:
   type <- match.arg(arg=type, choices=type.vals)
 
-  # set index function based on type:
-  # NOTE that these are the index2()-functions!
-  if(type=="jevons"){index_func <- .jevons2}
-  if(type=="carli"){index_func <- .carli2}
-  if(type=="dutot"){index_func <- .dutot2}
-  if(type=="harmonic"){index_func <- .harmonic2}
-  if(type=="toernq"){index_func <- .toernq2}
-  if(type=="laspey"){index_func <- .laspey2}
-  if(type=="paasche"){index_func <- .paasche2}
-  if(type=="walsh"){index_func <- .walsh2}
-  if(type=="fisher"){index_func <- .fisher2}
-
   # weights required for following index types:
   type.weights <- c("toernq", "laspey", "paasche", "walsh", "fisher")
 
   # error handling for quantity and weights:
-  if(type%in%type.weights && is.null(q) && is.null(w)){
-    stop(paste0("Non-valid input for type -> 'q' or 'w' required for type='", type, "'"))
+  if(settings$check.inputs && type%in%type.weights && is.null(q) && is.null(w)){
+    stop(paste0("Non-valid input for type='", type, "' -> 'q' or 'w' required"), call.=FALSE)
   }
 
-  # gather in data.table:
-  pdata <- data.table("r"=as.character(r), "n"=as.character(n), "p"=as.numeric(p), "z"=as.numeric(z))
+  # set index function based on type:
+  # NOTE that these are the index2()-functions!
+  index_func <- switch(type,
+                       jevons = spin:::.jevons2,
+                       carli = spin:::.carli2,
+                       dutot = spin:::.dutot2,
+                       harmonic = spin:::.harmonic2,
+                       toernq = spin:::.toernq2,
+                       laspey = spin:::.laspey2,
+                       paasche = spin:::.paasche2,
+                       fisher = spin:::.fisher2,
+                       walsh = spin:::.walsh2)
 
-  # if both q and w are provided, q will be checked:
-  pdata <- pdata[complete.cases(r, n, p, z), ]
-
-  # stop if no observations left:
-  if(nrow(pdata)<=0L){
-    stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
-  }
-
-  # store initial ordering of region levels:
-  r.lvl <- levels(factor(pdata$r))
-
-  # subset to connected data:
-  if(settings$connect){
-
-    if(pdata[, !spin::is.connected(r=r, n=n)]){
-
-      # subset based on input:
-      if(!base%in%r.lvl || is.null(base)){
-        pdata <- pdata[spin::connect(r=r, n=n), ]
-      }else{
-        pdata[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
-        pdata <- pdata[ng%in%pdata[r%in%base, unique(ng)], ]
-      }
-
-      # warning message:
-      if(settings$chatty){
-        warning("Non-connected regions -> computations with subset of data", call.=FALSE)
-      }
-
-    }
-
-  }
-
-  # check for duplicated entries:
-  if(anyDuplicated(x=pdata, by=c("r","n"))>0L){
-
-    # average duplicated prices and weights, sum duplicated quantities:
-    if(is.null(q)){
-      pdata <- pdata[, list("p"=mean(p), "z"=mean(z)), by=c("r","n")]
-    }else{
-      pdata <- pdata[, list("p"=mean(p), "z"=sum(z)), by=c("r","n")]
-    }
-
-    # print warning:
-    if(settings$chatty){
-      warning("Duplicated observations found and aggregated", call.=FALSE)
-    }
-
-  }
-
-  # coerce to factor:
-  pdata[, c("r","n") := list(factor(r), factor(n))]
-  # do not use "as.factor()" because this does not drop unused factor levels
+  # initialize data:
+  pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
 
   # set base region:
-  base <- set.base(r=pdata$r, base=base, null.ok=FALSE, chatty=settings$chatty)
+  base <- spin:::set.base(r=pdata$r, base=base, null.ok=FALSE, settings=settings)
 
   # intersection with base region prices and weights:
   pdata <- merge(x=pdata, y=pdata[r==base,], by="n", all=FALSE, suffixes=c("","_base"))
@@ -437,6 +390,7 @@
   # ensure that results contain all regions, also in cases
   # where no product matches were found. This is important
   # in cases of incomplete price data:
+  r.lvl <- levels(factor(r))
   aggdata <- merge(x=data.table("r"=r.lvl), y=aggdata, by="r", all.x=TRUE)
 
   # coerce to vector:
