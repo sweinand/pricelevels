@@ -45,9 +45,9 @@ Data for spatial price comparisons usually have three dimensions:
 
 * the *region* $(r=1,\ldots,R)$, which can be a country, city, or any other regional entity,
 * the *basic heading* $(b=1,\ldots,B)$, which is a group of similar products for which expenditure weights, $w_{b}$ or $w_{b}^{r}$, are avaiable,
-* and the *individual product* $(n=1,\ldots,N_b)$, for which prices $p_{bi}^r$ are recorded.
+* and the *individual product* $(n=1,\ldots,N_b)$, for which prices $p_{bn}^r$ are recorded.
 
-For transaction and supermarket scanner data, purchased quantities $q_{bi}^r$ of the individual products are often available.
+For transaction and supermarket scanner data, purchased quantities $q_{bn}^r$ of the individual products are often available.
 
 Having such detailed data can pose some additional challenges. Not every individual product might be available in each region. Hence, there are gaps in the data. In the worst case these gaps can result in *non-connected* price data [@WorldBank2013 p. 98], where price level comparisons of all regions are no longer possible.
 
@@ -191,9 +191,9 @@ The previous steps to simulate random price data are put together in function `r
 * Sales can be introduced. Some prices and quantities are adjusted by a random factor. The sales are flagged in the data.
 * The generation of prices follows a more sophisticated model (see also the NLCPD method later):
 \begin{equation}
-  p_{bi}^r = \pi_{bi} \ (P^r)^{\delta_{bi}} \ u_i^r \ ,
+  p_{bn}^r = \pi_{bn} \ (P^r)^{\delta_{bn}} \ u_{bn}^r \ ,
 \end{equation}
-where the price of product $i$ in region $r$, $p_{bi}^r$, is explained by the general product price, $\pi_{bi}$, the product-specific elasticities $\delta_{bi}$, and the regional price level, $P^r$. The error term $u_{bi}^r$ follows a lognormal distribution.
+where the price of product $n$ in region $r$, $p_{bn}^r$, is explained by the general product price, $\pi_{bn}$, the product-specific elasticities $\delta_{bn}$, and the regional price level, $P^r$. The error term $u_{bn}^r$ follows a lognormal distribution.
 * The parameters used for the data generating process (i.e., the model above) are stored by `rdata()` and can be added to the function output if wanted. This is particulalry useful for simulations where some calculated price levels are compared to the 'true' price levels underlying the data generation.
 
 The following code snippet shows how easily a connected price dataset with gaps, sales and expenditure weights for $B=4$ basic headings with $N_b=(2,2,3,3)$ products in $R=9$ regions can be simulated.
@@ -243,10 +243,12 @@ head(dt)
 
 If prices are collected by statistical offices locally (*local or field-based price collection*), quantities or any other information of the economic importance of the individual products are usually lacking. Therefore, the prices must be aggregated without any weights. The most prominent *elementary price indices* are implemented in the `spin`-package:
 
-* Carli index
-* Jevons index
-* Harmonic mean index
-* Dutot index
+- Carli index: $$P_{\text{Carli}}^{sr} = \frac{1}{N} \sum_{n=1}^{N} p_n^r / p_n^s$$
+- Jevons index: $$P_{\text{Jevons}}^{sr} = \prod_{n=1}^{N} \left( p_n^r / p_n^s \right)^{1/N}$$
+- Harmonic mean index: $$P_{\text{Harmonic}}^{sr} = \frac{N}{\sum_{n=1}^{N} p_n^s / p_n^r}$$
+- Dutot index: $$P_{\text{Dutot}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r}{\sum_{n=1}^{N} p_n^s} \ ,$$
+
+where the indices express the prices of each region $r$ to the base region $s$ based on the prices of the individual products $n \left(n=1,\ldots,N\right)$.
 
 If we want to compare the prices of each region in the data `dt` to those in region `1` using the harmonic mean index, we can set region `1` as the base region in function `harmonic()`:
 ```{r}
@@ -293,13 +295,15 @@ Another important requirement on spatial price index numbers is *transitivity*, 
 
 ## Weighted indices
 
-Not each individual product or basic heading is equally important to consumers. Household consumption considerably varies across basic headings but also for individual products within a basic heading. Neglecting these differences may cause a bias in the price index numbers as the price differences of less important products receive the same weight as more important ones. Therefore, any weighting information available should be included in the price comparison. The `spin`-package offers the following five weighted bilateral price indices. They can equally work with quantities and weights.
+Not each individual product or basic heading is equally important to consumers. Household consumption considerably varies across basic headings but also for individual products within a basic heading. Neglecting these differences may cause a bias in the price index numbers as the price differences of less important products receive the same weight as more important ones. Therefore, any weighting information available should be included in the price comparison. The `spin`-package offers the following weighted bilateral price indices. They can equally work with quantities and weights.
 
-- Laspeyres index
-- Paasche index
-- Fisher index
-- Walsh index
-- Törnqvist index
+- Laspeyres index: $$P_{\text{Laspeyres}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^s}{\sum_{n=1}^{N} p_n^s q_n^s} = \sum_{n=1}^{N} w_n^s \left( p_n^r / p_n^s \right)$$
+- Paasche index: $$P_{\text{Paasche}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} p_n^s q_n^r} = \frac{1}{\sum_{n=1}^{N} w_n^r \left( p_n^s / p_n^r \right)}$$
+- Fisher index: $$P_{\text{Fisher}}^{sr} = \sqrt{P_{\text{Laspeyres}}^{sr} \ P_{\text{Paasche}}^{sr}}$$
+- Walsh index: $$P_{\text{Walsh}}^{sr} = \frac{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^r / p_n^s}}{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^s / p_n^r}}$$
+- Törnqvist index: $$P_{\text{Törnqvist}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\frac{1}{2} \left( w_n^r + w_n^s \right)} \ ,$$
+
+where the weights $w_n^r = p_n^r q_n^r / \sum_{j=1}^N p_j^r q_j^r$ are defined as regional expenditure shares.
 
 The well-known Laspeyres index can be computed for each region using the quantities available in the data:
 ```{r}
