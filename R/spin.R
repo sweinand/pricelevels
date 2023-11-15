@@ -26,6 +26,7 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   # overwrite non-exported settings:
   settings$missings <- TRUE
   settings$duplicates <- TRUE
+  settings$norm.weights <- TRUE # also for cpd() and nlcpd()
 
   # main input checks:
   .check.num(x=p, int=c(0, Inf))

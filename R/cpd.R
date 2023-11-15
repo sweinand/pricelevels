@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   6 November 2023
+# Date:   15 November 2023
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
@@ -19,6 +19,7 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
   if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
   if(is.null(settings$missings)) settings$missings <- TRUE
   if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+  settings$norm.weights <- FALSE # different to other indices
 
   # input checks:
   if(settings$check.inputs){
@@ -391,6 +392,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
   if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
   if(is.null(settings$missings)) settings$missings <- TRUE
   if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+  settings$norm.weights <- FALSE # different to other indices
 
   # input checks:
   if(settings$check.inputs){

@@ -18,7 +18,7 @@ nlcpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list
 \arguments{
    \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or weights \code{w}, respectively. By default, no weights are used in the regression (\code{w=NULL}). While \code{w} can be any weights considered as approriate for weighted regression, \code{q} will result in an expenditure share weighted regression, i.e. weights are defined as regional expenditure shares. If both \code{q} and \code{w} are provided, \code{q} will be used.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or weights \code{w}. By default, no weights are used in the regression (\code{q=NULL} and \code{w=NULL}). While \code{w} can be any weights considered as approriate for weighted regression, \code{q} will result in an expenditure share weighted regression (see details). If both \code{q} and \code{w} are provided, \code{q} will be used.}
    \item{base}{A character specifying the base to which the estimated logarithmic regional price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average, similar to \code{\link{contr.sum}}.}
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
@@ -52,7 +52,7 @@ Note that both the CPD and the NLCPD method require a normalization of the estim
 
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 
-The weights \code{w} are (re-)normalized internally such that they add up to 1 for each region \code{r}.
+If \code{q} is provided, expenditure shares are derived as \eqn{w_i^r = p_i^r q_i^r / \sum_{s=1}^{R} p_i^s q_i^s} and used as weights in the regression. If only \code{w} is provided, the weights \code{w} are used in the regression without any further adjustment. This is different to the behavior of the other price index functions in the \code{spin}-package where the weights \code{w} are (re-)normalized for each region \code{r}.
 }
 
 \author{Sebastian Weinand}

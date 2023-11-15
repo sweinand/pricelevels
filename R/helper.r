@@ -45,11 +45,13 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
   # - connect : check and remove non-connected regions
   # - duplicates : check and aggregate duplicated values
   # - chatty : print warnings
+  # - norm.weights : normalize given weights or not
 
   # @output:
   # if 'q' and/or 'w' is provided, the output data will contain 'z=q'
   # and expenditure share weights that may differ to 'w' (if provided)
-  # if only 'w' is provided, the output data will contain 'z=w'
+  # if only 'w' is provided, the output data will contain 'z=w' if
+  # settings$norm.weights=FALSE and otherwise normalized weights w
   # if neither 'q' nor 'w' is provided, the output data will
   # contain 'z=1'
 
@@ -119,15 +121,16 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
 
   }
 
-
+  # derive weights:
   if(!is.null(q)){
-    # compute expenditure share weights for each region:
+    # expenditure share weights for each region:
     dt[, "w" := (p*z)/sum(p*z, na.rm=TRUE), by="r"]
   }else{
-    if(!is.null(w)){
+    if(!is.null(w) && settings$norm.weights){
       # normalize given weights:
       dt[, "w" := z/sum(z), by="r"]
     }else{
+      # else go with provided input:
       dt[, "w" := z]
     }
   }

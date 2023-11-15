@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     30 October 2023
+# Date:     15 November 2023
 
 # helper functions for comparison of two regions if
 # item sets are already matched. these will be called
@@ -321,6 +321,7 @@
   if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
   if(is.null(settings$missings)) settings$missings <- TRUE
   if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+  settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){

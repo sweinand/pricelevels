@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   6 November 2023
+# Date:   15 November 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -22,6 +22,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
   if(is.null(settings$missings)) settings$missings <- TRUE
   if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+  settings$norm.weights <- TRUE
   # the setting 'setting$base' is only used by geks() as provided
   # by the user, but always FALSE for index.pairs()
 
@@ -169,6 +170,7 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
   if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
   if(is.null(settings$missings)) settings$missings <- TRUE
   if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+  settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
@@ -206,6 +208,7 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
                          duplicates=settings$duplicates,
                          chatty=settings$chatty,
                          connect=settings$connect,
+                         norm.weights=settings$norm.weights,
                          base=base, # this setting is not visible/exported
                          as.dt=TRUE,
                          type=settings$type,

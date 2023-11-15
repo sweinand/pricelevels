@@ -47,7 +47,6 @@ expect_equal(
 set.seed(123)
 dt <- rdata(R=3, B=1, N=4, gaps=0.1)
 dt[, "share" := price*quantity / sum(price*quantity), by="region"]
-dt[, "quantity_share" := quantity / sum(quantity), by="region"]
 
 # CPD method:
 cpd.est1 <- dt[, cpd(p=price, r=region, n=product, w=share, base="1")]
@@ -67,8 +66,8 @@ expect_equal(
   dt[, cpd(p=price, r=region, n=product, w=share)]
 )
 
-# only quantity weighting:
-cpd.q <- exp(c(0, lm(log(price) ~ product+region-1, data=dt, weights=quantity_share)$coef[5:6]))
+# only quantity weighting / no normalization of weights:
+cpd.q <- exp(c(0, lm(log(price) ~ product+region-1, data=dt, weights=quantity)$coef[5:6]))
 cpd.q <- setNames(cpd.q, 1:3)
 expect_equal(
   dt[, cpd(p=price, r=region, n=product, w=quantity, base="1")],
@@ -99,7 +98,7 @@ expect_equal(
 
 # only quantity weighting:
 expect_equal(
-  dt[, nlcpd(p=price, r=region, n=product, w=quantity_share, base="1", simplify=TRUE,
+  dt[, nlcpd(p=price, r=region, n=product, w=quantity, base="1", simplify=TRUE,
                upper=c(rep(Inf, 6), rep(1, 3)), lower=c(rep(-Inf, 6), rep(1, 3)))],
   cpd.q,
   tolerance=1e-5

@@ -32,7 +32,7 @@ walsh(...)
 \arguments{
    \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or weights \code{w} to be used. Either \code{q} or \code{w} must be provided for weighted indices. If \code{q} and \code{w} are both given, \code{q} will be used in the calculations.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see details). Either \code{q} or \code{w} must be provided for weighted indices. If both \code{q} and \code{w} are provided, \code{q} will be used.}
    \item{base}{A character specifying the base region to which all price levels are expressed. If \code{NULL}, base region is set internally.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
@@ -50,7 +50,7 @@ ILO, IMF, OECD, UNECE, Eurostat and World Bank (2020). \emph{Consumer Price Inde
 \details{
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 
-The weights \code{w} are (re-)normalized internally such that they add up to 1 for each region \code{r}.
+The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{s=1}^{R} p_i^s q_i^s}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
 }
 
 \value{A named vector of price levels.}

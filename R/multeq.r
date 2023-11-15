@@ -2,7 +2,7 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     7 November 2023
+# Date:     15 November 2023
 
 # print output for class 'multeq':
 print.multeq <- function(x){
@@ -28,6 +28,7 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
   if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
   if(is.null(settings$missings)) settings$missings <- TRUE
   if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+  settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
