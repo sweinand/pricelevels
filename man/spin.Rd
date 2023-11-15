@@ -29,7 +29,7 @@ spin(p, r, n, q = NULL, w = NULL, base = NULL, settings = list())
 \details{
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 
-The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{s=1}^{R} p_i^s q_i^s}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
+The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
 }
 
 \value{A matrix price levels where the rows contain the index methods and the columns the regions.}

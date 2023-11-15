@@ -52,7 +52,7 @@ Note that both the CPD and the NLCPD method require a normalization of the estim
 
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 
-If \code{q} is provided, expenditure shares are derived as \eqn{w_i^r = p_i^r q_i^r / \sum_{s=1}^{R} p_i^s q_i^s} and used as weights in the regression. If only \code{w} is provided, the weights \code{w} are used in the regression without any further adjustment. This is different to the behavior of the other price index functions in the \code{spin}-package where the weights \code{w} are (re-)normalized for each region \code{r}.
+If \code{q} is provided, expenditure shares are derived as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r} and used as weights in the regression. If only \code{w} is provided, the weights \code{w} are used in the regression without any further adjustment. This is different to the behavior of the other price index functions in the \code{spin}-package where the weights \code{w} are (re-)normalized for each region \code{r}.
 }
 
 \author{Sebastian Weinand}
