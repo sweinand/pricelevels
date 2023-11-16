@@ -1,12 +1,17 @@
 \name{spin}
 
 \alias{spin}
+\alias{list.indices}
 
 \title{Spatial price indices}
 
 \description{Calculation of multiple spatial price indices at once.}
 
 \usage{
+# list all available price indices:
+list.indices()
+
+# compute all price indices:
 spin(p, r, n, q = NULL, w = NULL, base = NULL, settings = list())
 }
 
@@ -19,7 +24,7 @@ spin(p, r, n, q = NULL, w = NULL, base = NULL, settings = list())
    \itemize{
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
-   \item \code{type} : A character specifying the index methods used to aggregate prices into price indices. See \code{\link{bilateral.index}}, \code{\link{multeq}}, \code{\link{stochastic.index}}, and \code{\link{geks}} for allowed values. For \code{\link{geks}}, the index methods can be specified as \code{geks-jevons, geks-fisher,...}. The default is \code{NULL} in which case all possible price indices are computed.
+   \item \code{type} : A vector specifying the index methods used to aggregate prices into price indices. See \code{list.indices()} for allowed values. The default is \code{NULL} in which case all possible price indices are computed.
    \item \code{...} : Further settings allowed for the index methods.
    }}
 }

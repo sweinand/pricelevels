@@ -1,11 +1,11 @@
 % Encoding: UTF-8
 
 @InBook{Diewert1999,
+  author    = {Walter Erwin Diewert},
   pages     = {13--107},
-  title     = {{A}xiomatic and {E}conomic {A}pproaches to {I}nternational {C}omparisons},
   publisher = {University of Chicago Press},
+  title     = {{A}xiomatic and {E}conomic {A}pproaches to {I}nternational {C}omparisons},
   year      = {1999},
-  author    = {W. Erwin Diewert},
   month     = {January},
   booktitle = {International and Interarea Comparisons of Income, Output, and Prices},
   crossref  = {NBERhest99-1},
@@ -127,13 +127,13 @@
 }
 
 @Article{Gini1924,
-  author  = {Gini, C.},
-  title   = {{Q}uelques {C}onsiderations au {S}ujet de la {C}onstruction des {N}ombres {I}ndices des {P}rix et des {Q}uestions {A}nalogues},
+  author  = {Corrado Gini},
   journal = {Mentron},
+  title   = {{Q}uelques {C}onsiderations au {S}ujet de la {C}onstruction des {N}ombres {I}ndices des {P}rix et des {Q}uestions {A}nalogues},
   year    = {1924},
-  volume  = {4},
   number  = {1},
   pages   = {3--162},
+  volume  = {4},
 }
 
 @Unpublished{Rao2004b,
@@ -195,13 +195,13 @@
 }
 
 @Article{Geary1958,
-  author    = {R. C. Geary},
-  title     = {{A} {N}ote on the {C}omparison of {E}xchange {R}ates and {P}urchasing {P}ower {B}etween {C}ountries},
+  author    = {Robert Charles Geary},
   journal   = {Journal of the Royal Statistical Society. Series A (General)},
+  title     = {{A} {N}ote on the {C}omparison of {E}xchange {R}ates and {P}urchasing {P}ower {B}etween {C}ountries},
   year      = {1958},
-  volume    = {121},
   number    = {1},
   pages     = {97--99},
+  volume    = {121},
   publisher = {[Royal Statistical Society, Wiley]},
 }
 
@@ -265,13 +265,13 @@
 }
 
 @Article{Khamis1984,
-  author   = {Salem H. Khamis},
-  title    = {{O}n {A}ggregation {M}ethods for {I}nternationa {C}omparisons},
+  author   = {Salem Hanna Khamis},
   journal  = {Review of Income and Wealth},
+  title    = {{O}n {A}ggregation {M}ethods for {I}nternationa {C}omparisons},
   year     = {1984},
-  volume   = {30},
   number   = {2},
   pages    = {185--205},
+  volume   = {30},
   abstract = {This paper brings together discussions of Geary–Khamis indexes now available only in scattered sources, and considers their application to a range of uses. The first section traces the development of the method from its initial proposal by Geary in 1953, with the aid of a numerical example illustrating differences among various formulations. The second section considers the least squares properties of Geary-Khamis indexes and some related variants. The final section considers adjustments to the method required for regionalization and spatio-temporal bilateral and multilateral comparisons, as well as to take account of the nature of available data.},
 }
 
@@ -322,23 +322,23 @@
 }
 
 @Article{Gini1931,
-  author  = {Gini, C.},
-  title   = {{O}n the {C}ircular {T}est of {I}ndex {N}umbers},
+  author  = {Corrado Gini},
   journal = {International Statistical Review},
+  title   = {{O}n the {C}ircular {T}est of {I}ndex {N}umbers},
   year    = {1931},
-  volume  = {9},
   number  = {2},
   pages   = {3--25},
+  volume  = {9},
 }
 
 @Article{Jevons1865,
-  author    = {W. Stanley Jevons},
-  title     = {{O}n the {V}ariation of {P}rices and the {V}alue of the {C}urrency since 1782},
+  author    = {William Stanley Jevons},
   journal   = {Journal of the Statistical Society of London},
+  title     = {{O}n the {V}ariation of {P}rices and the {V}alue of the {C}urrency since 1782},
   year      = {1865},
-  volume    = {28},
   number    = {2},
   pages     = {294--320},
+  volume    = {28},
   publisher = {[Royal Statistical Society, Wiley]},
   url       = {http://www.jstor.org/stable/2338419},
 }
@@ -489,11 +489,11 @@
   address   = {Luxembourg},
 }
 
-@Proceedings{Dikhanov1994,
+@Unpublished{Dikhanov1994,
+  author = {Yuri Dikhanov},
+  note   = {{23rd General Conference of the International Association for Research in Income and Wealth, St. Andrews, Canada}},
   title  = {{Sensitivity of PPP-based income estimates to the choice of aggregation procedures}},
   year   = {1994},
-  note   = {{23rd General Conference of the International Association for Research in Income and Wealth, St. Andrews, Canada}},
-  author = {Yuri Dikhanov},
 }
 
 @InBook{Rao1990,
@@ -516,6 +516,149 @@
   volume    = {86},
   doi       = {10.2307/1880559},
   publisher = {Oxford University Press ({OUP})},
+}
+
+ 
+@Article{Laspeyres1981,
+  author    = {Etienne Laspeyres},
+  journal   = {Jahrbücher für Nationalökonomie und Statistik},
+  title     = {{Die Berechnung einer mittleren Waarenpreissteigerung}},
+  year      = {1981},
+  month     = mar,
+  number    = {3},
+  pages     = {218--238},
+  volume    = {196},
+  doi       = {10.1515/jbnst-1981-0303},
+  publisher = {Walter de Gruyter GmbH},
+}
+
+@Article{Paasche1874,
+  author  = {Hermann Paasche},
+  journal = {Jahrbücher fürNationalökonomie und Statistik},
+  title   = {{Über die Preisentwicklung der letzten Jahre nach den Hamburger Börsennotierungen}},
+  year    = {1874},
+  pages   = {168–178},
+  volume  = {12},
+}
+
+@InBook{Carli1804,
+  author    = {Gian Rinaldo Carli},
+  pages     = {297--366},
+  publisher = {Milano: G. G. Destefanis},
+  title     = {Del valore e della proporzione dei metallic monetati},
+  year      = {1804},
+  booktitle = {Scrittori classici italiani di economia politica},
+}
+
+@Book{Dutot1738,
+  author    = {Dutot, Nicolas},
+  publisher = {La Haye: Les frères Vaillant et N. Prevost.},
+  title     = {{Réflections politiques sur les finances et le commerce}},
+  year      = {1738},
+}
+
+ 
+@Article{Carruthers1980,
+  author    = {Carruthers, A. G. and Sellwood, D. J. and Ward, P. W.},
+  journal   = {The Statistician},
+  title     = {{Recent Developments in the Retail Prices Index}},
+  year      = {1980},
+  issn      = {0039-0526},
+  month     = mar,
+  number    = {1},
+  pages     = {1--32},
+  volume    = {29},
+  doi       = {10.2307/2987492},
+  publisher = {JSTOR},
+}
+
+@Article{Dalen1992,
+  author  = {Jörgen Dalén},
+  journal = {Journal of Official Statistics},
+  title   = {{Computing Elementary Aggregates in the Swedish Consumer Price Index}},
+  year    = {1992},
+  number  = {2},
+  pages   = {129--147},
+  volume  = {8},
+}
+
+ 
+@Article{Fisher1921,
+  author  = {Fisher, Irving},
+  journal = {Quarterly Publications of the American Statistical Association},
+  title   = {{The Best Form of Index Number}},
+  year    = {1921},
+  number  = {133},
+  pages   = {533--537},
+  volume  = {17},
+  doi     = {10.2307/2965310},
+}
+
+@Article{Drobisch1871a,
+  author  = {Moritz Wilhelm Drobisch},
+  journal = {Jahrbücher für Nationalökonomie und Statistik},
+  title   = {{Über die Berechnung der Veränderungen der Waarenpreise und des Geldwerths}},
+  year    = {1871},
+  pages   = {143--156},
+  volume  = {16},
+}
+
+@Article{Drobisch1871b,
+  author  = {Moritz Wilhelm Drobisch},
+  journal = {Jahrbücher für Nationalökonomie und Statistik},
+  title   = {{Über einige Einwürfe gegen die indiesen Jahrbüchern veröffentlichte neue Methode, die Veränderungen der Waarenpreise und des Geldwerths zu berechten}},
+  year    = {1871},
+  pages   = {416--427},
+  volume  = {16},
+}
+
+@Book{Edgeworth1925,
+  author    = {Francis Ysidro Edgeworth},
+  publisher = {London: Macmillan for the Royal Economic Society},
+  title     = {{Papers Relating to Political Economy}},
+  year      = {1925},
+  volume    = {1},
+}
+
+@Article{Marshall1887,
+  author  = {Alfred Marshall},
+  journal = {Contemporary Review},
+  title   = {{Remedies for Fluctuations of General Prices}},
+  year    = {1887},
+  pages   = {355--375},
+  volume  = {51},
+}
+
+ 
+@Article{Sato1976,
+  author  = {Sato, Kazuo},
+  journal = {The Review of Economics and Statistics},
+  title   = {{The Ideal Log-Change Index Number}},
+  year    = {1976},
+  number  = {2},
+  pages   = {223--228},
+  volume  = {58},
+  doi     = {10.2307/1924029},
+}
+
+@Article{Vartia1976,
+  author  = {Yrjö O. Vartia},
+  journal = {Scandinavian Journal of Statistics},
+  title   = {{Ideal Log-Change Index Numbers}},
+  year    = {1976},
+  number  = {3},
+  pages   = {121--126},
+  volume  = {3},
+}
+
+@Article{Toernqvist1936,
+  author  = {Törnqvist, Leo},
+  journal = {Bank of Finland Monthly Bulletin},
+  title   = {{The Bank of Finland’s Consumption Price Index}},
+  year    = {1936},
+  number  = {10},
+  pages   = {27--34},
+  volume  = {16},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}

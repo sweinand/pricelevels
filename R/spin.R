@@ -2,7 +2,14 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   6 November 2023
+# Date:   16 November 2023
+
+# list available price indices:
+list.indices <- function(){
+
+  return(sort(spin:::pindices$name))
+
+}
 
 # spatial price indices:
 spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
@@ -46,10 +53,7 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   .check.char(x=type, min.len=1, max.len=Inf, null.ok=TRUE, na.ok=FALSE)
 
   # allowed index types:
-  type.vals <- c("jevons","carli","harmonic","dutot","laspey","paasche",
-                 "fisher","walsh","toernq")
-  type.vals <- c(type.vals, paste("geks", type.vals, sep="-"), "cpd", "nlcpd",
-                 "rao","gerardi","geary-khamis","idb")
+  type.vals <- spin:::pindices$name
 
   # check against allowed index types:
   if(is.null(type)){
@@ -85,6 +89,10 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
       pdata[, spin::dutot(p=p, r=r, n=n, base=base, settings=settings)]
     },
 
+    "cswd"=if("cswd"%in%type){
+      pdata[, spin::cswd(p=p, r=r, n=n, base=base, settings=settings)]
+    },
+
     "geks-jevons"=if("geks-jevons"%in%type){
       pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="jevons"))]
     },
@@ -99,6 +107,10 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
     "geks-dutot"=if("geks-dutot"%in%type){
       pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="dutot"))]
+    },
+
+    "geks-cswd"=if("geks-cswd"%in%type){
+      pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="cswd"))]
     }
   )
 
@@ -125,6 +137,26 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
       "toernq"=if("toernq"%in%type){
         pdata[, spin::toernq(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
+      "medgeworth"=if("medgeworth"%in%type){
+        pdata[, spin::medgeworth(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
+      "theil"=if("theil"%in%type){
+        pdata[, spin::theil(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
+      "palgrave"=if("palgrave"%in%type){
+        pdata[, spin::palgrave(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
+      "svartia"=if("svartia"%in%type){
+        pdata[, spin::svartia(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
+      "drobisch"=if("drobisch"%in%type){
+        pdata[, spin::drobisch(p=p, r=r, n=n, q=z, base=base, settings=settings)]
       },
 
       "cpd"=if("cpd"%in%type){
@@ -155,7 +187,27 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
         pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="toernq"))]
       },
 
-      "geary-khamis"=if("geary-khamis"%in%type){
+      "geks-medgeworth"=if("geks-medgeworth"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="medgeworth"))]
+      },
+
+      "geks-theil"=if("geks-theil"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="theil"))]
+      },
+
+      "geks-palgrave"=if("geks-palgrave"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="palgrave"))]
+      },
+
+      "geks-svartia"=if("geks-svartia"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="svartia"))]
+      },
+
+      "geks-drobisch"=if("geks-drobisch"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="drobisch"))]
+      },
+
+      "gk"=if("gk"%in%type){
         pdata[, spin::gk(p=p, r=r, n=n, q=z, base=base, settings=settings)]
       },
 
@@ -212,6 +264,26 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
           pdata[, spin::toernq(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
+        "medgeworth"=if("medgeworth"%in%type){
+          NA_real_
+        },
+
+        "theil"=if("theil"%in%type){
+          NA_real_
+        },
+
+        "palgrave"=if("palgrave"%in%type){
+          pdata[, spin::palgrave(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        },
+
+        "svartia"=if("svartia"%in%type){
+          pdata[, spin::svartia(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        },
+
+        "drobisch"=if("drobisch"%in%type){
+          pdata[, spin::drobisch(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        },
+
         "cpd"=if("cpd"%in%type){
           pdata[, spin::cpd(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
@@ -240,7 +312,27 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
           pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="toernq"))]
         },
 
-        "geary-khamis"=if("geary-khamis"%in%type){
+        "geks-medgeworth"=if("geks-medgeworth"%in%type){
+          NA_real_
+        },
+
+        "geks-theil"=if("geks-theil"%in%type){
+          NA_real_
+        },
+
+        "geks-palgrave"=if("geks-palgrave"%in%type){
+          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="palgrave"))]
+        },
+
+        "geks-svartia"=if("geks-svartia"%in%type){
+          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="svartia"))]
+        },
+
+        "geks-drobisch"=if("geks-drobisch"%in%type){
+          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="drobisch"))]
+        },
+
+        "gk"=if("gk"%in%type){
           NA_real_
         },
 

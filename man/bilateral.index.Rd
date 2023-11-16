@@ -4,29 +4,49 @@
 \alias{carli}
 \alias{dutot}
 \alias{harmonic}
+\alias{cswd}
 \alias{laspey}
 \alias{paasche}
 \alias{fisher}
 \alias{walsh}
 \alias{toernq}
+\alias{medgeworth}
+\alias{theil}
+\alias{svartia}
+\alias{palgrave}
+\alias{drobisch}
 
 \title{Bilateral price indices}
 
-\description{Calculation of bilateral price indices. Currently, Jevons, Carli, Harmonic and Dutot index (unweighted indices), and Laspeyres, Paasche, Fisher, Toernqvist and Walsh (weighted indices) are implemented.}
+\description{Calculation of bilateral price indices. Currently, the following ones are implemented:
+\itemize{
+  \item Unweighted indices: Jevons, Carli, Harmonic, Dutot, and CSWD
+  \item Indices based on quantities: Marshall-Edgeworth, Theil
+  \item Indices based on quantities or weights: Laspeyres, Paasche, Fisher, Toernqvist, Walsh, Palgrave, Sato-Vartia, and Drobisch
+}
+}
 
 \usage{
-# unweighted indices:
-jevons(p, r, n, base = NULL, settings = list())
+# bilateral unweighted indices:
+jevons(p, r, n, base=NULL, settings=list())
 carli(...)
 harmonic(...)
 dutot(...)
+cswd(...)
 
-# weighted indices:
-laspey(p, r, n, q, w = NULL, base = NULL, settings = list())
+# bilateral indices using quantites:
+medgeworth(p, r, n, q, base=NULL, settings=list())
+theil(...)
+
+# bilateral indices using quantities or expenditure share weights:
+laspey(p, r, n, q, w=NULL, base=NULL, settings=list())
 paasche(...)
 fisher(...)
 toernq(...)
 walsh(...)
+palgrave(...)
+svartia(...)
+drobisch(...)
 }
 
 \arguments{

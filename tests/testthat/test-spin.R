@@ -1,12 +1,8 @@
 # START
 
 # price indices:
-Punw <- c("carli","dutot","harmonic","jevons")
-Punw <- sort(c(Punw, paste("geks", Punw, sep="-"),"cpd","nlcpd"))
-Pw <- c("fisher","laspey","paasche","toernq","walsh")
-Pw <- sort(c(Pw, paste("geks", Pw, sep="-"),"cpd","nlcpd","gerardi","idb","rao"))
-Pq <- c("geary-khamis")
-Pall <- sort(unique(c(Punw, Pw, Pq)))
+Punw <- sort(c(spin:::pindices[uses_q==FALSE & uses_w==F, name],"cpd","nlcpd"))
+Pall <- sort(spin:::pindices$name)
 
 
 # Data with one region only -----------------------------------------------
@@ -27,7 +23,7 @@ expect_equal(
 )
 
 res <- matrix(data=1, ncol=1, nrow=length(Pall), dimnames=list(Pall, "1"))
-res[rownames(res)=="geary-khamis",1] <- NA
+res[rownames(res)%in%c("gk","theil","medgeworth","geks-theil","geks-medgeworth"),1] <- NA
 expect_equal(
   dt[, spin(p=price, r=region, n=product, w=quantity, base="1")],
   res

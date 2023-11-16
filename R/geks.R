@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   15 November 2023
+# Date:   16 November 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -50,17 +50,17 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   }
 
   # allowed index types:
-  type.vals <- c("jevons", "carli", "dutot", "harmonic", "toernq", "laspey", "paasche", "walsh", "fisher")
+  type.vals <- spin:::pindices[type=="bilateral", ]
 
   # check against allowed index types:
-  type <- match.arg(arg=settings$type, choices=type.vals)
-
-  # weights required for following index types:
-  type.weights <- c("toernq", "laspey", "paasche", "walsh", "fisher")
+  type <- match.arg(arg=settings$type, choices=type.vals$name)
 
   # error handling for quantity and weights:
-  if(settings$check.inputs && type%in%type.weights && is.null(q) && is.null(w)){
+  if(settings$check.inputs && type%in%type.vals[uses_q==TRUE & uses_w==TRUE, name] && is.null(q) && is.null(w)){
     stop(paste0("Non-valid input for type='", type, "' -> 'q' or 'w' required"), call.=FALSE)
+  }
+  if(settings$check.inputs && type%in%type.vals[uses_q==TRUE & uses_w==FALSE, name] && is.null(q)){
+    stop(paste0("Non-valid input for type='", type, "' -> 'q' required"), call.=FALSE)
   }
 
   # set index function based on type:
@@ -70,11 +70,17 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
                        carli = spin:::.carli,
                        dutot = spin:::.dutot,
                        harmonic = spin:::.harmonic,
+                       cswd = spin:::.cswd,
+                       theil = spin:::.theil,
+                       medgeworth = spin:::.medgeworth,
                        toernq = spin:::.toernq,
                        laspey = spin:::.laspey,
                        paasche = spin:::.paasche,
                        fisher = spin:::.fisher,
-                       walsh = spin:::.walsh)
+                       walsh = spin:::.walsh,
+                       svartia = spin:::.svartia,
+                       palgrave = spin:::.palgrave,
+                       drobisch = spin:::.drobisch)
 
   # initialize data:
   pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=settings$base, settings=settings)

@@ -14,42 +14,17 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, carli(p=price, r=region, n=product, base="1")],
-  c("1"=1)
-)
-
-expect_equal(
-  dt[, dutot(p=price, r=region, n=product, base="1")],
-  c("1"=1)
-)
-
-expect_equal(
-  dt[, harmonic(p=price, r=region, n=product, base="1")],
-  c("1"=1)
-)
-
-expect_equal(
   dt[, laspey(p=price, r=region, n=product, w=weight, base="1")],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, paasche(p=price, r=region, n=product, w=weight, base="1")],
+  dt[, paasche(p=price, r=region, n=product, q=quantity, base="1")],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, walsh(p=price, r=region, n=product, w=weight, base="1")],
-  c("1"=1)
-)
-
-expect_equal(
-  dt[, fisher(p=price, r=region, n=product, w=weight, base="1")],
-  c("1"=1)
-)
-
-expect_equal(
-  dt[, toernq(p=price, r=region, n=product, w=weight, base="1")],
+  dt[, theil(p=price, r=region, n=product, q=quantity, base="1")],
   c("1"=1)
 )
 
@@ -66,35 +41,15 @@ expect_no_error(
 )
 
 expect_no_error(
-  dt[, carli(p=price, r=region, n=product, base="1")]
-)
-
-expect_no_error(
-  dt[, dutot(p=price, r=region, n=product, base="1")],
-)
-
-expect_no_error(
-  dt[, harmonic(p=price, r=region, n=product, base="1")]
-)
-
-expect_no_error(
   dt[, laspey(p=price, r=region, n=product, w=weight, base="1")]
 )
 
 expect_no_error(
-  dt[, paasche(p=price, r=region, n=product, w=weight, base="1")]
+  dt[, paasche(p=price, r=region, n=product, q=quantity, base="1")]
 )
 
 expect_no_error(
-  dt[, fisher(p=price, r=region, n=product, w=weight, base="1")]
-)
-
-expect_no_error(
-  dt[, walsh(p=price, r=region, n=product, w=weight, base="1")]
-)
-
-expect_no_error(
-  dt[, toernq(p=price, r=region, n=product, w=weight, base="1")]
+  dt[, theil(p=price, r=region, n=product, q=quantity, base="1")]
 )
 
 
@@ -102,44 +57,152 @@ expect_no_error(
 
 
 # example data:
-set.seed(123)
-dt <- rdata(R=3, B=1, N=4, gaps=0.2, settings=list(exclude=data.frame("r"=1, "n"=NA)))
-dt[, "weight" := rweights(r=region, b=product, type=~b)]
+dt <- data.table(
+  "region"=as.character(rep(1:3, times=4)),
+  "product"=as.character(rep(1:4, each=3)),
+  "price"=c(10,12,9, 5,5,4, 2,2,2, 17,20,17),
+  "quantity"=c(1000,800,1500, 2000,1500,2300, 5000,4000,8000, 200,150,300)
+)
+dt <- dt[-c(1,2,8),]
+dt[, "share" := price*quantity/sum(price*quantity), by="region"]
+
+# base region 1:
+dt1 <- merge(x=dt, y=dt[region=="1",], by="product", suffixes=c("",".base"))
 
 # manual computations:
-r <- dt[, list(region, price/price[region=="1"], weight), by="product"]
-J <- r[, exp(mean(log(V2), na.rm=TRUE)), by="region"]
-J <- setNames(J$V1, J$region)
-C <- r[, mean(V2, na.rm=TRUE), by="region"]
-C <- setNames(C$V1, C$region)
-H <- r[, 1/mean(1/V2, na.rm=TRUE), by="region"]
-H <- setNames(H$V1, H$region)
-D1 <- dt[product%in%intersect(dt[region=="1", product], dt[region=="1", product]) & region%in%c("1"), mean(price[region=="1"])/mean(price[region=="1"])]
-D2 <- dt[product%in%intersect(dt[region=="1", product], dt[region=="2", product]) & region%in%c("1","2"), mean(price[region=="2"])/mean(price[region=="1"])]
-D3 <- dt[product%in%intersect(dt[region=="1", product], dt[region=="3", product]) & region%in%c("1","3"), mean(price[region=="3"])/mean(price[region=="1"])]
-D <- setNames(c(D1,D2,D3), c("1","2","3"))
-L <- r[, weighted.mean(V2, weight, na.rm=TRUE), by="region"]
-L <- setNames(L$V1, L$region)
-P <- r[, 1/weighted.mean(1/V2, weight, na.rm=TRUE), by="region"]
-P <- setNames(P$V1, P$region)
-Fi <- sqrt(L*P)
-To <- r[, exp(weighted.mean(log(V2), weight, na.rm=TRUE)), by="region"]
-To <- setNames(To$V1, To$region)
-W <- r[, weighted.mean(sqrt(V2), weight, na.rm=TRUE)/weighted.mean(sqrt(1/V2), weight, na.rm=TRUE), by="region"]
-W <- setNames(W$V1, W$region)
+PJe <- dt1[, exp(mean(log(price/price.base))), by="region"]
+PJe <- setNames(PJe$V1, PJe$region)
+
+PCa <- dt1[, mean(price/price.base), by="region"]
+PCa <- setNames(PCa$V1, PCa$region)
+
+PHa <- dt1[, 1/mean(price.base/price), by="region"]
+PHa <- setNames(PHa$V1, PHa$region)
+
+PDu <- dt1[, mean(price)/mean(price.base), by="region"]
+PDu <- setNames(PDu$V1, PDu$region)
+
+PCSWD <- sqrt(PHa*PCa)
+
+PLa <- dt1[, sum(price*quantity.base)/sum(price.base*quantity.base), by="region"]
+PLa <- setNames(PLa$V1, PLa$region)
+
+PPa <- dt1[, sum(price*quantity)/sum(price.base*quantity), by="region"]
+PPa <- setNames(PPa$V1, PPa$region)
+
+PFi <- sqrt(PLa*PPa)
+
+PDr <- (PLa+PPa)/2
+
+PPal <- dt1[, sum(share/sum(share)*(price/price.base)), by="region"]
+PPal <- setNames(PPal$V1, PPal$region)
+
+PWa <- dt1[, sum(price*sqrt(quantity*quantity.base))/sum(price.base*sqrt(quantity*quantity.base)), by="region"]
+PWa <- setNames(PWa$V1, PWa$region)
+
+PTo <- dt1[, exp(sum(0.5*(price*quantity/sum(price*quantity)+price.base*quantity.base/sum(price.base*quantity.base))*log(price/price.base))), by="region"]
+PTo <- setNames(PTo$V1, PTo$region)
+
+PMe <- dt1[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
+PMe <- setNames(PMe$V1, PMe$region)
+
+dt1[, "w":= ((price*quantity+price.base*quantity.base)/2*(price*quantity)*(price.base*quantity.base))^(1/3)]
+PTh <- dt1[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
+PTh <- setNames(PTh$V1, PTh$region)
+dt1[, "w":=NULL]
+
+dt1[, "w":= ifelse(abs(share-share.base)<1e-6, share.base, (share/sum(share)-share.base/sum(share.base))/(log(share/sum(share))-log(share.base/sum(share.base)))), by="region"]
+PSv <- dt1[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
+PSv <- setNames(PSv$V1, PSv$region)
+dt1[, "w":=NULL]
 
 # unweighted indices:
-expect_equal(dt[, jevons(p=price, r=region, n=product, base="1")], J)
-expect_equal(dt[, carli(p=price, r=region, n=product, base="1")], C)
-expect_equal(dt[, dutot(p=price, r=region, n=product, base="1")], D)
-expect_equal(dt[, harmonic(p=price, r=region, n=product, base="1")], H)
+expect_equal(dt[, jevons(p=price, r=region, n=product, base="1")], PJe)
+expect_equal(dt[, carli(p=price, r=region, n=product, base="1")], PCa)
+expect_equal(dt[, dutot(p=price, r=region, n=product, base="1")], PDu)
+expect_equal(dt[, harmonic(p=price, r=region, n=product, base="1")], PHa)
+expect_equal(dt[, cswd(p=price, r=region, n=product, base="1")], PCSWD)
 
 # weighted indices:
-expect_equal(dt[, laspey(p=price, r=region, n=product, w=weight, base="1")], L)
-expect_equal(dt[, paasche(p=price, r=region, n=product, w=weight, base="1")], P)
-expect_equal(dt[, fisher(p=price, r=region, n=product, w=weight, base="1")], Fi)
-expect_equal(dt[, toernq(p=price, r=region, n=product, w=weight, base="1")], To)
-expect_equal(dt[, walsh(p=price, r=region, n=product, w=weight, base="1")], W)
+expect_equal(dt[, laspey(p=price, r=region, n=product, q=quantity, base="1")], PLa)
+expect_equal(dt[, paasche(p=price, r=region, n=product, q=quantity, base="1")], PPa)
+expect_equal(dt[, fisher(p=price, r=region, n=product, q=quantity, base="1")], PFi)
+expect_equal(dt[, toernq(p=price, r=region, n=product, q=quantity, base="1")], PTo)
+expect_equal(dt[, walsh(p=price, r=region, n=product, q=quantity, base="1")], PWa)
+expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="1")], PTh)
+expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="1")], PMe)
+expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="1")], PPal)
+expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="1")], PDr)
+expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="1")], PSv)
+
+# base region 2:
+dt2 <- merge(x=dt, y=dt[region=="2",], by="product", suffixes=c("",".base"))
+
+# manual computations:
+PJe <- dt2[, exp(mean(log(price/price.base))), by="region"]
+PJe <- setNames(PJe$V1, PJe$region)
+
+PCa <- dt2[, mean(price/price.base), by="region"]
+PCa <- setNames(PCa$V1, PCa$region)
+
+PHa <- dt2[, 1/mean(price.base/price), by="region"]
+PHa <- setNames(PHa$V1, PHa$region)
+
+PDu <- dt2[, mean(price)/mean(price.base), by="region"]
+PDu <- setNames(PDu$V1, PDu$region)
+
+PCSWD <- sqrt(PHa*PCa)
+
+PLa <- dt2[, sum(price*quantity.base)/sum(price.base*quantity.base), by="region"]
+PLa <- setNames(PLa$V1, PLa$region)
+
+PPa <- dt2[, sum(price*quantity)/sum(price.base*quantity), by="region"]
+PPa <- setNames(PPa$V1, PPa$region)
+
+PFi <- sqrt(PLa*PPa)
+
+PDr <- (PLa+PPa)/2
+
+PPal <- dt2[, sum(share/sum(share)*(price/price.base)), by="region"]
+PPal <- setNames(PPal$V1, PPal$region)
+
+PWa <- dt2[, sum(price*sqrt(quantity*quantity.base))/sum(price.base*sqrt(quantity*quantity.base)), by="region"]
+PWa <- setNames(PWa$V1, PWa$region)
+
+PTo <- dt2[, exp(sum(0.5*(price*quantity/sum(price*quantity)+price.base*quantity.base/sum(price.base*quantity.base))*log(price/price.base))), by="region"]
+PTo <- setNames(PTo$V1, PTo$region)
+
+PMe <- dt2[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
+PMe <- setNames(PMe$V1, PMe$region)
+
+dt2[, "w":= ((price*quantity+price.base*quantity.base)/2*(price*quantity)*(price.base*quantity.base))^(1/3)]
+PTh <- dt2[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
+PTh <- setNames(PTh$V1, PTh$region)
+dt2[, "w":=NULL]
+
+dt2[, "w":= ifelse(abs(share-share.base)<1e-6, share.base, (share/sum(share)-share.base/sum(share.base))/(log(share/sum(share))-log(share.base/sum(share.base)))), by="region"]
+PSv <- dt2[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
+PSv <- setNames(PSv$V1, PSv$region)
+dt2[, "w":=NULL]
+
+# unweighted indices:
+expect_equal(dt[, jevons(p=price, r=region, n=product, base="2")], PJe)
+expect_equal(dt[, carli(p=price, r=region, n=product, base="2")], PCa)
+expect_equal(dt[, dutot(p=price, r=region, n=product, base="2")], PDu)
+expect_equal(dt[, harmonic(p=price, r=region, n=product, base="2")], PHa)
+expect_equal(dt[, cswd(p=price, r=region, n=product, base="2")], PCSWD)
+
+# weighted indices:
+expect_equal(dt[, laspey(p=price, r=region, n=product, q=quantity, base="2")], PLa)
+expect_equal(dt[, paasche(p=price, r=region, n=product, q=quantity, base="2")], PPa)
+expect_equal(dt[, fisher(p=price, r=region, n=product, q=quantity, base="2")], PFi)
+expect_equal(dt[, toernq(p=price, r=region, n=product, q=quantity, base="2")], PTo)
+expect_equal(dt[, walsh(p=price, r=region, n=product, q=quantity, base="2")], PWa)
+expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="2")], PTh)
+expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="2")], PMe)
+expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="2")], PPal)
+expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="2")], PDr)
+expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="2")], PSv)
 
 # check rebasing:
 expect_equal(
@@ -188,6 +251,21 @@ expect_equal(
 expect_equal(
   dt[, walsh(p=price, r=region, n=product, q=quantity, base="1")],
   dt[, walsh(p=price, r=region, n=product, w=share, base="1")]
+)
+
+expect_equal(
+  dt[, drobisch(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, drobisch(p=price, r=region, n=product, w=share, base="1")]
+)
+
+expect_equal(
+  dt[, palgrave(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, palgrave(p=price, r=region, n=product, w=share, base="1")]
+)
+
+expect_equal(
+  dt[, svartia(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, svartia(p=price, r=region, n=product, w=share, base="1")]
 )
 
 
@@ -242,51 +320,8 @@ expect_equal(
 # Misc --------------------------------------------------------------------
 
 
-# example data without gaps:
-set.seed(123)
-dt <- rdata(R=3, B=1, N=4, gaps=0)
-dt[, "weight" := rweights(r=region, b=product, type=~b)]
-
-# manual computations:
-r <- dt[, list(region, price/price[region=="1"], weight), by="product"]
-J <- r[, exp(mean(log(V2))), by="region"]
-J <- setNames(J$V1, J$region)
-C <- r[, mean(V2), by="region"]
-C <- setNames(C$V1, C$region)
-H <- r[, 1/mean(1/V2), by="region"]
-H <- setNames(H$V1, H$region)
-D <- dt[, mean(price), by="region"]
-D <- setNames(D$V1/D$V1[D$region=="1"], D$region)
-L <- r[, weighted.mean(V2, weight), by="region"]
-L <- setNames(L$V1, L$region)
-P <- r[, 1/weighted.mean(1/V2, weight), by="region"]
-P <- setNames(P$V1, P$region)
-Fi <- sqrt(L*P)
-To <- r[, exp(weighted.mean(log(V2), weight)), by="region"]
-To <- setNames(To$V1, To$region)
-W <- r[, weighted.mean(sqrt(V2), weight)/weighted.mean(sqrt(1/V2), weight), by="region"]
-W <- setNames(W$V1, W$region)
-
-# unweighted indices:
-expect_equal(dt[, jevons(p=price, r=region, n=product, base="1")], J)
-expect_equal(dt[, carli(p=price, r=region, n=product, base="1")], C)
-expect_equal(dt[, dutot(p=price, r=region, n=product, base="1")], D)
-expect_equal(dt[, harmonic(p=price, r=region, n=product, base="1")], H)
-
-# weighted indices:
-expect_equal(dt[, laspey(p=price, r=region, n=product, w=weight, base="1")], L)
-expect_equal(dt[, paasche(p=price, r=region, n=product, w=weight, base="1")], P)
-expect_equal(dt[, fisher(p=price, r=region, n=product, w=weight, base="1")], Fi)
-expect_equal(dt[, walsh(p=price, r=region, n=product, w=weight, base="1")], W)
-expect_equal(dt[, toernq(p=price, r=region, n=product, w=weight, base="1")], To)
-
-
-# Check consistency of helper functions -----------------------------------
-
-
-# check if helper function indices produce the
-# same results, i.e., if matrix function produces
-# the same output as vectorized function
+# check consistency of helper function, i.e., if matrix
+# function produce the same output as vectorized function
 
 # sample data:
 set.seed(1)
@@ -326,6 +361,21 @@ expect_equal(PD1, PD2)
 system.time(PH1 <- spin:::.harmonic(P=P, Q=Q))
 system.time(PH2 <- dt[, harmonic(p=p, r=r, n=n, base="1")])
 expect_equal(PH1, PH2)
+
+# cswd:
+system.time(PCSWD1 <- spin:::.cswd(P=P, Q=Q))
+system.time(PCSWD2 <- dt[, cswd(p=p, r=r, n=n, base="1")])
+expect_equal(PCSWD1, PCSWD2)
+
+# theil:
+system.time(PTh1 <- spin:::.theil(P=P, Q=Q))
+system.time(PTh2 <- dt[, theil(p=p, r=r, n=n, q=q, base="1")])
+expect_equal(PTh1, PTh2)
+
+# marshall-edgeworth:
+system.time(PMe1 <- spin:::.medgeworth(P=P, Q=Q))
+system.time(PMe2 <- dt[, medgeworth(p=p, r=r, n=n, q=q, base="1")])
+expect_equal(PMe1, PMe2)
 
 # laspeyres:
 system.time(PL1 <- spin:::.laspey(P=P, Q=Q))
@@ -386,6 +436,42 @@ expect_equal(PT3, PT4)
 
 # compare weights versus quantities:
 expect_equal(PT1, PT3)
+
+# palgrave:
+system.time(PPal1 <- spin:::.palgrave(P=P, Q=Q))
+system.time(PPal2 <- dt[, palgrave(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PPal1, PPal2)
+
+system.time(PPal3 <- spin:::.palgrave(P=P, W=W))
+system.time(PPal4 <- dt[, palgrave(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PPal3, PPal4)
+
+# compare weights versus quantities:
+expect_equal(PPal1, PPal3)
+
+# drobisch:
+system.time(PDr1 <- spin:::.drobisch(P=P, Q=Q))
+system.time(PDr2 <- dt[, drobisch(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PDr1, PDr2)
+
+system.time(PDr3 <- spin:::.drobisch(P=P, W=W))
+system.time(PDr4 <- dt[, drobisch(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PDr3, PDr4)
+
+# compare weights versus quantities:
+expect_equal(PDr1, PDr3)
+
+# sato-vartia:
+system.time(PSv1 <- spin:::.svartia(P=P, Q=Q))
+system.time(PSv2 <- dt[, svartia(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PSv1, PSv2)
+
+system.time(PSv3 <- spin:::.svartia(P=P, W=W))
+system.time(PSv4 <- dt[, svartia(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PSv3, PSv4)
+
+# compare weights versus quantities:
+expect_equal(PSv1, PSv3)
 
 # END
 

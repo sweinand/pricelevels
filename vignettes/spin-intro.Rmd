@@ -25,8 +25,8 @@ knitr::opts_chunk$set(
 The `spin`-package provides index number methods for price comparisons within a country. As price comparisons between countries or other geographical entities usually rely on the same index number methods, the package has been denoted more generally as `spin` (for spatial index number methods). Currently, the following index number methods (or price indices) are implemented.
 
 1. Bilateral price indices:
-    - Non-weighted: Jevons, Dutot, Carli, Harmonic
-    - Weighted: Laspeyres, Paasche, Fisher, Toernqvist, Walsh
+    - Non-weighted: Jevons, Dutot, Carli, Harmonic, CSWD
+    - Weighted: Laspeyres, Paasche, Fisher, Toernqvist, Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch
 2. Multilateral price indices: 
     - CPD and NLCPD methods
     - (Weighted) GEKS method
@@ -243,10 +243,11 @@ head(dt)
 
 If prices are collected by statistical offices locally (*local or field-based price collection*), quantities or any other information of the economic importance of the individual products are usually lacking. Therefore, the prices must be aggregated without any weights. The most prominent *elementary price indices* are implemented in the `spin`-package:
 
-- Carli index: $$P_{\text{Carli}}^{sr} = \frac{1}{N} \sum_{n=1}^{N} p_n^r / p_n^s$$
-- Jevons index: $$P_{\text{Jevons}}^{sr} = \prod_{n=1}^{N} \left( p_n^r / p_n^s \right)^{1/N}$$
+- Carli index [@Carli1804]: $$P_{\text{Carli}}^{sr} = \frac{1}{N} \sum_{n=1}^{N} p_n^r / p_n^s$$
+- Jevons index [@Jevons1865]: $$P_{\text{Jevons}}^{sr} = \prod_{n=1}^{N} \left( p_n^r / p_n^s \right)^{1/N}$$
 - Harmonic mean index: $$P_{\text{Harmonic}}^{sr} = \frac{N}{\sum_{n=1}^{N} p_n^s / p_n^r}$$
-- Dutot index: $$P_{\text{Dutot}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r}{\sum_{n=1}^{N} p_n^s} \ ,$$
+- Dutot index [@Dutot1738]: $$P_{\text{Dutot}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r}{\sum_{n=1}^{N} p_n^s}$$
+- CSWD index [@Carruthers1980; @Dalen1992]: $$P_{\text{CSWD}}^{sr} = \sqrt{P_{\text{Carli}}^{sr} \ P_{\text{Harmonic}}^{sr}} \ ,$$
 
 where the indices express the prices of each region $r$ to the base region $s$ based on the prices of the individual products $n \left(n=1,\ldots,N\right)$.
 
@@ -297,11 +298,16 @@ Another important requirement on spatial price index numbers is *transitivity*, 
 
 Not each individual product or basic heading is equally important to consumers. Household consumption considerably varies across basic headings but also for individual products within a basic heading. Neglecting these differences may cause a bias in the price index numbers as the price differences of less important products receive the same weight as more important ones. Therefore, any weighting information available should be included in the price comparison. The `spin`-package offers the following weighted bilateral price indices. They can equally work with quantities and weights.
 
-- Laspeyres index: $$P_{\text{Laspeyres}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^s}{\sum_{n=1}^{N} p_n^s q_n^s} = \sum_{n=1}^{N} w_n^s \left( p_n^r / p_n^s \right)$$
-- Paasche index: $$P_{\text{Paasche}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} p_n^s q_n^r} = \frac{1}{\sum_{n=1}^{N} w_n^r \left( p_n^s / p_n^r \right)}$$
-- Fisher index: $$P_{\text{Fisher}}^{sr} = \sqrt{P_{\text{Laspeyres}}^{sr} \ P_{\text{Paasche}}^{sr}}$$
+- Laspeyres index [@Laspeyres1981]: $$P_{\text{Laspeyres}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^s}{\sum_{n=1}^{N} p_n^s q_n^s} = \sum_{n=1}^{N} w_n^s \left( p_n^r / p_n^s \right)$$
+- Paasche index [@Paasche1874]: $$P_{\text{Paasche}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} p_n^s q_n^r} = \frac{1}{\sum_{n=1}^{N} w_n^r \left( p_n^s / p_n^r \right)}$$
+- Fisher index [@Fisher1921]: $$P_{\text{Fisher}}^{sr} = \sqrt{P_{\text{Laspeyres}}^{sr} \ P_{\text{Paasche}}^{sr}}$$
+- Drobisch index [@Drobisch1871a; @Drobisch1871b]: $$P_{\text{Drobisch}}^{sr} = \left( P_{\text{Laspeyres}}^{sr} + P_{\text{Paasche}}^{sr} \right) / 2$$
+- Palgrave index: $$P_{\text{Palgrave}}^{sr} = \sum_{n=1}^N w_n^r \left( p_n^r / p_n^s \right)$$
+- Marshall-Edgeworth index [@Marshall1887; @Edgeworth1925]: $$P_{\text{ME}}^{sr} = \frac{\sum_{n=1}^N p_n^r \left( q_n^r + q_n^s \right)}{\sum_{n=1}^N p_n^s \left( q_n^r + q_n^s \right)}$$
 - Walsh index: $$P_{\text{Walsh}}^{sr} = \frac{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^r / p_n^s}}{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^s / p_n^r}}$$
-- Törnqvist index: $$P_{\text{Törnqvist}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\frac{1}{2} \left( w_n^r + w_n^s \right)} \ ,$$
+- Törnqvist index [@Toernqvist1936]: $$P_{\text{Törnqvist}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \frac{1}{2} \left( w_n^r + w_n^s \right)$$
+- Sato-Vartia index [@Sato1976; @Vartia1976]:  $$P_{\text{SV}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \begin{cases} \frac{w_n^r-w_n^s}{\ln{w_n^r}-\ln{w_n^s}} & w_n^r \neq w_n^s \\ w_n^s & w_n^r = w_n^s \end{cases}$$
+- Theil index: $$P_{\text{Theil}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \left[ \frac{p_n^r q_n^r + p_n^s q_n^s}{2} \ p_n^r q_n^r \ p_n^s q_n^s \right]^{1/3} \ ,$$
 
 where the weights $w_n^r = p_n^r q_n^r / \sum_{j=1}^N p_j^r q_j^r$ are defined as regional expenditure shares.
 
