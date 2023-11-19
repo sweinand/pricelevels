@@ -245,7 +245,7 @@ If prices are collected by statistical offices locally (*local or field-based pr
 
 - Carli index [@Carli1804]: $$P_{\text{Carli}}^{sr} = \frac{1}{N} \sum_{n=1}^{N} p_n^r / p_n^s$$
 - Jevons index [@Jevons1865]: $$P_{\text{Jevons}}^{sr} = \prod_{n=1}^{N} \left( p_n^r / p_n^s \right)^{1/N}$$
-- Harmonic mean index: $$P_{\text{Harmonic}}^{sr} = \frac{N}{\sum_{n=1}^{N} p_n^s / p_n^r}$$
+- Harmonic mean index [@Jevons1865; @Coggeshall1886]: $$P_{\text{Harmonic}}^{sr} = \frac{N}{\sum_{n=1}^{N} p_n^s / p_n^r}$$
 - Dutot index [@Dutot1738]: $$P_{\text{Dutot}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r}{\sum_{n=1}^{N} p_n^s}$$
 - CSWD index [@Carruthers1980; @Dalen1992]: $$P_{\text{CSWD}}^{sr} = \sqrt{P_{\text{Carli}}^{sr} \ P_{\text{Harmonic}}^{sr}} \ ,$$
 
@@ -302,12 +302,12 @@ Not each individual product or basic heading is equally important to consumers. 
 - Paasche index [@Paasche1874]: $$P_{\text{Paasche}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} p_n^s q_n^r} = \frac{1}{\sum_{n=1}^{N} w_n^r \left( p_n^s / p_n^r \right)}$$
 - Fisher index [@Fisher1921]: $$P_{\text{Fisher}}^{sr} = \sqrt{P_{\text{Laspeyres}}^{sr} \ P_{\text{Paasche}}^{sr}}$$
 - Drobisch index [@Drobisch1871a; @Drobisch1871b]: $$P_{\text{Drobisch}}^{sr} = \left( P_{\text{Laspeyres}}^{sr} + P_{\text{Paasche}}^{sr} \right) / 2$$
-- Palgrave index: $$P_{\text{Palgrave}}^{sr} = \sum_{n=1}^N w_n^r \left( p_n^r / p_n^s \right)$$
+- Palgrave index [@Palgrave1886]: $$P_{\text{Palgrave}}^{sr} = \sum_{n=1}^N w_n^r \left( p_n^r / p_n^s \right)$$
 - Marshall-Edgeworth index [@Marshall1887; @Edgeworth1925]: $$P_{\text{ME}}^{sr} = \frac{\sum_{n=1}^N p_n^r \left( q_n^r + q_n^s \right)}{\sum_{n=1}^N p_n^s \left( q_n^r + q_n^s \right)}$$
-- Walsh index: $$P_{\text{Walsh}}^{sr} = \frac{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^r / p_n^s}}{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^s / p_n^r}}$$
+- Walsh index [@Walsh1901]: $$P_{\text{Walsh}}^{sr} = \frac{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^r / p_n^s}}{\sum_{n=1}^{N} \sqrt{w_n^r w_n^s} \sqrt{p_n^s / p_n^r}}$$
 - Törnqvist index [@Toernqvist1936]: $$P_{\text{Törnqvist}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \frac{1}{2} \left( w_n^r + w_n^s \right)$$
 - Sato-Vartia index [@Sato1976; @Vartia1976]:  $$P_{\text{SV}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \begin{cases} \frac{w_n^r-w_n^s}{\ln{w_n^r}-\ln{w_n^s}} & w_n^r \neq w_n^s \\ w_n^s & w_n^r = w_n^s \end{cases}$$
-- Theil index: $$P_{\text{Theil}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \left[ \frac{p_n^r q_n^r + p_n^s q_n^s}{2} \ p_n^r q_n^r \ p_n^s q_n^s \right]^{1/3} \ ,$$
+- Theil index [@Theil1973]: $$P_{\text{Theil}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \left[ \frac{1}{2} \left( w_n^r + w_n^s \right) \ w_n^r \ w_n^s \right]^{1/3} \ ,$$
 
 where the weights $w_n^r = p_n^r q_n^r / \sum_{j=1}^N p_j^r q_j^r$ are defined as regional expenditure shares.
 
