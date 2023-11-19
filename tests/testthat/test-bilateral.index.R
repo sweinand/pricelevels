@@ -106,7 +106,7 @@ PTo <- setNames(PTo$V1, PTo$region)
 PMe <- dt1[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
 PMe <- setNames(PMe$V1, PMe$region)
 
-dt1[, "w":= ((price*quantity+price.base*quantity.base)/2*(price*quantity)*(price.base*quantity.base))^(1/3)]
+dt1[, "w":= ((share/sum(share)+share.base/sum(share.base))/2*(share/sum(share))*(share.base/sum(share.base)))^(1/3), by="region"]
 PTh <- dt1[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
 PTh <- setNames(PTh$V1, PTh$region)
 dt1[, "w":=NULL]
@@ -175,7 +175,7 @@ PTo <- setNames(PTo$V1, PTo$region)
 PMe <- dt2[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
 PMe <- setNames(PMe$V1, PMe$region)
 
-dt2[, "w":= ((price*quantity+price.base*quantity.base)/2*(price*quantity)*(price.base*quantity.base))^(1/3)]
+dt2[, "w":= ((share/sum(share)+share.base/sum(share.base))/2*(share/sum(share))*(share.base/sum(share.base)))^(1/3), by="region"]
 PTh <- dt2[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
 PTh <- setNames(PTh$V1, PTh$region)
 dt2[, "w":=NULL]
@@ -251,6 +251,11 @@ expect_equal(
 expect_equal(
   dt[, walsh(p=price, r=region, n=product, q=quantity, base="1")],
   dt[, walsh(p=price, r=region, n=product, w=share, base="1")]
+)
+
+expect_equal(
+  dt[, theil(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, theil(p=price, r=region, n=product, w=share, base="1")]
 )
 
 expect_equal(
@@ -367,11 +372,6 @@ system.time(PCSWD1 <- spin:::.cswd(P=P, Q=Q))
 system.time(PCSWD2 <- dt[, cswd(p=p, r=r, n=n, base="1")])
 expect_equal(PCSWD1, PCSWD2)
 
-# theil:
-system.time(PTh1 <- spin:::.theil(P=P, Q=Q))
-system.time(PTh2 <- dt[, theil(p=p, r=r, n=n, q=q, base="1")])
-expect_equal(PTh1, PTh2)
-
 # marshall-edgeworth:
 system.time(PMe1 <- spin:::.medgeworth(P=P, Q=Q))
 system.time(PMe2 <- dt[, medgeworth(p=p, r=r, n=n, q=q, base="1")])
@@ -413,30 +413,6 @@ expect_equal(PF3, PF4)
 # compare weights versus quantities:
 expect_equal(PF1, PF3)
 
-# walsh:
-system.time(PW1 <- spin:::.walsh(P=P, Q=Q))
-system.time(PW2 <- dt[, walsh(p=p, q=q, r=r, n=n, base="1")])
-expect_equal(PW1, PW2)
-
-system.time(PW3 <- spin:::.walsh(P=P, W=W))
-system.time(PW4 <- dt[, walsh(p=p, w=share, r=r, n=n, base="1")])
-expect_equal(PW3, PW4)
-
-# compare weights versus quantities:
-expect_equal(PW1, PW3)
-
-# toernqvist:
-system.time(PT1 <- spin:::.toernq(P=P, Q=Q))
-system.time(PT2 <- dt[, toernq(p=p, q=q, r=r, n=n, base="1")])
-expect_equal(PT1, PT2)
-
-system.time(PT3 <- spin:::.toernq(P=P, W=W))
-system.time(PT4 <- dt[, toernq(p=p, w=share, r=r, n=n, base="1")])
-expect_equal(PT3, PT4)
-
-# compare weights versus quantities:
-expect_equal(PT1, PT3)
-
 # palgrave:
 system.time(PPal1 <- spin:::.palgrave(P=P, Q=Q))
 system.time(PPal2 <- dt[, palgrave(p=p, q=q, r=r, n=n, base="1")])
@@ -460,6 +436,42 @@ expect_equal(PDr3, PDr4)
 
 # compare weights versus quantities:
 expect_equal(PDr1, PDr3)
+
+# walsh:
+system.time(PW1 <- spin:::.walsh(P=P, Q=Q))
+system.time(PW2 <- dt[, walsh(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PW1, PW2)
+
+system.time(PW3 <- spin:::.walsh(P=P, W=W))
+system.time(PW4 <- dt[, walsh(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PW3, PW4)
+
+# compare weights versus quantities:
+expect_equal(PW1, PW3)
+
+# theil:
+system.time(PTh1 <- spin:::.theil(P=P, Q=Q))
+system.time(PTh2 <- dt[, theil(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PTh1, PTh2)
+
+system.time(PTh3 <- spin:::.theil(P=P, W=W))
+system.time(PTh4 <- dt[, theil(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PTh3, PTh4)
+
+# compare weights versus quantities:
+expect_equal(PTh1, PTh3)
+
+# toernqvist:
+system.time(PT1 <- spin:::.toernq(P=P, Q=Q))
+system.time(PT2 <- dt[, toernq(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PT1, PT2)
+
+system.time(PT3 <- spin:::.toernq(P=P, W=W))
+system.time(PT4 <- dt[, toernq(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PT3, PT4)
+
+# compare weights versus quantities:
+expect_equal(PT1, PT3)
 
 # sato-vartia:
 system.time(PSv1 <- spin:::.svartia(P=P, Q=Q))

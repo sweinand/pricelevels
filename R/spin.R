@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   16 November 2023
+# Date:   19 November 2023
 
 # list available price indices:
 list.indices <- function(){
@@ -269,7 +269,7 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
         },
 
         "theil"=if("theil"%in%type){
-          NA_real_
+          pdata[, spin::theil(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
         "palgrave"=if("palgrave"%in%type){
@@ -317,7 +317,7 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
         },
 
         "geks-theil"=if("geks-theil"%in%type){
-          NA_real_
+          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="theil"))]
         },
 
         "geks-palgrave"=if("geks-palgrave"%in%type){

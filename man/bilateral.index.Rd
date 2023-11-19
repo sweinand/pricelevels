@@ -21,8 +21,8 @@
 \description{Calculation of bilateral price indices. Currently, the following ones are implemented:
 \itemize{
   \item Unweighted indices: Jevons, Carli, Harmonic, Dutot, and CSWD
-  \item Indices based on quantities: Marshall-Edgeworth, Theil
-  \item Indices based on quantities or weights: Laspeyres, Paasche, Fisher, Toernqvist, Walsh, Palgrave, Sato-Vartia, and Drobisch
+  \item Indices based on quantities: Marshall-Edgeworth
+  \item Indices based on quantities or weights: Laspeyres, Paasche, Fisher, Toernqvist, Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
 }
 }
 
@@ -36,17 +36,17 @@ cswd(...)
 
 # bilateral indices using quantites:
 medgeworth(p, r, n, q, base=NULL, settings=list())
-theil(...)
 
 # bilateral indices using quantities or expenditure share weights:
 laspey(p, r, n, q, w=NULL, base=NULL, settings=list())
 paasche(...)
-fisher(...)
-toernq(...)
-walsh(...)
 palgrave(...)
-svartia(...)
+fisher(...)
 drobisch(...)
+walsh(...)
+toernq(...)
+svartia(...)
+theil(...)
 }
 
 \arguments{

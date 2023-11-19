@@ -23,7 +23,7 @@ expect_equal(
 )
 
 res <- matrix(data=1, ncol=1, nrow=length(Pall), dimnames=list(Pall, "1"))
-res[rownames(res)%in%c("gk","theil","medgeworth","geks-theil","geks-medgeworth"),1] <- NA
+res[rownames(res)%in%c("gk","medgeworth","geks-medgeworth"),1] <- NA
 expect_equal(
   dt[, spin(p=price, r=region, n=product, w=quantity, base="1")],
   res

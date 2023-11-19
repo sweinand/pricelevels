@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     16 November 2023
+# Date:     19 November 2023
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -58,70 +58,14 @@
   return(res)
 
 }
-.theil2 <- function(p1, q1, w1=NULL, p0, q0, w0=NULL){
-
-  # define weights:
-  w <- ((p0*q0+p1*q1)/2*(p0*q0)*(p1*q1))^(1/3)
-
-  # normalize weights:
-  w <- w/sum(w)
-
-  # compute index:
-  res <- exp(weighted.mean(x=log(p1/p0), w=w))
-
-  # return output:
-  return(res)
-
-}
-.toernq2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # define weights:
-  if(missing(q0) | missing(q1)){
-    w <- 0.5*(w0/sum(w0) + w1/sum(w1))
-  }else{
-    w <- 0.5*(p0*q0/sum(p0*q0) + p1*q1/sum(p1*q1))
-  }
-
-  # normalize weights:
-  w <- w/sum(w)
-
-  # compute index:
-  res <- exp(weighted.mean(x=log(p1/p0), w=w))
-
-  # return output:
-  return(res)
-
-}
-.walsh2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # define weights:
-  if(missing(q0) | missing(q1)){
-    w <- sqrt(w0/sum(w0)*w1/sum(w1))
-  }else{
-    w <- sqrt((p0*q0/sum(p0*q0)) * (p1*q1/sum(p1*q1)))
-  }
-
-  # normalize weights:
-  w <- w/sum(w)
-
-  # compute index:
-  res <- weighted.mean(x=sqrt(p1/p0), w=w) / weighted.mean(x=sqrt(p0/p1), w=w)
-
-  # return output:
-  return(res)
-
-}
 .laspey2 <- function(p1, q1, w1, p0, q0, w0){
 
-  # define weights:
-  if(missing(q0) | missing(q1)){
+  # derive normalized weights:
+  if(missing(q0)){
     w <- w0/sum(w0)
   }else{
     w <- p0*q0/sum(p0*q0)
   }
-
-  # normalize weights:
-  w <- w/sum(w)
 
   # compute index:
   res <- weighted.mean(x=p1/p0, w=w)
@@ -132,18 +76,63 @@
 }
 .paasche2 <- function(p1, q1, w1, p0, q0, w0){
 
-  # define weights:
-  if(missing(q0) | missing(q1)){
+  # derive normalized weights:
+  if(missing(q1)){
     w <- w1/sum(w1)
   }else{
     w <- p1*q1/sum(p1*q1)
   }
 
-  # normalize weights:
-  w <- w/sum(w)
-
   # compute index:
   res <- 1/weighted.mean(x=p0/p1, w=w)
+
+  # return output:
+  return(res)
+
+}
+.geo.laspey2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # derive normalized weights:
+  if(missing(q0)){
+    w <- w0/sum(w0)
+  }else{
+    w <- p0*q0/sum(p0*q0)
+  }
+
+  # compute index:
+  res <- exp(weighted.mean(x=log(p1/p0), w=w))
+
+  # return output:
+  return(res)
+
+}
+.geo.paasche2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # derive normalized weights:
+  if(missing(q1)){
+    w <- w1/sum(w1)
+  }else{
+    w <- p1*q1/sum(p1*q1)
+  }
+
+  # compute index:
+  res <- 1/exp(weighted.mean(x=log(p0/p1), w=w))
+
+  # return output:
+  return(res)
+
+}
+.palgrave2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # derive normalized weights:
+  if(missing(q1)){
+    w <- w1/sum(w1)
+  }else{
+    w <- p1*q1/sum(p1*q1)
+  }
+
+  # compute index:
+  res <- weighted.mean(x=p1/p0, w=w)
 
   # return output:
   return(res)
@@ -161,87 +150,6 @@
   return(sqrt(l*p))
 
 }
-.geo.laspey2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # define weights:
-  if(missing(q0) | missing(q1)){
-    w <- w0/sum(w0)
-  }else{
-    w <- p0*q0/sum(p0*q0)
-  }
-
-  # normalize weights:
-  w <- w/sum(w)
-
-  # compute index:
-  res <- exp(weighted.mean(x=log(p1/p0), w=w))
-
-  # return output:
-  return(res)
-
-}
-.geo.paasche2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # define weights:
-  if(missing(q0) | missing(q1)){
-    w <- w1/sum(w1)
-  }else{
-    w <- p1*q1/sum(p1*q1)
-  }
-
-  # normalize weights:
-  w <- w/sum(w)
-
-  # compute index:
-  res <- 1/exp(weighted.mean(x=log(p0/p1), w=w))
-
-  # return output:
-  return(res)
-
-}
-.palgrave2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # define weights:
-  if(missing(q0) | missing(q1)){
-    w <- w1/sum(w1)
-  }else{
-    w <- p1*q1/sum(p1*q1)
-  }
-
-  # normalize weights:
-  w <- w/sum(w)
-
-  # compute index:
-  res <- weighted.mean(x=p1/p0, w=w)
-
-  # return output:
-  return(res)
-
-}
-.svartia2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # define weights:
-  if(missing(q0) | missing(q1)){
-    w0 <- w0/sum(w0)
-    w1 <- w1/sum(w1)
-  }else{
-    w1 <- p1*q1/sum(p1*q1)
-    w0 <- p0*q0/sum(p0*q0)
-  }
-
-  # define weights:
-  w <- ifelse(abs(w1-w0)>1e-7, (w1-w0)/(log(w1)-log(w0)), w0)
-
-  # normalize weights:
-  w <- w/sum(w)
-
-  # compute index:
-  res <- exp(weighted.mean(x=log(p1/p0), w=w))
-
-  # return output:
-  return(res)
-
-}
 .drobisch2 <- function(p1, q1, w1, p0, q0, w0){
 
   # compute laspeyres indices:
@@ -252,6 +160,102 @@
 
   # compute Fisher:
   return((l+p)/2)
+
+}
+.walsh2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # set weights:
+  if(missing(q0) | missing(q1)){
+    w0 <- w0/sum(w0)
+    w1 <- w1/sum(w1)
+  }else{
+    w0 <- (p0*q0)/sum(p0*q0)
+    w1 <- (p1*q1)/sum(p1*q1)
+  }
+
+  # compute weights:
+  w <- sqrt(w0*w1)
+
+  # normalize weights:
+  w <- w/sum(w)
+
+  # compute index:
+  res <- weighted.mean(x=sqrt(p1/p0), w=w) / weighted.mean(x=sqrt(p0/p1), w=w)
+
+  # return output:
+  return(res)
+
+}
+.theil2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # set weights:
+  if(missing(q0) | missing(q1)){
+    w0 <- w0/sum(w0)
+    w1 <- w1/sum(w1)
+  }else{
+    w0 <- (p0*q0)/sum(p0*q0)
+    w1 <- (p1*q1)/sum(p1*q1)
+  }
+
+  # compute weights:
+  w <- (w0*w1*(w0+w1)/2)^(1/3)
+
+  # normalize weights:
+  w <- w/sum(w)
+
+  # compute index:
+  res <- exp(weighted.mean(x=log(p1/p0), w=w))
+
+  # return output:
+  return(res)
+
+}
+.toernq2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # set weights:
+  if(missing(q0) | missing(q1)){
+    w0 <- w0/sum(w0)
+    w1 <- w1/sum(w1)
+  }else{
+    w0 <- (p0*q0)/sum(p0*q0)
+    w1 <- (p1*q1)/sum(p1*q1)
+  }
+
+  # compute weights:
+  w <- 0.5*(w0/sum(w0) + w1/sum(w1))
+
+  # normalize weights:
+  w <- w/sum(w)
+
+  # compute index:
+  res <- exp(weighted.mean(x=log(p1/p0), w=w))
+
+  # return output:
+  return(res)
+
+}
+.svartia2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # set weights:
+  if(missing(q0) | missing(q1)){
+    w0 <- w0/sum(w0)
+    w1 <- w1/sum(w1)
+  }else{
+    w0 <- (p0*q0)/sum(p0*q0)
+    w1 <- (p1*q1)/sum(p1*q1)
+  }
+
+  # compute weights:
+  w <- ifelse(abs(w1-w0)>1e-7, (w1-w0)/(log(w1)-log(w0)), w0)
+
+  # normalize weights:
+  w <- w/sum(w)
+
+  # compute index:
+  res <- exp(weighted.mean(x=log(p1/p0), w=w))
+
+  # return output:
+  return(res)
 
 }
 
@@ -354,89 +358,6 @@
   return(res)
 
 }
-.theil <- function(P, Q, W=NULL, base=1L){
-
-  # compute price ratios:
-  R <- log(P/P[, base])
-
-  # define weights:
-  W <- (((P[,base]*Q[,base]+P*Q)/2)*(P[,base]*Q[,base])*(P*Q))^(1/3)
-
-  # align dimensions of weighting matrix:
-  W <- W*matrix(data=1, nrow=nrow(P), ncol=ncol(P), dimnames=dimnames(P))
-
-  # set weights to NA when no intersection of prices:
-  W[is.na(R)] <- NA
-
-  # normalize weights:
-  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
-
-  # compute index:
-  res <- colSums(x=W*R, na.rm=TRUE)
-
-  # set to NA when no intersecting prices were found:
-  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
-  # -> colSums()-function returns 0 when everything is NA
-
-  # print output to console:
-  return(exp(res))
-
-}
-.walsh <- function(P, Q, W, base=1L){
-
-  # compute weights:
-  if(missing(Q)){
-    W <- sqrt(W*W[, base])
-  }else{
-    W <- sqrt(P*Q/colSums(P*Q, na.rm=TRUE)[col(P)] * P[,base]*Q[,base]/sum(P[,base]*Q[,base], na.rm=TRUE))
-  }
-
-  # set to NA if no intersection:
-  W[is.na(P/P[,base])] <- NA
-
-  # normalize weights:
-  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
-
-  # compute index:
-  res <- colSums(x=W*sqrt(P/P[, base]), na.rm=TRUE)/colSums(x=W*sqrt(P[, base]/P), na.rm=TRUE)
-
-  # set to NA when no intersecting prices were found:
-  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
-  # -> colSums()-function returns 0 when everything is NA
-
-  # print output to console:
-  return(res)
-
-}
-.toernq <- function(P, Q, W, base=1L){
-
-  # compute logarithmic differences:
-  R <- log(P/P[, base])
-
-  # compute weights:
-  if(missing(Q)){
-    Wbase <- matrix(data=W[,base], ncol=ncol(P), nrow=nrow(P))
-    Wall <- W
-  }else{
-    Wbase <- matrix(data=P[,base]*Q[,base], ncol=ncol(P), nrow=nrow(P))
-    Wall <- P*Q
-  }
-
-  Wbase[is.na(R)] <- NA
-  Wall[is.na(R)] <- NA
-  W <- 0.5*(Wall/colSums(Wall, na.rm=TRUE)[col(R)] + Wbase/colSums(Wbase, na.rm=TRUE)[col(R)])
-
-  # compute index:
-  res <- colSums(x=W*R, na.rm=TRUE)
-
-  # set to NA when no intersecting prices were found:
-  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
-  # -> colSums()-function returns 0 when everything is NA
-
-  # re-transform logs:
-  return(exp(res))
-
-}
 .laspey <- function(P, Q, W, base=1L){
 
   # compute price ratios:
@@ -496,18 +417,6 @@
 
   # print output to console:
   return(res)
-
-}
-.fisher <- function(P, Q, W, base=1L){
-
-  # compute laspeyres indices:
-  l <- .laspey(P=P, Q=Q, W=W, base=base)
-
-  # compute paasche indices:
-  p <- .paasche(P=P, Q=Q, W=W, base=base)
-
-  # compute Fisher:
-  return(sqrt(l*p))
 
 }
 .geo.laspey <- function(P, Q, W, base=1L){
@@ -600,37 +509,16 @@
   return(res)
 
 }
-.svartia <- function(P, Q, W, base=1L){
+.fisher <- function(P, Q, W, base=1L){
 
-  # compute logarithmic differences:
-  R <- log(P/P[, base])
+  # compute laspeyres indices:
+  l <- .laspey(P=P, Q=Q, W=W, base=base)
 
-  # compute weights:
-  if(missing(Q)){
-    Wbase <- matrix(data=W[,base], ncol=ncol(P), nrow=nrow(P))
-    Wall <- W
-  }else{
-    Wbase <- matrix(data=P[,base]*Q[,base], ncol=ncol(P), nrow=nrow(P))
-    Wall <- P*Q
-  }
+  # compute paasche indices:
+  p <- .paasche(P=P, Q=Q, W=W, base=base)
 
-  Wbase[is.na(R)] <- NA
-  Wall[is.na(R)] <- NA
-  Wbase <- Wbase/colSums(Wbase, na.rm=TRUE)[col(R)]
-  Wall <- Wall/colSums(Wall, na.rm=TRUE)[col(R)]
-  W <- (Wall-Wbase)/(log(Wall)-log(Wbase))
-  W <- ifelse(abs(Wall-Wbase)>1e-7, W, Wbase)
-  W <- W/colSums(W, na.rm=TRUE)[col(R)]
-
-  # compute index:
-  res <- colSums(x=W*R, na.rm=TRUE)
-
-  # set to NA when no intersecting prices were found:
-  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
-  # -> colSums()-function returns 0 when everything is NA
-
-  # re-transform logs:
-  return(exp(res))
+  # compute Fisher:
+  return(sqrt(l*p))
 
 }
 .drobisch <- function(P, Q, W, base=1L){
@@ -643,6 +531,147 @@
 
   # compute Fisher:
   return((l+p)/2)
+
+}
+.walsh <- function(P, Q, W, base=1L){
+
+  # compute price ratios:
+  R <- P/P[, base]
+
+  # set weights:
+  if(missing(Q)){
+    Wbase <- matrix(data=W[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- W
+  }else{
+    Wbase <- matrix(data=P[,base]*Q[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- P*Q
+  }
+
+  # normalize weights:
+  Wbase[is.na(R)] <- NA
+  Wbase <- Wbase/colSums(Wbase, na.rm=TRUE)[col(R)]
+  Wall[is.na(R)] <- NA
+  Wall <- Wall/colSums(Wall, na.rm=TRUE)[col(R)]
+
+  # compute new weights:
+  W <- sqrt(Wbase*Wall)
+  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+  # compute index:
+  res <- colSums(x=W*sqrt(R), na.rm=TRUE)/colSums(x=W*sqrt(1/R), na.rm=TRUE)
+
+  # set to NA when no intersecting prices were found:
+  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+  # -> colSums()-function returns 0 when everything is NA
+
+  # print output to console:
+  return(res)
+
+}
+.theil <- function(P, Q, W, base=1L){
+
+  # compute price ratios:
+  R <- log(P/P[, base])
+
+  # set weights:
+  if(missing(Q)){
+    Wbase <- matrix(data=W[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- W
+  }else{
+    Wbase <- matrix(data=P[,base]*Q[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- P*Q
+  }
+
+  # normalize weights:
+  Wbase[is.na(R)] <- NA
+  Wbase <- Wbase/colSums(Wbase, na.rm=TRUE)[col(R)]
+  Wall[is.na(R)] <- NA
+  Wall <- Wall/colSums(Wall, na.rm=TRUE)[col(R)]
+
+  # compute new weights:
+  W <- (Wall*Wbase*(Wall+Wbase)/2)^(1/3)
+  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+  # compute index:
+  res <- colSums(x=W*R, na.rm=TRUE)
+
+  # set to NA when no intersecting prices were found:
+  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+  # -> colSums()-function returns 0 when everything is NA
+
+  # print output to console:
+  return(exp(res))
+
+}
+.toernq <- function(P, Q, W, base=1L){
+
+  # compute price ratios:
+  R <- log(P/P[, base])
+
+  # set weights:
+  if(missing(Q)){
+    Wbase <- matrix(data=W[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- W
+  }else{
+    Wbase <- matrix(data=P[,base]*Q[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- P*Q
+  }
+
+  # normalize weights:
+  Wbase[is.na(R)] <- NA
+  Wbase <- Wbase/colSums(Wbase, na.rm=TRUE)[col(R)]
+  Wall[is.na(R)] <- NA
+  Wall <- Wall/colSums(Wall, na.rm=TRUE)[col(R)]
+
+  # compute new weights:
+  W <- 0.5*(Wbase+Wall)
+  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+  # compute index:
+  res <- colSums(x=W*R, na.rm=TRUE)
+
+  # set to NA when no intersecting prices were found:
+  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+  # -> colSums()-function returns 0 when everything is NA
+
+  # re-transform logs:
+  return(exp(res))
+
+}
+.svartia <- function(P, Q, W, base=1L){
+
+  # compute logarithmic differences:
+  R <- log(P/P[, base])
+
+  # set weights:
+  if(missing(Q)){
+    Wbase <- matrix(data=W[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- W
+  }else{
+    Wbase <- matrix(data=P[,base]*Q[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- P*Q
+  }
+
+  # normalize weights:
+  Wbase[is.na(R)] <- NA
+  Wbase <- Wbase/colSums(Wbase, na.rm=TRUE)[col(R)]
+  Wall[is.na(R)] <- NA
+  Wall <- Wall/colSums(Wall, na.rm=TRUE)[col(R)]
+
+  # compute new weights:
+  W <- (Wall-Wbase)/(log(Wall)-log(Wbase))
+  W <- ifelse(abs(Wall-Wbase)>1e-7, W, Wbase)
+  W <- W/colSums(W, na.rm=TRUE)[col(W)]
+
+  # compute index:
+  res <- colSums(x=W*R, na.rm=TRUE)
+
+  # set to NA when no intersecting prices were found:
+  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+  # -> colSums()-function returns 0 when everything is NA
+
+  # re-transform logs:
+  return(exp(res))
 
 }
 
@@ -784,21 +813,6 @@ medgeworth <- function(p, r, n, q, base=NULL, settings=list()){
   .bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="medgeworth", base=base, settings=settings)
 
 }
-theil <- function(p, r, n, q, base=NULL, settings=list()){
-
-  .bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="theil", base=base, settings=settings)
-
-}
-walsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
-
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="walsh", base=base, settings=settings)
-
-}
-toernq <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
-
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="toernq", base=base, settings=settings)
-
-}
 laspey <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="laspey", base=base, settings=settings)
@@ -809,24 +823,39 @@ paasche <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
   .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="paasche", base=base, settings=settings)
 
 }
-fisher <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
-
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="fisher", base=base, settings=settings)
-
-}
 palgrave <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="palgrave", base=base, settings=settings)
 
 }
-svartia <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+fisher <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
-  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="svartia", base=base, settings=settings)
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="fisher", base=base, settings=settings)
 
 }
 drobisch <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="drobisch", base=base, settings=settings)
+
+}
+walsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="walsh", base=base, settings=settings)
+
+}
+theil <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="theil", base=base, settings=settings)
+
+}
+toernq <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="toernq", base=base, settings=settings)
+
+}
+svartia <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="svartia", base=base, settings=settings)
 
 }
 
