@@ -15,6 +15,9 @@
 \alias{svartia}
 \alias{palgrave}
 \alias{drobisch}
+\alias{geolaspey}
+\alias{geopaasche}
+\alias{geowalsh}
 
 \title{Bilateral price indices}
 
@@ -22,7 +25,7 @@
 \itemize{
   \item Unweighted indices: Jevons, Carli, Harmonic, Dutot, and CSWD
   \item Indices based on quantities: Marshall-Edgeworth
-  \item Indices based on quantities or weights: Laspeyres, Paasche, Fisher, Toernqvist, Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
+  \item Indices based on quantities or weights: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
 }
 }
 
@@ -44,9 +47,12 @@ palgrave(...)
 fisher(...)
 drobisch(...)
 walsh(...)
+geolaspey(...)
+geopaasche(...)
 toernq(...)
-svartia(...)
+geowalsh(...)
 theil(...)
+svartia(...)
 }
 
 \arguments{

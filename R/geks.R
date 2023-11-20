@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   16 November 2023
+# Date:   20 November 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -80,7 +80,10 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
                        walsh = spin:::.walsh,
                        svartia = spin:::.svartia,
                        palgrave = spin:::.palgrave,
-                       drobisch = spin:::.drobisch)
+                       drobisch = spin:::.drobisch,
+                       geolaspey = spin:::.geolaspey,
+                       geopaasche = spin:::.geopaasche,
+                       geowalsh = spin:::.geowalsh)
 
   # initialize data:
   pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=settings$base, settings=settings)

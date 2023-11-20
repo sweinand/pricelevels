@@ -519,15 +519,15 @@
 }
 
  
-@Article{Laspeyres1981,
+@Article{Laspeyres1871,
   author    = {Etienne Laspeyres},
   journal   = {Jahrbücher für Nationalökonomie und Statistik},
   title     = {{Die Berechnung einer mittleren Waarenpreissteigerung}},
-  year      = {1981},
+  year      = {1871},
   month     = mar,
-  number    = {3},
-  pages     = {218--238},
-  volume    = {196},
+  number    = {1},
+  pages     = {296--314},
+  volume    = {16},
   doi       = {10.1515/jbnst-1981-0303},
   publisher = {Walter de Gruyter GmbH},
 }

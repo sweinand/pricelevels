@@ -1,14 +1,15 @@
 # START
 
 # Title:    Available price indices
-# Date:     19 November 2023
+# Date:     20 November 2023
 
 library(data.table)
 
 # bilateral price indices:
 bilPunw <- c("jevons","carli","dutot","harmonic","cswd")
 bilPq <- c("medgeworth")
-bilPw <- c("toernq","laspey","paasche","walsh","fisher","palgrave","svartia","drobisch","theil")
+bilPw <- c("toernq","laspey","paasche","walsh","fisher","palgrave",
+           "svartia","drobisch","theil","geolaspey","geopaasche","geowalsh")
 bilP <- data.table("name"=c(bilPunw, bilPq, bilPw),
                    "type"="bilateral",
                    "uses_q"=c(rep(FALSE, length(bilPunw)), rep(TRUE, length(bilPq)), rep(TRUE, length(bilPw))),

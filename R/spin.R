@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   19 November 2023
+# Date:   20 November 2023
 
 # list available price indices:
 list.indices <- function(){
@@ -159,6 +159,18 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
         pdata[, spin::drobisch(p=p, r=r, n=n, q=z, base=base, settings=settings)]
       },
 
+      "geolaspey"=if("geolaspey"%in%type){
+        pdata[, spin::geolaspey(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
+      "geopaasche"=if("geopaasche"%in%type){
+        pdata[, spin::geopaasche(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
+      "geowalsh"=if("geowalsh"%in%type){
+        pdata[, spin::geowalsh(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      },
+
       "cpd"=if("cpd"%in%type){
         pdata[, spin::cpd(p=p, r=r, n=n, q=z, base=base, settings=settings)]
       },
@@ -205,6 +217,18 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
       "geks-drobisch"=if("geks-drobisch"%in%type){
         pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="drobisch"))]
+      },
+
+      "geks-geolaspey"=if("geks-geolaspey"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="geolaspey"))]
+      },
+
+      "geks-geopaasche"=if("geks-geopaasche"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="geopaasche"))]
+      },
+
+      "geks-geowalsh"=if("geks-geowalsh"%in%type){
+        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="geowalsh"))]
       },
 
       "gk"=if("gk"%in%type){
@@ -284,6 +308,18 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
           pdata[, spin::drobisch(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
+        "geolaspey"=if("geolaspey"%in%type){
+          pdata[, spin::geolaspey(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        },
+
+        "geopaasche"=if("geopaasche"%in%type){
+          pdata[, spin::geopaasche(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        },
+
+        "geowalsh"=if("geowalsh"%in%type){
+          pdata[, spin::geowalsh(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        },
+
         "cpd"=if("cpd"%in%type){
           pdata[, spin::cpd(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
@@ -330,6 +366,18 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
         "geks-drobisch"=if("geks-drobisch"%in%type){
           pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="drobisch"))]
+        },
+
+        "geks-geolaspey"=if("geks-geolaspey"%in%type){
+          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="geolaspey"))]
+        },
+
+        "geks-geopaasche"=if("geks-geopaasche"%in%type){
+          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="geopaasche"))]
+        },
+
+        "geks-geowalsh"=if("geks-geowalsh"%in%type){
+          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="geowalsh"))]
         },
 
         "gk"=if("gk"%in%type){

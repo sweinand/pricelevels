@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     19 November 2023
+# Date:     20 November 2023
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -90,38 +90,6 @@
   return(res)
 
 }
-.geo.laspey2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # derive normalized weights:
-  if(missing(q0)){
-    w <- w0/sum(w0)
-  }else{
-    w <- p0*q0/sum(p0*q0)
-  }
-
-  # compute index:
-  res <- exp(weighted.mean(x=log(p1/p0), w=w))
-
-  # return output:
-  return(res)
-
-}
-.geo.paasche2 <- function(p1, q1, w1, p0, q0, w0){
-
-  # derive normalized weights:
-  if(missing(q1)){
-    w <- w1/sum(w1)
-  }else{
-    w <- p1*q1/sum(p1*q1)
-  }
-
-  # compute index:
-  res <- 1/exp(weighted.mean(x=log(p0/p1), w=w))
-
-  # return output:
-  return(res)
-
-}
 .palgrave2 <- function(p1, q1, w1, p0, q0, w0){
 
   # derive normalized weights:
@@ -181,6 +149,62 @@
 
   # compute index:
   res <- weighted.mean(x=sqrt(p1/p0), w=w) / weighted.mean(x=sqrt(p0/p1), w=w)
+
+  # return output:
+  return(res)
+
+}
+.geolaspey2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # derive normalized weights:
+  if(missing(q0)){
+    w <- w0/sum(w0)
+  }else{
+    w <- p0*q0/sum(p0*q0)
+  }
+
+  # compute index:
+  res <- exp(weighted.mean(x=log(p1/p0), w=w))
+
+  # return output:
+  return(res)
+
+}
+.geopaasche2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # derive normalized weights:
+  if(missing(q1)){
+    w <- w1/sum(w1)
+  }else{
+    w <- p1*q1/sum(p1*q1)
+  }
+
+  # compute index:
+  res <- exp(weighted.mean(x=log(p1/p0), w=w))
+
+  # return output:
+  return(res)
+
+}
+.geowalsh2 <- function(p1, q1, w1, p0, q0, w0){
+
+  # set weights:
+  if(missing(q0) | missing(q1)){
+    w0 <- w0/sum(w0)
+    w1 <- w1/sum(w1)
+  }else{
+    w0 <- (p0*q0)/sum(p0*q0)
+    w1 <- (p1*q1)/sum(p1*q1)
+  }
+
+  # compute weights:
+  w <- sqrt(w0*w1)
+
+  # normalize weights:
+  w <- w/sum(w)
+
+  # compute index:
+  res <- exp(weighted.mean(x=log(p1/p0), w=w))
 
   # return output:
   return(res)
@@ -419,67 +443,6 @@
   return(res)
 
 }
-.geo.laspey <- function(P, Q, W, base=1L){
-
-  # compute price ratios:
-  R <- P / P[, base]
-
-  # define weights:
-  if(missing(Q)){
-    W <- W[, base]
-  }else{
-    W <- P[,base]*Q[,base]
-  }
-
-  # align dimensions of weighting matrix:
-  W <- W*matrix(data=1, nrow=nrow(P), ncol=ncol(P), dimnames=dimnames(P))
-
-  # set weights to NA when no intersection of prices:
-  W[is.na(R)] <- NA
-
-  # normalize weights:
-  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
-
-  # compute index:
-  res <- exp(colSums(x=W*log(R), na.rm=TRUE))
-
-  # set to NA when no intersecting prices were found:
-  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
-  # -> colSums()-function returns 0 when everything is NA
-
-  # print output to console:
-  return(res)
-
-}
-.geo.paasche <- function(P, Q, W, base=1L){
-
-  # compute price ratios:
-  R <- 1 / (P / P[, base])
-
-  # compute weights:
-  if(missing(Q)){
-    W <- W
-  }else{
-    W <- P*Q
-  }
-
-  # set weights to NA when no intersection of prices:
-  W[is.na(R)] <- NA
-
-  # normalize weights:
-  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
-
-  # compute index:
-  res <- 1/exp(colSums(x=W*log(R), na.rm=TRUE))
-
-  # set to NA when no intersecting prices were found:
-  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
-  # -> colSums()-function returns 0 when everything is NA
-
-  # print output to console:
-  return(res)
-
-}
 .palgrave <- function(P, Q, W, base=1L){
 
   # compute price ratios:
@@ -568,6 +531,102 @@
   return(res)
 
 }
+.geolaspey <- function(P, Q, W, base=1L){
+
+  # compute price ratios:
+  R <- P / P[, base]
+
+  # define weights:
+  if(missing(Q)){
+    W <- W[, base]
+  }else{
+    W <- P[,base]*Q[,base]
+  }
+
+  # align dimensions of weighting matrix:
+  W <- W*matrix(data=1, nrow=nrow(P), ncol=ncol(P), dimnames=dimnames(P))
+
+  # set weights to NA when no intersection of prices:
+  W[is.na(R)] <- NA
+
+  # normalize weights:
+  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+  # compute index:
+  res <- exp(colSums(x=W*log(R), na.rm=TRUE))
+
+  # set to NA when no intersecting prices were found:
+  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+  # -> colSums()-function returns 0 when everything is NA
+
+  # print output to console:
+  return(res)
+
+}
+.geopaasche <- function(P, Q, W, base=1L){
+
+  # compute price ratios:
+  R <- 1 / (P / P[, base])
+
+  # compute weights:
+  if(missing(Q)){
+    W <- W
+  }else{
+    W <- P*Q
+  }
+
+  # set weights to NA when no intersection of prices:
+  W[is.na(R)] <- NA
+
+  # normalize weights:
+  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+  # compute index:
+  res <- 1/exp(colSums(x=W*log(R), na.rm=TRUE))
+
+  # set to NA when no intersecting prices were found:
+  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+  # -> colSums()-function returns 0 when everything is NA
+
+  # print output to console:
+  return(res)
+
+}
+.geowalsh <- function(P, Q, W, base=1L){
+
+  # compute price ratios:
+  R <- log(P/P[, base])
+
+  # set weights:
+  if(missing(Q)){
+    Wbase <- matrix(data=W[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- W
+  }else{
+    Wbase <- matrix(data=P[,base]*Q[,base], ncol=ncol(P), nrow=nrow(P))
+    Wall <- P*Q
+  }
+
+  # normalize weights:
+  Wbase[is.na(R)] <- NA
+  Wbase <- Wbase/colSums(Wbase, na.rm=TRUE)[col(R)]
+  Wall[is.na(R)] <- NA
+  Wall <- Wall/colSums(Wall, na.rm=TRUE)[col(R)]
+
+  # compute new weights:
+  W <- sqrt(Wbase*Wall)
+  W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+  # compute index:
+  res <- exp(colSums(x=W*R, na.rm=TRUE))
+
+  # set to NA when no intersecting prices were found:
+  res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+  # -> colSums()-function returns 0 when everything is NA
+
+  # print output to console:
+  return(res)
+
+}
 .theil <- function(P, Q, W, base=1L){
 
   # compute price ratios:
@@ -593,14 +652,14 @@
   W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
 
   # compute index:
-  res <- colSums(x=W*R, na.rm=TRUE)
+  res <- exp(colSums(x=W*R, na.rm=TRUE))
 
   # set to NA when no intersecting prices were found:
   res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
   # -> colSums()-function returns 0 when everything is NA
 
   # print output to console:
-  return(exp(res))
+  return(res)
 
 }
 .toernq <- function(P, Q, W, base=1L){
@@ -628,14 +687,14 @@
   W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
 
   # compute index:
-  res <- colSums(x=W*R, na.rm=TRUE)
+  res <- exp(colSums(x=W*R, na.rm=TRUE))
 
   # set to NA when no intersecting prices were found:
   res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
   # -> colSums()-function returns 0 when everything is NA
 
-  # re-transform logs:
-  return(exp(res))
+  # print output to console:
+  return(res)
 
 }
 .svartia <- function(P, Q, W, base=1L){
@@ -664,14 +723,14 @@
   W <- W/colSums(W, na.rm=TRUE)[col(W)]
 
   # compute index:
-  res <- colSums(x=W*R, na.rm=TRUE)
+  res <- exp(colSums(x=W*R, na.rm=TRUE))
 
   # set to NA when no intersecting prices were found:
   res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
   # -> colSums()-function returns 0 when everything is NA
 
-  # re-transform logs:
-  return(exp(res))
+  # print output to console:
+  return(res)
 
 }
 
@@ -747,7 +806,10 @@
                        walsh = spin:::.walsh2,
                        svartia = spin:::.svartia2,
                        palgrave = spin:::.palgrave2,
-                       drobisch = spin:::.drobisch2)
+                       drobisch = spin:::.drobisch2,
+                       geolaspey = spin:::.geolaspey2,
+                       geopaasche = spin:::.geopaasche2,
+                       geowalsh = spin:::.geowalsh2)
 
   # initialize data:
   pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
@@ -841,6 +903,21 @@ drobisch <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 walsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="walsh", base=base, settings=settings)
+
+}
+geolaspey <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geolaspey", base=base, settings=settings)
+
+}
+geopaasche <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geopaasche", base=base, settings=settings)
+
+}
+geowalsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  .bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geowalsh", base=base, settings=settings)
 
 }
 theil <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){

@@ -100,11 +100,22 @@ PPal <- setNames(PPal$V1, PPal$region)
 PWa <- dt1[, sum(price*sqrt(quantity*quantity.base))/sum(price.base*sqrt(quantity*quantity.base)), by="region"]
 PWa <- setNames(PWa$V1, PWa$region)
 
+PGeoLa <- dt1[, exp(sum(share.base/sum(share.base)*log(price/price.base))), by="region"]
+PGeoLa <- setNames(PGeoLa$V1, PGeoLa$region)
+
+PGeoPa <- dt1[, exp(sum(share/sum(share)*log(price/price.base))), by="region"]
+PGeoPa <- setNames(PGeoPa$V1, PGeoPa$region)
+
 PTo <- dt1[, exp(sum(0.5*(price*quantity/sum(price*quantity)+price.base*quantity.base/sum(price.base*quantity.base))*log(price/price.base))), by="region"]
 PTo <- setNames(PTo$V1, PTo$region)
 
 PMe <- dt1[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
 PMe <- setNames(PMe$V1, PMe$region)
+
+dt1[, "w":= sqrt(share/sum(share)*share.base/sum(share.base)), by="region"]
+PGeoWa <- dt1[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
+PGeoWa <- setNames(PGeoWa$V1, PGeoWa$region)
+dt1[, "w":=NULL]
 
 dt1[, "w":= ((share/sum(share)+share.base/sum(share.base))/2*(share/sum(share))*(share.base/sum(share.base)))^(1/3), by="region"]
 PTh <- dt1[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
@@ -134,6 +145,9 @@ expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="1")
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="1")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="1")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="1")], PSv)
+expect_equal(dt[, geolaspey(p=price, r=region, n=product, q=quantity, base="1")], PGeoLa)
+expect_equal(dt[, geopaasche(p=price, r=region, n=product, q=quantity, base="1")], PGeoPa)
+expect_equal(dt[, geowalsh(p=price, r=region, n=product, q=quantity, base="1")], PGeoWa)
 
 # base region 2:
 dt2 <- merge(x=dt, y=dt[region=="2",], by="product", suffixes=c("",".base"))
@@ -169,11 +183,22 @@ PPal <- setNames(PPal$V1, PPal$region)
 PWa <- dt2[, sum(price*sqrt(quantity*quantity.base))/sum(price.base*sqrt(quantity*quantity.base)), by="region"]
 PWa <- setNames(PWa$V1, PWa$region)
 
+PGeoLa <- dt2[, exp(sum(share.base/sum(share.base)*log(price/price.base))), by="region"]
+PGeoLa <- setNames(PGeoLa$V1, PGeoLa$region)
+
+PGeoPa <- dt2[, exp(sum(share/sum(share)*log(price/price.base))), by="region"]
+PGeoPa <- setNames(PGeoPa$V1, PGeoPa$region)
+
 PTo <- dt2[, exp(sum(0.5*(price*quantity/sum(price*quantity)+price.base*quantity.base/sum(price.base*quantity.base))*log(price/price.base))), by="region"]
 PTo <- setNames(PTo$V1, PTo$region)
 
 PMe <- dt2[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
 PMe <- setNames(PMe$V1, PMe$region)
+
+dt2[, "w":= sqrt(share/sum(share)*share.base/sum(share.base)), by="region"]
+PGeoWa <- dt2[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
+PGeoWa <- setNames(PGeoWa$V1, PGeoWa$region)
+dt2[, "w":=NULL]
 
 dt2[, "w":= ((share/sum(share)+share.base/sum(share.base))/2*(share/sum(share))*(share.base/sum(share.base)))^(1/3), by="region"]
 PTh <- dt2[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
@@ -203,6 +228,9 @@ expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="2")
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="2")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="2")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="2")], PSv)
+expect_equal(dt[, geolaspey(p=price, r=region, n=product, q=quantity, base="2")], PGeoLa)
+expect_equal(dt[, geopaasche(p=price, r=region, n=product, q=quantity, base="2")], PGeoPa)
+expect_equal(dt[, geowalsh(p=price, r=region, n=product, q=quantity, base="2")], PGeoWa)
 
 # check rebasing:
 expect_equal(
@@ -251,6 +279,21 @@ expect_equal(
 expect_equal(
   dt[, walsh(p=price, r=region, n=product, q=quantity, base="1")],
   dt[, walsh(p=price, r=region, n=product, w=share, base="1")]
+)
+
+expect_equal(
+  dt[, geolaspey(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, geolaspey(p=price, r=region, n=product, w=share, base="1")]
+)
+
+expect_equal(
+  dt[, geopaasche(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, geopaasche(p=price, r=region, n=product, w=share, base="1")]
+)
+
+expect_equal(
+  dt[, geowalsh(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, geowalsh(p=price, r=region, n=product, w=share, base="1")]
 )
 
 expect_equal(
@@ -484,6 +527,42 @@ expect_equal(PSv3, PSv4)
 
 # compare weights versus quantities:
 expect_equal(PSv1, PSv3)
+
+# geolaspey:
+system.time(PGeoLa1 <- spin:::.geolaspey(P=P, Q=Q))
+system.time(PGeoLa2 <- dt[, geolaspey(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PGeoLa1, PGeoLa2)
+
+system.time(PGeoLa3 <- spin:::.geolaspey(P=P, W=W))
+system.time(PGeoLa4 <- dt[, geolaspey(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PGeoLa3, PGeoLa4)
+
+# compare weights versus quantities:
+expect_equal(PGeoLa1, PGeoLa3)
+
+# geopaasche:
+system.time(PGeoPa1 <- spin:::.geopaasche(P=P, Q=Q))
+system.time(PGeoPa2 <- dt[, geopaasche(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PGeoPa1, PGeoPa2)
+
+system.time(PGeoPa3 <- spin:::.geopaasche(P=P, W=W))
+system.time(PGeoPa4 <- dt[, geopaasche(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PGeoPa3, PGeoPa4)
+
+# compare weights versus quantities:
+expect_equal(PGeoPa1, PGeoPa3)
+
+# geowalsh:
+system.time(PGeoWa1 <- spin:::.geowalsh(P=P, Q=Q))
+system.time(PGeoWa2 <- dt[, geowalsh(p=p, q=q, r=r, n=n, base="1")])
+expect_equal(PGeoWa1, PGeoWa2)
+
+system.time(PGeoWa3 <- spin:::.geowalsh(P=P, W=W))
+system.time(PGeoWa4 <- dt[, geowalsh(p=p, w=share, r=r, n=n, base="1")])
+expect_equal(PGeoWa3, PGeoWa4)
+
+# compare weights versus quantities:
+expect_equal(PGeoWa1, PGeoWa3)
 
 # END
 
