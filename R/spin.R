@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   20 November 2023
+# Date:   29 November 2023
 
 # list available price indices:
 list.indices <- function(){
@@ -53,7 +53,15 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   .check.char(x=type, min.len=1, max.len=Inf, null.ok=TRUE, na.ok=FALSE)
 
   # allowed index types:
-  type.vals <- spin:::pindices$name
+  if(is.null(q) && is.null(w)){
+    type.vals <- spin:::pindices[uses_none==TRUE, name]
+  }else{
+    if(is.null(q)){
+      type.vals <- spin:::pindices[uses_none==TRUE | uses_w==TRUE, name]
+    }else{
+      type.vals <- spin:::pindices[uses_none==TRUE | uses_q==TRUE, name]
+    }
+  }
 
   # check against allowed index types:
   if(is.null(type)){
@@ -69,255 +77,44 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   base <- spin:::set.base(r=pdata$r, base=base, null.ok=FALSE, settings=settings)
 
   # overwrite settings to avoid double checking:
-  settings$missings <- settings$duplicates <- settings$connect <- FALSE
+  settings$missings <- settings$duplicates <- settings$connect <- settings$check.inputs <- FALSE
 
-  # indices without quantities or weights:
-  Punw <- list(
-    "jevons"=if("jevons"%in%type){
-      pdata[, spin::jevons(p=p, r=r, n=n, base=base, settings=settings)]
-    },
+  # class of bilateral indices and geks indices:
+  type.bil <- type[type%in%spin:::pindices[type=="bilateral", name]]
+  type.geks <- gsub(pattern="^geks-", replacement="", x=grep(pattern="^geks-", x=type, value=TRUE))
 
-    "carli"=if("carli"%in%type){
-      pdata[, spin::carli(p=p, r=r, n=n, base=base, settings=settings)]
-    },
+  # unweighted indices:
+  if(is.null(q) && is.null(w)){
 
-    "harmonic"=if("harmonic"%in%type){
-      pdata[, spin::harmonic(p=p, r=r, n=n, base=base, settings=settings)]
-    },
+    Pout <- list(
 
-    "dutot"=if("dutot"%in%type){
-      pdata[, spin::dutot(p=p, r=r, n=n, base=base, settings=settings)]
-    },
-
-    "cswd"=if("cswd"%in%type){
-      pdata[, spin::cswd(p=p, r=r, n=n, base=base, settings=settings)]
-    },
-
-    "geks-jevons"=if("geks-jevons"%in%type){
-      pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="jevons"))]
-    },
-
-    "geks-carli"=if("geks-carli"%in%type){
-      pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="carli"))]
-    },
-
-    "geks-harmonic"=if("geks-harmonic"%in%type){
-      pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="harmonic"))]
-    },
-
-    "geks-dutot"=if("geks-dutot"%in%type){
-      pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="dutot"))]
-    },
-
-    "geks-cswd"=if("geks-cswd"%in%type){
-      pdata[, spin::geks(p=p, r=r, n=n, base=base, settings=c(settings, type="cswd"))]
-    }
-  )
-
-  # indices with quantities:
-  if(!is.null(q)){
-
-    # weighted indices:
-    Pw <- list(
-      "laspey"=if("laspey"%in%type){
-        pdata[, spin::laspey(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "paasche"=if("paasche"%in%type){
-        pdata[, spin::paasche(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "fisher"=if("fisher"%in%type){
-        pdata[, spin::fisher(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "walsh"=if("walsh"%in%type){
-        pdata[, spin::walsh(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "toernq"=if("toernq"%in%type){
-        pdata[, spin::toernq(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "medgeworth"=if("medgeworth"%in%type){
-        pdata[, spin::medgeworth(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "theil"=if("theil"%in%type){
-        pdata[, spin::theil(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "palgrave"=if("palgrave"%in%type){
-        pdata[, spin::palgrave(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "svartia"=if("svartia"%in%type){
-        pdata[, spin::svartia(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "drobisch"=if("drobisch"%in%type){
-        pdata[, spin::drobisch(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "geolaspey"=if("geolaspey"%in%type){
-        pdata[, spin::geolaspey(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "geopaasche"=if("geopaasche"%in%type){
-        pdata[, spin::geopaasche(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "geowalsh"=if("geowalsh"%in%type){
-        pdata[, spin::geowalsh(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+      if(length(type.bil)>0){
+       pdata[, spin:::bilateral.index(p=p, r=r, n=n, base=base, type=type.bil, settings=settings)]
       },
 
       "cpd"=if("cpd"%in%type){
-        pdata[, spin::cpd(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+        pdata[, spin::cpd(p=p, r=r, n=n, base=base, settings=settings)]
       },
 
       "nlcpd"=if("nlcpd"%in%type){
-        pdata[, spin::nlcpd(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+        pdata[, spin::nlcpd(p=p, r=r, n=n, base=base, settings=settings)]
       },
 
-      "geks-laspey"=if("geks-laspey"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="laspey"))]
-      },
-
-      "geks-paasche"=if("geks-paasche"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="paasche"))]
-      },
-
-      "geks-fisher"=if("geks-fisher"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="fisher"))]
-      },
-
-      "geks-walsh"=if("geks-walsh"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="walsh"))]
-      },
-
-      "geks-toernq"=if("geks-toernq"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="toernq"))]
-      },
-
-      "geks-medgeworth"=if("geks-medgeworth"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="medgeworth"))]
-      },
-
-      "geks-theil"=if("geks-theil"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="theil"))]
-      },
-
-      "geks-palgrave"=if("geks-palgrave"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="palgrave"))]
-      },
-
-      "geks-svartia"=if("geks-svartia"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="svartia"))]
-      },
-
-      "geks-drobisch"=if("geks-drobisch"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="drobisch"))]
-      },
-
-      "geks-geolaspey"=if("geks-geolaspey"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="geolaspey"))]
-      },
-
-      "geks-geopaasche"=if("geks-geopaasche"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="geopaasche"))]
-      },
-
-      "geks-geowalsh"=if("geks-geowalsh"%in%type){
-        pdata[, spin::geks(p=p, r=r, n=n, q=z, base=base, settings=c(settings, type="geowalsh"))]
-      },
-
-      "gk"=if("gk"%in%type){
-        pdata[, spin::gk(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "rao"=if("rao"%in%type){
-        pdata[, spin::rao(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "idb"=if("idb"%in%type){
-        pdata[, spin::idb(p=p, r=r, n=n, q=z, base=base, settings=settings)]
-      },
-
-      "gerardi"=if("gerardi"%in%type){
-        pdata[, spin::gerardi(p=p, r=r, n=n, q=z, base=base, settings=c(settings, method="iterative"))]
+      if(length(type.geks)>0){
+        pdata[, spin:::geks.main(p=p, r=r, n=n, base=base, settings=c(list("type"=type.geks), settings))]
       }
 
     )
 
   }else{
 
-    if(is.null(w)){
+    # expenditure share weighted indices:
+    if(is.null(q)){
 
-      # no weighted indices but add unweighted cpd and nlcpd:
-      Pw <- NULL
+      Pout <- list(
 
-      if("cpd"%in%type){
-        Punw$cpd <- pdata[, spin::cpd(p=p, r=r, n=n, base=base, settings=settings)]
-      }
-
-      if("nlcpd"%in%type){
-        Punw$nlcpd <- pdata[, spin::nlcpd(p=p, r=r, n=n, base=base, settings=settings)]
-      }
-
-    }else{
-
-      # weighted indices:
-      Pw <- list(
-        "laspey"=if("laspey"%in%type){
-          pdata[, spin::laspey(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "paasche"=if("paasche"%in%type){
-          pdata[, spin::paasche(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "fisher"=if("fisher"%in%type){
-          pdata[, spin::fisher(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "walsh"=if("walsh"%in%type){
-          pdata[, spin::walsh(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "toernq"=if("toernq"%in%type){
-          pdata[, spin::toernq(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "medgeworth"=if("medgeworth"%in%type){
-          NA_real_
-        },
-
-        "theil"=if("theil"%in%type){
-          pdata[, spin::theil(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "palgrave"=if("palgrave"%in%type){
-          pdata[, spin::palgrave(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "svartia"=if("svartia"%in%type){
-          pdata[, spin::svartia(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "drobisch"=if("drobisch"%in%type){
-          pdata[, spin::drobisch(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "geolaspey"=if("geolaspey"%in%type){
-          pdata[, spin::geolaspey(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "geopaasche"=if("geopaasche"%in%type){
-          pdata[, spin::geopaasche(p=p, r=r, n=n, w=w, base=base, settings=settings)]
-        },
-
-        "geowalsh"=if("geowalsh"%in%type){
-          pdata[, spin::geowalsh(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        if(length(type.bil)>0){
+          pdata[, spin:::bilateral.index(p=p, r=r, n=n, w=w, base=base, type=type.bil, settings=settings)]
         },
 
         "cpd"=if("cpd"%in%type){
@@ -328,60 +125,8 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
           pdata[, spin::nlcpd(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
-        "geks-laspey"=if("geks-laspey"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="laspey"))]
-        },
-
-        "geks-paasche"=if("geks-paasche"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="paasche"))]
-        },
-
-        "geks-fisher"=if("geks-fisher"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="fisher"))]
-        },
-
-        "geks-walsh"=if("geks-walsh"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="walsh"))]
-        },
-
-        "geks-toernq"=if("geks-toernq"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="toernq"))]
-        },
-
-        "geks-medgeworth"=if("geks-medgeworth"%in%type){
-          NA_real_
-        },
-
-        "geks-theil"=if("geks-theil"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="theil"))]
-        },
-
-        "geks-palgrave"=if("geks-palgrave"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="palgrave"))]
-        },
-
-        "geks-svartia"=if("geks-svartia"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="svartia"))]
-        },
-
-        "geks-drobisch"=if("geks-drobisch"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="drobisch"))]
-        },
-
-        "geks-geolaspey"=if("geks-geolaspey"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="geolaspey"))]
-        },
-
-        "geks-geopaasche"=if("geks-geopaasche"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="geopaasche"))]
-        },
-
-        "geks-geowalsh"=if("geks-geowalsh"%in%type){
-          pdata[, spin::geks(p=p, r=r, n=n, w=w, base=base, settings=c(settings, type="geowalsh"))]
-        },
-
-        "gk"=if("gk"%in%type){
-          NA_real_
+        if(length(type.geks)>0){
+          pdata[, spin:::geks.main(p=p, r=r, n=n, w=w, base=base, settings=c(list("type"=type.geks), settings))]
         },
 
         "rao"=if("rao"%in%type){
@@ -393,7 +138,46 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
         },
 
         "gerardi"=if("gerardi"%in%type){
-          pdata[, spin::gerardi(p=p, r=r, n=n, w=w, base=base, settings=c(settings, method="iterative"))]
+          pdata[, spin::gerardi(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+        }
+
+      )
+
+    # quantity weighted indices:
+    }else{
+
+      Pout <- list(
+
+        if(length(type.bil)>0){
+          pdata[, spin:::bilateral.index(p=p, r=r, n=n, q=z, base=base, type=type.bil, settings=settings)]
+        },
+
+        "cpd"=if("cpd"%in%type){
+          pdata[, spin::cpd(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+        },
+
+        "nlcpd"=if("nlcpd"%in%type){
+          pdata[, spin::nlcpd(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+        },
+
+        if(length(type.geks)>0){
+          pdata[, spin:::geks.main(p=p, r=r, n=n, q=z, base=base, settings=c(list("type"=type.geks), settings))]
+        },
+
+        "rao"=if("rao"%in%type){
+          pdata[, spin::rao(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+        },
+
+        "idb"=if("idb"%in%type){
+          pdata[, spin::idb(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+        },
+
+        "gerardi"=if("gerardi"%in%type){
+          pdata[, spin::gerardi(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+        },
+
+        "gk"=if("gk"%in%type){
+          pdata[, spin::gk(p=p, r=r, n=n, q=z, base=base, settings=settings)]
         }
 
       )
@@ -403,7 +187,7 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   }
 
   # collect results and order alphabetically:
-  out <- do.call("rbind", c(Punw, Pw))
+  out <- do.call("rbind", Pout)
   out <- out[order(rownames(out)), , drop=FALSE]
 
   # match to initial ordering:

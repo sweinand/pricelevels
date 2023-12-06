@@ -24,9 +24,8 @@ geks(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
    \item \code{all.pairs} : Logical indicating whether index numbers should be computed for all region pairs (\code{TRUE}) or only for non-redundant ones (\code{FALSE}), e.g. the index number of regions \code{AB} should be the same as the inverse of \code{BA}. The default is \code{TRUE}.
-   \item \code{type} : A character specifying the index method used to aggregate prices into bilateral price indices for each pair of regions (first step of GEKS). See \code{\link{bilateral.index}} for allowed values. The default is \code{jevons}.
-   \item \code{wmethod} : the weighting method (second step of GEKS). Allowed values are \code{none} for equal weighting of all bilateral price indices, \code{obs} for weighting the bilateral price indices according to the underlying number of intersecting observations, or \code{shares} for weighting according to the intersecting expenditure shares. The default is \code{none}. Used only by \code{geks()}
-   \item \code{as.dt} : A logical indicating whether the results should be transformed to a data.table or not. The default is \code{FALSE}. Used only by \code{index.pairs()}.
+   \item \code{type} : A character specifying the index method(s) used to aggregate prices into bilateral price indices for each pair of regions (first step of GEKS). See \code{\link{bilateral.index}} for allowed values. Multiple choices allowed. The default is \code{jevons}.
+   \item \code{wmethod} : the weighting method (second step of GEKS). Allowed values are \code{none} for equal weighting of all bilateral price indices, \code{obs} for weighting the bilateral price indices according to the underlying number of intersecting observations, or \code{shares} for weighting according to the intersecting expenditure shares. The default is \code{none}. Used only by \code{geks()}.
    }}
 }
 
@@ -43,14 +42,9 @@ Szulc, B. J. (1964). Indices for Multiregional Comparisons. \emph{Przeglad Staty
 }
 
 \value{
-For \code{index.pairs()}, a matrix of price levels or, in case \code{settings$as.dt=TRUE}, a data.table with the following variables:
-\tabular{lll}{
-   \code{region} \tab \tab region\cr
-   \code{base} \tab \tab base region\cr
-   \code{index} \tab \tab price level of comparison between region and base\cr
-}
+For \code{index.pairs()}, a data.table with variables \code{base} (the base region), \code{region} (the comparison region), and \code{eval(settings$type)} (the price level between the two regions).
 
-For \code{geks()}, a named vector of (unlogged) regional price levels if \code{simplify=TRUE}. Otherwise, for \code{simplify=FALSE}, a \code{lm}-object containing the full regression output.
+For \code{geks()}, a named vector or matrix of (unlogged) regional price levels if \code{simplify=TRUE}. Otherwise, for \code{simplify=FALSE}, a \code{lm}-object containing the full regression output.
 }
 
 \details{
@@ -78,27 +72,29 @@ Pje <- dt1[, index.pairs(p=price, r=region, n=product, settings=list(type="jevon
 # test (like the Jevons index), the price index numbers of
 # the upper-right triangle are the same as the inverse of
 # the price index numbers of the lower-left triangle.
-all.equal(Pje[3,1], 1/Pje[1,3]) # true
+all.equal(Pje$jevons[3], 1/Pje$jevons[7]) # true
 # hence, one could set all.pairs=FALSE without loosing any
 # information. however, this is no longer true for indices
 # that do not satisfy this test (like the Carli index):
 Pca <- dt1[, index.pairs(p=price, r=region, n=product, settings=list(type="carli"))]
-all.equal(Pca[3,1], 1/Pca[1,3]) # false
+all.equal(Pca$carli[3], 1/Pca$carli[7]) # false
 
 ### GEKS method
 
 # for complete price data (no gaps), the jevons index is transitive.
 # hence, no adjustment is needed by the geks approach, which is
 # why the index numbers are the same:
-dt1[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
-dt1[, jevons(p=price, r=region, n=product, base="1")]
-# -> identical
+all.equal(
+  dt1[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))],
+  dt1[, jevons(p=price, r=region, n=product, base="1")]
+) # true
 
 # this is no longer true when there are gaps in the data:
 dt1.gaps <- dt1[!rgaps(region, product, amount=0.25), ]
-dt1.gaps[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
-dt1.gaps[, jevons(p=price, r=region, n=product, base="1")]
-# -> now, differences
+all.equal(
+  dt1.gaps[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))],
+  dt1.gaps[, jevons(p=price, r=region, n=product, base="1")]
+) # now, differences
 
 # weighting at the second step of GEKS can be done with respect
 # to the intersection of products for each pair of region:
@@ -113,6 +109,9 @@ dt <- rbind(dt1, dt2)
 dt[, is.connected(r=region, n=product)] # non-connected now
 
 # compute all index pairs and geks:
-dt[, index.pairs(p=price, r=region, n=product)]
+as.matrix(dcast(
+  data=dt[, index.pairs(p=price, r=region, n=product)],
+  formula=base~region,
+  value.var="jevons"), rownames="base")
 dt[, geks(p=price, r=region, n=product, base="1", settings=list(type="jevons"))]
 }

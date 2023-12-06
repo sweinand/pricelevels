@@ -4,10 +4,10 @@ The `spin`-package provides index number methods for price comparisons within a 
 
 1. Bilateral price indices:
     - Non-weighted: Jevons, Dutot, Carli, Harmonic, CSWD
-    - Weighted: Laspeyres, Paasche, Fisher, Toernqvist, Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch
+    - Weighted: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch
 2. Multilateral price indices: 
     - CPD and NLCPD methods
-    - (Weighted) GEKS method
+    - GEKS method
     - Multilateral systems of equations: Geary-Khamis, Iklé-Dikhanov-Balk, Geradi, Rao
 
 Moreover, the package offers functions for sampling and characterizing price data. Details can be found in the package vignette.

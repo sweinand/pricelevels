@@ -1,8 +1,9 @@
 # START
 
 # price indices:
-Punw <- sort(c(spin:::pindices[uses_q==FALSE & uses_w==F, name],"cpd","nlcpd"))
-Pall <- sort(spin:::pindices$name)
+Punw <- sort(spin:::pindices[uses_none==TRUE, name])
+Pq <- sort(spin:::pindices[uses_none==TRUE | uses_q==TRUE, name])
+Pw <- sort(spin:::pindices[uses_none==TRUE | uses_w==TRUE, name])
 
 
 # Data with one region only -----------------------------------------------
@@ -18,15 +19,13 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, spin(p=price, r=region, n=product, q=quantity, base="1")],
-  matrix(data=1, ncol=1, nrow=length(Pall), dimnames=list(Pall, "1"))
+  dt[, spin(p=price, r=region, n=product, w=weight, base="1")],
+  matrix(data=1, ncol=1, nrow=length(Pw), dimnames=list(Pw, "1"))
 )
 
-res <- matrix(data=1, ncol=1, nrow=length(Pall), dimnames=list(Pall, "1"))
-res[rownames(res)%in%c("gk","medgeworth","geks-medgeworth"),1] <- NA
 expect_equal(
-  dt[, spin(p=price, r=region, n=product, w=quantity, base="1")],
-  res
+  dt[, spin(p=price, r=region, n=product, q=quantity, base="1")],
+  matrix(data=1, ncol=1, nrow=length(Pq), dimnames=list(Pq, "1"))
 )
 
 
@@ -74,21 +73,22 @@ expect_no_error(
 # check rebasing:
 expect_equal(
   dt[, spin(p=price, r=region, n=product, q=quantity, base="1")][,1],
-  setNames(rep(1, length(Pall)), Pall)
+  setNames(rep(1, length(Pq)), Pq)
 )
 
 expect_equal(
   dt[, spin(p=price, r=region, n=product, q=quantity, base="2")][,2],
-  setNames(rep(1, length(Pall)), Pall)
+  setNames(rep(1, length(Pq)), Pq)
 )
 
 # test quantities versus shares as weights:
 dt[, "share" := (price*quantity)/sum(price*quantity), by="region"]
 
+A <- dt[, spin(p=price, r=region, n=product, q=quantity, base="1")]
+B <- dt[, spin(p=price, r=region, n=product, w=share, base="1")]
+
 expect_true(
-  all(abs(
-    dt[, spin(p=price, r=region, n=product, q=quantity, base="1")]-dt[, spin(p=price, r=region, n=product, w=share, base="1")]
-    )<1e-5, na.rm=TRUE)
+  all(abs(A[!rownames(A)%in%c("medgeworth","gk","geks-medgeworth"),]-B)<1e-5, na.rm=TRUE)
 )
 
 
@@ -111,12 +111,28 @@ expect_error(
   dt[, spin(p=price, r=region, n=product, q=quantity, base="1", settings=list(solve="abc"))]
 )
 
+expect_error(
+  dt[, spin(p=price, r=region, n=product, base="1", settings=list(type="abc"))]
+)
+
+expect_error(
+  dt[, spin(p=price, r=region, n=product, base="1", settings=list(type="laspey"))]
+)
+
 expect_true(
   is.matrix(dt[, spin(p=price, r=region, n=product, base="1", settings=list(type="jevons"))])
 )
 
 expect_true(
   nrow(dt[, spin(p=price, r=region, n=product, base="1", settings=list(type="jevons"))])==1L
+)
+
+expect_true(
+  is.matrix(dt[, spin(p=price, r=region, n=product, base="1", settings=list(type=c("jevons","dutot")))])
+)
+
+expect_true(
+  nrow(dt[, spin(p=price, r=region, n=product, base="1", settings=list(type=c("jevons","dutot")))])==2L
 )
 
 
@@ -139,25 +155,25 @@ expect_error(
 expect_equal(
   dt[, spin(p=price, r=region, n=product, q=quantity, base="1",
               settings=list(chatty=FALSE, connect=TRUE))][,1],
-  setNames(rep(1, length(Pall)), Pall)
+  setNames(rep(1, length(Pq)), Pq)
 )
 
 expect_equal(
   dt[, spin(p=price, r=region, n=product, q=quantity, base="1",
               settings=list(chatty=FALSE, connect=TRUE))][,4:7],
-  matrix(data=NA_real_, ncol=4, nrow=length(Pall), dimnames=list(Pall, 4:7))
+  matrix(data=NA_real_, ncol=4, nrow=length(Pq), dimnames=list(Pq, 4:7))
 )
 
 expect_equal(
   dt[, spin(p=price, r=region, n=product, q=quantity, base="4",
               settings=list(chatty=FALSE, connect=TRUE))][,1:3],
-  matrix(data=NA_real_, ncol=3, nrow=length(Pall), dimnames=list(Pall, 1:3))
+  matrix(data=NA_real_, ncol=3, nrow=length(Pq), dimnames=list(Pq, 1:3))
 )
 
 expect_equal(
   dt[, spin(p=price, r=region, n=product, q=quantity, base="4",
               settings=list(chatty=FALSE, connect=TRUE))][,4],
-  setNames(rep(1, length(Pall)), Pall)
+  setNames(rep(1, length(Pq)), Pq)
 )
 
 # END

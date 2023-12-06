@@ -391,41 +391,41 @@ W <- as.matrix(
   rownames="n")
 
 # jevons:
-system.time(PJ1 <- spin:::.jevons(P=P, Q=Q))
+system.time(PJ1 <- spin:::Pmatrix$jevons(P=P, Q=Q))
 system.time(PJ2 <- dt[, jevons(p=p, r=r, n=n, base="1")])
 expect_equal(PJ1, PJ2)
 
 # carli:
-system.time(PC1 <- spin:::.carli(P=P, Q=Q))
+system.time(PC1 <- spin:::Pmatrix$carli(P=P, Q=Q))
 system.time(PC2 <- dt[, carli(p=p, r=r, n=n, base="1")])
 expect_equal(PC1, PC2)
 
 # dutot:
-system.time(PD1 <- spin:::.dutot(P=P, Q=Q))
+system.time(PD1 <- spin:::Pmatrix$dutot(P=P, Q=Q))
 system.time(PD2 <- dt[, dutot(p=p, r=r, n=n, base="1")])
 expect_equal(PD1, PD2)
 
 # harmonic:
-system.time(PH1 <- spin:::.harmonic(P=P, Q=Q))
+system.time(PH1 <- spin:::Pmatrix$harmonic(P=P, Q=Q))
 system.time(PH2 <- dt[, harmonic(p=p, r=r, n=n, base="1")])
 expect_equal(PH1, PH2)
 
 # cswd:
-system.time(PCSWD1 <- spin:::.cswd(P=P, Q=Q))
+system.time(PCSWD1 <- spin:::Pmatrix$cswd(P=P, Q=Q))
 system.time(PCSWD2 <- dt[, cswd(p=p, r=r, n=n, base="1")])
 expect_equal(PCSWD1, PCSWD2)
 
 # marshall-edgeworth:
-system.time(PMe1 <- spin:::.medgeworth(P=P, Q=Q))
+system.time(PMe1 <- spin:::Pmatrix$medgeworth(P=P, Q=Q))
 system.time(PMe2 <- dt[, medgeworth(p=p, r=r, n=n, q=q, base="1")])
 expect_equal(PMe1, PMe2)
 
 # laspeyres:
-system.time(PL1 <- spin:::.laspey(P=P, Q=Q))
+system.time(PL1 <- spin:::Pmatrix$laspey(P=P, Q=Q))
 system.time(PL2 <- dt[, laspey(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PL1, PL2)
 
-system.time(PL3 <- spin:::.laspey(P=P, W=W))
+system.time(PL3 <- spin:::Pmatrix$laspey(P=P, W=W))
 system.time(PL4 <- dt[, laspey(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PL3, PL4)
 
@@ -433,11 +433,11 @@ expect_equal(PL3, PL4)
 expect_equal(PL1, PL3)
 
 # paasche:
-system.time(PP1 <- spin:::.paasche(P=P, Q=Q))
+system.time(PP1 <- spin:::Pmatrix$paasche(P=P, Q=Q))
 system.time(PP2 <- dt[, paasche(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PP1, PP2)
 
-system.time(PP3 <- spin:::.paasche(P=P, W=W))
+system.time(PP3 <- spin:::Pmatrix$paasche(P=P, W=W))
 system.time(PP4 <- dt[, paasche(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PP3, PP4)
 
@@ -445,11 +445,11 @@ expect_equal(PP3, PP4)
 expect_equal(PP1, PP3)
 
 # fisher:
-system.time(PF1 <- spin:::.fisher(P=P, Q=Q))
+system.time(PF1 <- spin:::Pmatrix$fisher(P=P, Q=Q))
 system.time(PF2 <- dt[, fisher(p=p, q=q, r=r, n=n,base="1")])
 expect_equal(PF1, PF2)
 
-system.time(PF3 <- spin:::.fisher(P=P, W=W))
+system.time(PF3 <- spin:::Pmatrix$fisher(P=P, W=W))
 system.time(PF4 <- dt[, fisher(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PF3, PF4)
 
@@ -457,11 +457,11 @@ expect_equal(PF3, PF4)
 expect_equal(PF1, PF3)
 
 # palgrave:
-system.time(PPal1 <- spin:::.palgrave(P=P, Q=Q))
+system.time(PPal1 <- spin:::Pmatrix$palgrave(P=P, Q=Q))
 system.time(PPal2 <- dt[, palgrave(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PPal1, PPal2)
 
-system.time(PPal3 <- spin:::.palgrave(P=P, W=W))
+system.time(PPal3 <- spin:::Pmatrix$palgrave(P=P, W=W))
 system.time(PPal4 <- dt[, palgrave(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PPal3, PPal4)
 
@@ -469,11 +469,11 @@ expect_equal(PPal3, PPal4)
 expect_equal(PPal1, PPal3)
 
 # drobisch:
-system.time(PDr1 <- spin:::.drobisch(P=P, Q=Q))
+system.time(PDr1 <- spin:::Pmatrix$drobisch(P=P, Q=Q))
 system.time(PDr2 <- dt[, drobisch(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PDr1, PDr2)
 
-system.time(PDr3 <- spin:::.drobisch(P=P, W=W))
+system.time(PDr3 <- spin:::Pmatrix$drobisch(P=P, W=W))
 system.time(PDr4 <- dt[, drobisch(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PDr3, PDr4)
 
@@ -481,11 +481,11 @@ expect_equal(PDr3, PDr4)
 expect_equal(PDr1, PDr3)
 
 # walsh:
-system.time(PW1 <- spin:::.walsh(P=P, Q=Q))
+system.time(PW1 <- spin:::Pmatrix$walsh(P=P, Q=Q))
 system.time(PW2 <- dt[, walsh(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PW1, PW2)
 
-system.time(PW3 <- spin:::.walsh(P=P, W=W))
+system.time(PW3 <- spin:::Pmatrix$walsh(P=P, W=W))
 system.time(PW4 <- dt[, walsh(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PW3, PW4)
 
@@ -493,11 +493,11 @@ expect_equal(PW3, PW4)
 expect_equal(PW1, PW3)
 
 # theil:
-system.time(PTh1 <- spin:::.theil(P=P, Q=Q))
+system.time(PTh1 <- spin:::Pmatrix$theil(P=P, Q=Q))
 system.time(PTh2 <- dt[, theil(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PTh1, PTh2)
 
-system.time(PTh3 <- spin:::.theil(P=P, W=W))
+system.time(PTh3 <- spin:::Pmatrix$theil(P=P, W=W))
 system.time(PTh4 <- dt[, theil(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PTh3, PTh4)
 
@@ -505,11 +505,11 @@ expect_equal(PTh3, PTh4)
 expect_equal(PTh1, PTh3)
 
 # toernqvist:
-system.time(PT1 <- spin:::.toernq(P=P, Q=Q))
+system.time(PT1 <- spin:::Pmatrix$toernq(P=P, Q=Q))
 system.time(PT2 <- dt[, toernq(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PT1, PT2)
 
-system.time(PT3 <- spin:::.toernq(P=P, W=W))
+system.time(PT3 <- spin:::Pmatrix$toernq(P=P, W=W))
 system.time(PT4 <- dt[, toernq(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PT3, PT4)
 
@@ -517,11 +517,11 @@ expect_equal(PT3, PT4)
 expect_equal(PT1, PT3)
 
 # sato-vartia:
-system.time(PSv1 <- spin:::.svartia(P=P, Q=Q))
+system.time(PSv1 <- spin:::Pmatrix$svartia(P=P, Q=Q))
 system.time(PSv2 <- dt[, svartia(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PSv1, PSv2)
 
-system.time(PSv3 <- spin:::.svartia(P=P, W=W))
+system.time(PSv3 <- spin:::Pmatrix$svartia(P=P, W=W))
 system.time(PSv4 <- dt[, svartia(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PSv3, PSv4)
 
@@ -529,11 +529,11 @@ expect_equal(PSv3, PSv4)
 expect_equal(PSv1, PSv3)
 
 # geolaspey:
-system.time(PGeoLa1 <- spin:::.geolaspey(P=P, Q=Q))
+system.time(PGeoLa1 <- spin:::Pmatrix$geolaspey(P=P, Q=Q))
 system.time(PGeoLa2 <- dt[, geolaspey(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PGeoLa1, PGeoLa2)
 
-system.time(PGeoLa3 <- spin:::.geolaspey(P=P, W=W))
+system.time(PGeoLa3 <- spin:::Pmatrix$geolaspey(P=P, W=W))
 system.time(PGeoLa4 <- dt[, geolaspey(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PGeoLa3, PGeoLa4)
 
@@ -541,11 +541,11 @@ expect_equal(PGeoLa3, PGeoLa4)
 expect_equal(PGeoLa1, PGeoLa3)
 
 # geopaasche:
-system.time(PGeoPa1 <- spin:::.geopaasche(P=P, Q=Q))
+system.time(PGeoPa1 <- spin:::Pmatrix$geopaasche(P=P, Q=Q))
 system.time(PGeoPa2 <- dt[, geopaasche(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PGeoPa1, PGeoPa2)
 
-system.time(PGeoPa3 <- spin:::.geopaasche(P=P, W=W))
+system.time(PGeoPa3 <- spin:::Pmatrix$geopaasche(P=P, W=W))
 system.time(PGeoPa4 <- dt[, geopaasche(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PGeoPa3, PGeoPa4)
 
@@ -553,11 +553,11 @@ expect_equal(PGeoPa3, PGeoPa4)
 expect_equal(PGeoPa1, PGeoPa3)
 
 # geowalsh:
-system.time(PGeoWa1 <- spin:::.geowalsh(P=P, Q=Q))
+system.time(PGeoWa1 <- spin:::Pmatrix$geowalsh(P=P, Q=Q))
 system.time(PGeoWa2 <- dt[, geowalsh(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PGeoWa1, PGeoWa2)
 
-system.time(PGeoWa3 <- spin:::.geowalsh(P=P, W=W))
+system.time(PGeoWa3 <- spin:::Pmatrix$geowalsh(P=P, W=W))
 system.time(PGeoWa4 <- dt[, geowalsh(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PGeoWa3, PGeoWa4)
 

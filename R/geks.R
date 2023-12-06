@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   20 November 2023
+# Date:   5 December 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -16,7 +16,6 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(is.null(settings$chatty)) settings$chatty <- TRUE
   if(is.null(settings$type)) settings$type <- "jevons"
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
-  if(is.null(settings$as.dt)) settings$as.dt <- FALSE
 
   # non-exported settings:
   if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
@@ -41,9 +40,8 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
     .check.lengths(x=r, y=w)
 
     # settings:
-    .check.char(x=settings$type, min.len=1, max.len=1, na.ok=FALSE)
+    .check.char(x=settings$type, min.len=1, max.len=Inf, na.ok=FALSE)
     .check.log(x=settings$all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-    .check.log(x=settings$as.dt, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
     .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
     .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
 
@@ -53,37 +51,24 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   type.vals <- spin:::pindices[type=="bilateral", ]
 
   # check against allowed index types:
-  type <- match.arg(arg=settings$type, choices=type.vals$name)
+  type <- match.arg(arg=settings$type, choices=type.vals$name, several.ok=TRUE)
 
   # error handling for quantity and weights:
-  if(settings$check.inputs && type%in%type.vals[uses_q==TRUE & uses_w==TRUE, name] && is.null(q) && is.null(w)){
-    stop(paste0("Non-valid input for type='", type, "' -> 'q' or 'w' required"), call.=FALSE)
-  }
-  if(settings$check.inputs && type%in%type.vals[uses_q==TRUE & uses_w==FALSE, name] && is.null(q)){
-    stop(paste0("Non-valid input for type='", type, "' -> 'q' required"), call.=FALSE)
+  if(settings$check.inputs){
+
+    if(any(type%in%type.vals[uses_q==TRUE & uses_w==TRUE, name]) && is.null(q) && is.null(w)){
+      stop(paste0("Non-valid input -> 'q' or 'w' required but both missing"), call.=FALSE)
+    }
+
+    if(any(type%in%type.vals[uses_q==TRUE & uses_w==FALSE, name]) && is.null(q)){
+      stop(paste0("Non-valid input -> 'q' required but missing"), call.=FALSE)
+    }
+
   }
 
-  # set index function based on type:
-  # NOTE that these are the matrix-version functions!
-  index_func <- switch(type,
-                       jevons = spin:::.jevons,
-                       carli = spin:::.carli,
-                       dutot = spin:::.dutot,
-                       harmonic = spin:::.harmonic,
-                       cswd = spin:::.cswd,
-                       theil = spin:::.theil,
-                       medgeworth = spin:::.medgeworth,
-                       toernq = spin:::.toernq,
-                       laspey = spin:::.laspey,
-                       paasche = spin:::.paasche,
-                       fisher = spin:::.fisher,
-                       walsh = spin:::.walsh,
-                       svartia = spin:::.svartia,
-                       palgrave = spin:::.palgrave,
-                       drobisch = spin:::.drobisch,
-                       geolaspey = spin:::.geolaspey,
-                       geopaasche = spin:::.geopaasche,
-                       geowalsh = spin:::.geowalsh)
+  # set "matrix index function" based on type:
+  # indexfn <- spin:::Pmatrix[match(x=type, table=names(spin:::Pmatrix))]
+  indexfn <- Pmatrix[match(x=type, table=names(Pmatrix))]
 
   # initialize data:
   pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=settings$base, settings=settings)
@@ -111,50 +96,48 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   # number of regions or time periods:
   R <- ncol(P)
 
-  # container to store price levels:
-  res <- matrix(data=NA_real_, nrow=R, ncol=R, dimnames=list(colnames(P), colnames(P)))
+  # loop over all indices:
+  out <- vector(mode="list", length=length(type))
+  for(j in seq_along(type)){
 
-  # slow, but complete or quick, but only non-redundant:
-  if(!settings$all.pairs){
+    # container to store price levels:
+    res <- matrix(data=NA_real_, nrow=R, ncol=R, dimnames=list(colnames(P), colnames(P)))
 
-    if(is.null(q)){
-      for(i in 1:R){
-        idx <- i:R # tighten column selection in each iteration
-        res[i, idx] <- index_func(P=P[, idx, drop=FALSE], W=Z[, idx, drop=FALSE], base=1L)
+    if(!settings$all.pairs){
+
+      # faster, but only-non-redundant
+      if(is.null(q)){
+        for(i in 1:R){
+          idx <- i:R # tighten column selection in each iteration
+          res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], W=Z[, idx, drop=FALSE], base=1L)
+        }
+      }else{
+        for(i in 1:R){
+          idx <- i:R # tighten column selection in each iteration
+          res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], Q=Z[, idx, drop=FALSE], base=1L)
+        }
       }
+
+      # slower, but complete
     }else{
-      for(i in 1:R){
-        idx <- i:R # tighten column selection in each iteration
-        res[i, idx] <- index_func(P=P[, idx, drop=FALSE], Q=Z[, idx, drop=FALSE], base=1L)
+
+      if(is.null(q)){
+        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, W=Z, base=i)
+      }else{
+        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, Q=Z, base=i)
       }
+
     }
 
-  }else{
-
-    if(is.null(q)){
-      for(i in 1:R) res[i, ] <- index_func(P=P, W=Z, base=i)
-    }else{
-      for(i in 1:R) res[i, ] <- index_func(P=P, Q=Z, base=i)
-    }
+    out[[j]] <- res
 
   }
 
-  # convert to dataframe:
-  if(settings$as.dt){
-
-    # convert into dataframe:
-    res <- as.data.table(as.table(t(res)))
-
-    # drop missing values:
-    res <- res[!is.na(N),]
-
-    # set column names:
-    setnames(x=res, c("region", "base", "index"))
-
-    # set key:
-    setkeyv(x=res, cols = c("region", "base"))
-
-  }
+  # convert into datatable:
+  res <- expand.grid("base"=colnames(out[[1]]), "region"=rownames(out[[1]]), KEEP.OUT.ATTRS=FALSE)
+  for(j in seq_along(type)) res[, type[j]] <- as.vector(out[[j]])
+  res <- na.omit(res)
+  res <- as.data.table(x=res, key=c("base", "region"))
 
   # print output to console:
   return(res)
@@ -162,7 +145,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
 }
 
 # compute mutlilateral GEKS index:
-geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
   # set default if missing:
   if(missing(q)) q <- NULL
@@ -219,9 +202,11 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
                          connect=settings$connect,
                          norm.weights=settings$norm.weights,
                          base=base, # this setting is not visible/exported
-                         as.dt=TRUE,
                          type=settings$type,
                          all.pairs=settings$all.pairs))
+
+  # get the processed index types:
+  type <- setdiff(colnames(pdata), c("base","region"))
 
   # no weighting in second aggregation step:
   if(settings$wmethod=="none"){
@@ -261,7 +246,8 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
   }
 
   # set response and explanatory variables:
-  index <- pdata$index
+  index <- as.matrix(subset(x=pdata, select=type))
+  colnames(index) <- paste("geks", colnames(index), sep="-")
   r <- factor(pdata$region)
   rb <- factor(pdata$base)
 
@@ -320,29 +306,43 @@ geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=lis
   if(simplify){
 
     # extract estimated regional price levels:
-    out <- coef(geks_reg_out)
-    names(out) <- gsub(pattern="^lnP", replacement="", x=names(out))
+    out <- as.matrix(coef(geks_reg_out))
+    rownames(out) <- gsub(pattern="^lnP", replacement="", x=rownames(out))
 
     # add price level of base region:
-    r.miss <- setdiff(x=levels(r), y=names(out))
-    if(is.null(base)) out.miss <- -sum(out) else out.miss <- 0
-    names(out.miss) <- r.miss
-    out <- c(out, out.miss)
+    r.miss <- setdiff(x=levels(r), y=rownames(out))
+    if(is.null(base)) out.miss <- -colSums(out) else out.miss <- 0
+    out.miss <- matrix(data=out.miss, ncol=ncol(out), dimnames=list(r.miss, paste("geks", type, sep="-")))
+    out <- rbind(out, out.miss)
 
     # match to initial ordering and unlog:
-    out <- exp(out)[match(x=r.lvl, table=names(out))]
-    names(out) <- r.lvl
+    out <- exp(out)[match(x=r.lvl, table=rownames(out)),, drop=FALSE]
+    rownames(out) <- r.lvl
+    out <- t(out)
 
   }else{
 
     # keep lm-object:
+    if(length(type)>1L){
+      rownames(geks_reg_out$coefficients) <- sub("^(lnP)", "\\1.", rownames(geks_reg_out$coefficients))
+    }else{
+      names(geks_reg_out$coefficients) <- sub("^(lnP)", "\\1.", names(geks_reg_out$coefficients))
+    }
     out <- geks_reg_out
-    names(out$coefficients) <- sub("^(lnP)", "\\1.", names(out$coefficients))
 
   }
 
   # print output to console:
   return(out)
+
+}
+
+# exported function:
+geks <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+
+  res <- spin:::geks.main(p=p, r=r, n=n, q=q, w=w, base=base, simplify=simplify, settings=settings)
+  if(simplify && nrow(res)<=1L) res <- setNames(as.vector(res), colnames(res))
+  return(res)
 
 }
 
