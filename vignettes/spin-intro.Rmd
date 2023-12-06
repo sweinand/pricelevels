@@ -1,7 +1,7 @@
 ---
 title: "Introduction to the spin-package"
 author: Sebastian Weinand
-date: "`r format(Sys.Date(),'%d %B %Y')`"
+date: "`r Sys.setlocale('LC_TIME', 'English'); format(Sys.Date(),'%d %B %Y')`"
 output: 
   rmarkdown::html_vignette:
     toc: true
@@ -15,6 +15,8 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+Sys.setenv(LANGUAGE="en")
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -26,10 +28,10 @@ The `spin`-package provides index number methods for price comparisons within a 
 
 1. Bilateral price indices:
     - Non-weighted: Jevons, Dutot, Carli, Harmonic, CSWD
-    - Weighted: Laspeyres, Paasche, Fisher, Toernqvist, Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch
+    - Weighted: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch
 2. Multilateral price indices: 
     - CPD and NLCPD methods
-    - (Weighted) GEKS method
+    - GEKS method
     - Multilateral systems of equations: Geary-Khamis, Iklé-Dikhanov-Balk, Gerardi, Rao
 
 Moreover, the package offers functions for sampling and characterizing price data. This vignette highlights the main package features. It contains three sections on price data, bilateral indices, and multilateral indices.
@@ -456,11 +458,11 @@ dt.big <- rdata(R=99, B=1, N=50, gaps=0.25)
 
 # iterative processing:
 system.time(m1 <- dt.big[, gk(p=price, r=region, n=product, q=quantity,
-                              settings=list(solve="iterative"), simplify=FALSE)])
+                              settings=list(solve="iterative"))])
 
 # matrix algebra:
 system.time(m2 <- dt.big[, gk(p=price, r=region, n=product, q=quantity,
-                              settings=list(solve="matrix"), simplify=FALSE)])
+                              settings=list(solve="matrix"))])
 
 # compare results and computation time:
 all.equal(m1, m2, tol=1e-05)
@@ -587,6 +589,6 @@ Similarly, if there are quantities or weights available in the data, all weighte
 ```{r}
 dt[, spin(p=price, r=region, n=product, q=quantity, base="1")]
 ```
-It is important to note that only the simplified output including the regions' price levels is returned. Moreover, the user has to provide a specific base reigon as bilateral indices do not allow a compartison to the average regional price level. However, any additional settings of some price index function (e.g., `settings$use.jac=TRUE` for `nlcpd()`) can be used in `spin()` as well.
+It is important to note that only the simplified output including the regions' price levels is returned. Moreover, the user has to provide a specific base region as bilateral indices do not allow a comparison to the average regional price level. However, any additional settings of some price index function (e.g., `settings$use.jac=TRUE` for `nlcpd()`) can be used in `spin()` as well.
 
 # References
