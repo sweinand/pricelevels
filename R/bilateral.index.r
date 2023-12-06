@@ -850,9 +850,9 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
 
     # compute price index for each region:
     if(is.null(q)){
-      aggdata <- pdata[, indexfn[[j]](p1=p, w1=z, p0=p_base, w0=z_base), by="r"]
+      aggdata <- pdata[, indexfn[[j]](p1=p, w1=w, p0=p_base, w0=w_base), by="r"]
     }else{
-      aggdata <- pdata[, indexfn[[j]](p1=p, q1=z, p0=p_base, q0=z_base), by="r"]
+      aggdata <- pdata[, indexfn[[j]](p1=p, q1=q, p0=p_base, q0=q_base), by="r"]
     }
 
     # ensure that results contain all regions, also in cases

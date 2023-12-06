@@ -440,6 +440,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
 
   # initialize data:
   pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
+  if(is.null(w) && is.null(q)) pdata[, "w":=1]
 
   # set base region:
   base <- spin:::set.base(r=pdata$r, base=base, null.ok=TRUE, settings=settings)

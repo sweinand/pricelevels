@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   29 November 2023
+# Date:   5 December 2023
 
 # list available price indices:
 list.indices <- function(){
@@ -149,35 +149,35 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
       Pout <- list(
 
         if(length(type.bil)>0){
-          pdata[, spin:::bilateral.index(p=p, r=r, n=n, q=z, base=base, type=type.bil, settings=settings)]
+          pdata[, spin:::bilateral.index(p=p, r=r, n=n, q=q, base=base, type=type.bil, settings=settings)]
         },
 
         "cpd"=if("cpd"%in%type){
-          pdata[, spin::cpd(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+          pdata[, spin::cpd(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "nlcpd"=if("nlcpd"%in%type){
-          pdata[, spin::nlcpd(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+          pdata[, spin::nlcpd(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         if(length(type.geks)>0){
-          pdata[, spin:::geks.main(p=p, r=r, n=n, q=z, base=base, settings=c(list("type"=type.geks), settings))]
+          pdata[, spin:::geks.main(p=p, r=r, n=n, q=q, base=base, settings=c(list("type"=type.geks), settings))]
         },
 
         "rao"=if("rao"%in%type){
-          pdata[, spin::rao(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+          pdata[, spin::rao(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "idb"=if("idb"%in%type){
-          pdata[, spin::idb(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+          pdata[, spin::idb(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "gerardi"=if("gerardi"%in%type){
-          pdata[, spin::gerardi(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+          pdata[, spin::gerardi(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "gk"=if("gk"%in%type){
-          pdata[, spin::gk(p=p, r=r, n=n, q=z, base=base, settings=settings)]
+          pdata[, spin::gk(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         }
 
       )

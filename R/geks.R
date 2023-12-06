@@ -83,14 +83,12 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(is.null(q) && is.null(w)){
     Z <- NULL
   }else{
-    Z <- as.matrix(
-      x=dcast(
-        data=pdata,
-        formula=n~r,
-        fun.aggregate=function(j){if(is.null(q)) mean(j) else sum(j)},
-        value.var="z",
-        fill=NA),
-      rownames="n")
+    if(is.null(q)){
+      Z <- dcast(data=pdata, formula=n~r, fun.aggregate=mean, value.var="w", fill=NA)
+    }else{
+      Z <- dcast(data=pdata, formula=n~r, fun.aggregate=sum, value.var="q", fill=NA)
+    }
+    Z <- as.matrix(x=Z, rownames="n")
   }
 
   # number of regions or time periods:

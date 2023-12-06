@@ -2,7 +2,7 @@
 
 # Title:  General helper functions
 # Author: Sebastian Weinand
-# Date:   6 November 2023
+# Date:   5 December 2023
 
 # set base region:
 set.base <- function(r, base, null.ok, settings=list()){
@@ -48,12 +48,13 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
   # - norm.weights : normalize given weights or not
 
   # @output:
-  # if 'q' and/or 'w' is provided, the output data will contain 'z=q'
+  # if 'q' and/or 'w' is provided, the output data will contain 'q=q'
   # and expenditure share weights that may differ to 'w' (if provided)
-  # if only 'w' is provided, the output data will contain 'z=w' if
-  # settings$norm.weights=FALSE and otherwise normalized weights w
+  # if only 'w' is provided, the output data will contain 'q=NA' and
+  # 'w=w' if settings$norm.weights=FALSE and 'w=w/sum(w)' if
+  # settings$norm.weights=TRUE
   # if neither 'q' nor 'w' is provided, the output data will
-  # contain 'z=1'
+  # contain 'w=NA' and 'z=NA'
 
   # set quantities or weights if available:
   if(is.null(q) && is.null(w)){
@@ -125,14 +126,22 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
   if(!is.null(q)){
     # expenditure share weights for each region:
     dt[, "w" := (p*z)/sum(p*z, na.rm=TRUE), by="r"]
+    setnames(x=dt, old="z", new="q")
   }else{
-    if(!is.null(w) && settings$norm.weights){
-      # normalize given weights:
-      dt[, "w" := z/sum(z), by="r"]
+    if(is.null(w)){
+      dt[, c("q","w") := NA_real_]
     }else{
-      # else go with provided input:
-      dt[, "w" := z]
+      dt[, "q" := NA_real_]
+      if(settings$norm.weights){
+        # normalize given weights:
+        dt[, "w" := z/sum(z), by="r"]
+      }else{
+        # else go with provided input:
+        dt[, "w" := z]
+      }
     }
+    # drop working variable again:
+    dt[, "z" := NULL]
   }
 
   # coerce regions and products to factor:

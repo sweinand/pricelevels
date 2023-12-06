@@ -2,7 +2,7 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     15 November 2023
+# Date:     6 December 2023
 
 # print output for class 'multeq':
 print.multeq <- function(x){
@@ -84,8 +84,8 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
   if(type=="gk" && settings$solve=="matrix"){
 
     # define matrices:
-    Q <- pdata[, tapply(X=z, INDEX=list(r, n), FUN=mean, default=0)]
-    E <- pdata[, tapply(X=p*z, INDEX=list(r, n), FUN=mean, default=0)]
+    Q <- pdata[, tapply(X=q, INDEX=list(r, n), FUN=mean, default=0)]
+    E <- pdata[, tapply(X=p*q, INDEX=list(r, n), FUN=mean, default=0)]
     E <- E/rowSums(E)
     C <- diag(1/colSums(Q), ncol=ncol(Q), nrow=ncol(Q))%*%t(E)%*%Q
 
@@ -99,7 +99,7 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
     names(b) <- colnames(C)
 
     # compute price levels:
-    Ptmp <- pdata[, P.FUN(p=p, q=z, r=r, v=b[match(x=n, names(b))])]
+    Ptmp <- pdata[, P.FUN(p=p, q=q, r=r, v=b[match(x=n, names(b))])]
 
   }
 
@@ -113,8 +113,8 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
 
       # compute price levels:
       Ptmp0 <- Ptmp
-      vtmp <- pdata[, v.FUN(p=p, q=z, w=w, n=n, P=Ptmp)]
-      Ptmp <- pdata[, P.FUN(p=p, q=z, w=w, r=r, v=vtmp)]
+      vtmp <- pdata[, v.FUN(p=p, q=q, w=w, n=n, P=Ptmp)]
+      Ptmp <- pdata[, P.FUN(p=p, q=q, w=w, r=r, v=vtmp)]
 
       # check differences to previous price levels:
       check <- any(abs(Ptmp-Ptmp0)>settings$tol)
@@ -154,7 +154,7 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
   }else{
 
     # average product prices using normalized price levels:
-    v <- pdata[, v.FUN(p=p, q=z, w=w, n=n, P=P[match(x=r, table=names(P))])]
+    v <- pdata[, v.FUN(p=p, q=q, w=w, n=n, P=P[match(x=r, table=names(P))])]
     v <- split(x=v, f=names(v))
     v <- sapply(X=v, "[[", 1L)
 
