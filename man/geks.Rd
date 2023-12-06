@@ -26,6 +26,7 @@ geks(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(
    \item \code{all.pairs} : Logical indicating whether index numbers should be computed for all region pairs (\code{TRUE}) or only for non-redundant ones (\code{FALSE}), e.g. the index number of regions \code{AB} should be the same as the inverse of \code{BA}. The default is \code{TRUE}.
    \item \code{type} : A character specifying the index method(s) used to aggregate prices into bilateral price indices for each pair of regions (first step of GEKS). See \code{\link{bilateral.index}} for allowed values. Multiple choices allowed. The default is \code{jevons}.
    \item \code{wmethod} : the weighting method (second step of GEKS). Allowed values are \code{none} for equal weighting of all bilateral price indices, \code{obs} for weighting the bilateral price indices according to the underlying number of intersecting observations, or \code{shares} for weighting according to the intersecting expenditure shares. The default is \code{none}. Used only by \code{geks()}.
+   \item \code{qbase} : relevant only for \code{type='lowe'} and \code{type='young'}, see \code{\link{bilateral.index}}.
    }}
 }
 

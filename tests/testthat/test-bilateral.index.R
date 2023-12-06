@@ -28,6 +28,16 @@ expect_equal(
   c("1"=1)
 )
 
+expect_equal(
+  dt[, lowe(p=price, r=region, n=product, q=quantity, base="1")],
+  c("1"=1)
+)
+
+expect_equal(
+  dt[, young(p=price, r=region, n=product, q=quantity, base="1")],
+  c("1"=1)
+)
+
 
 # Data with one product only ----------------------------------------------
 
@@ -52,6 +62,14 @@ expect_no_error(
   dt[, theil(p=price, r=region, n=product, q=quantity, base="1")]
 )
 
+expect_no_error(
+  dt[, lowe(p=price, r=region, n=product, q=quantity, base="1")]
+)
+
+expect_no_error(
+  dt[, young(p=price, r=region, n=product, q=quantity, base="1")]
+)
+
 
 # Data with gaps ----------------------------------------------------------
 
@@ -68,6 +86,7 @@ dt[, "share" := price*quantity/sum(price*quantity), by="region"]
 
 # base region 1:
 dt1 <- merge(x=dt, y=dt[region=="1",], by="product", suffixes=c("",".base"))
+dt1 <- merge(x=dt1, y=dt[region=="3",], by="product", suffixes=c("",".qbase"))
 
 # manual computations:
 PJe <- dt1[, exp(mean(log(price/price.base))), by="region"]
@@ -112,6 +131,12 @@ PTo <- setNames(PTo$V1, PTo$region)
 PMe <- dt1[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
 PMe <- setNames(PMe$V1, PMe$region)
 
+PLo <- dt1[, sum((price.base*quantity.qbase)/sum(price.base*quantity.qbase)*(price/price.base)), by="region"]
+PLo <- setNames(PLo$V1, PLo$region)
+
+PYo <- dt1[, sum((price.qbase*quantity.qbase)/sum(price.qbase*quantity.qbase)*(price/price.base)), by="region"]
+PYo <- setNames(PYo$V1, PYo$region)
+
 dt1[, "w":= sqrt(share/sum(share)*share.base/sum(share.base)), by="region"]
 PGeoWa <- dt1[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
 PGeoWa <- setNames(PGeoWa$V1, PGeoWa$region)
@@ -142,6 +167,8 @@ expect_equal(dt[, toernq(p=price, r=region, n=product, q=quantity, base="1")], P
 expect_equal(dt[, walsh(p=price, r=region, n=product, q=quantity, base="1")], PWa)
 expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="1")], PTh)
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="1")], PMe)
+expect_equal(dt[, lowe(p=price, r=region, n=product, q=quantity, base="1", settings=list(qbase="3"))], PLo)
+expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="1", settings=list(qbase="3"))], PYo)
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="1")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="1")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="1")], PSv)
@@ -151,6 +178,7 @@ expect_equal(dt[, geowalsh(p=price, r=region, n=product, q=quantity, base="1")],
 
 # base region 2:
 dt2 <- merge(x=dt, y=dt[region=="2",], by="product", suffixes=c("",".base"))
+dt2 <- merge(x=dt2, y=dt[region=="3",], by="product", suffixes=c("",".qbase"))
 
 # manual computations:
 PJe <- dt2[, exp(mean(log(price/price.base))), by="region"]
@@ -195,6 +223,12 @@ PTo <- setNames(PTo$V1, PTo$region)
 PMe <- dt2[, sum(price*(quantity+quantity.base))/sum(price.base*(quantity+quantity.base)), by="region"]
 PMe <- setNames(PMe$V1, PMe$region)
 
+PLo <- dt2[, sum((price.base*quantity.qbase)/sum(price.base*quantity.qbase)*(price/price.base)), by="region"]
+PLo <- setNames(PLo$V1, PLo$region)
+
+PYo <- dt2[, sum((price.qbase*quantity.qbase)/sum(price.qbase*quantity.qbase)*(price/price.base)), by="region"]
+PYo <- setNames(PYo$V1, PYo$region)
+
 dt2[, "w":= sqrt(share/sum(share)*share.base/sum(share.base)), by="region"]
 PGeoWa <- dt2[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
 PGeoWa <- setNames(PGeoWa$V1, PGeoWa$region)
@@ -225,6 +259,8 @@ expect_equal(dt[, toernq(p=price, r=region, n=product, q=quantity, base="2")], P
 expect_equal(dt[, walsh(p=price, r=region, n=product, q=quantity, base="2")], PWa)
 expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="2")], PTh)
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="2")], PMe)
+expect_equal(dt[, lowe(p=price, r=region, n=product, q=quantity, base="2", settings=list(qbase="3"))], PLo)
+expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="2", settings=list(qbase="3"))], PYo)
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="2")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="2")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="2")], PSv)
@@ -328,6 +364,10 @@ expect_error(
   dt[, laspey(p=price, r=region, n=product, q=quantity, settings=list(connect="abc"))]
 )
 
+expect_error(
+  dt[, lowe(p=price, r=region, n=product, q=quantity, settings=list(qbase=NA_character_))]
+)
+
 
 # Non-connected data ------------------------------------------------------
 
@@ -419,6 +459,24 @@ expect_equal(PCSWD1, PCSWD2)
 system.time(PMe1 <- spin:::Pmatrix$medgeworth(P=P, Q=Q))
 system.time(PMe2 <- dt[, medgeworth(p=p, r=r, n=n, q=q, base="1")])
 expect_equal(PMe1, PMe2)
+
+# lowe:
+system.time(PLo1 <- spin:::Pmatrix$lowe(P=P, Q=Q, qbase=2))
+system.time(PLo2 <- dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="2"))])
+expect_equal(PLo1, PLo2)
+
+system.time(PLo3 <- spin:::Pmatrix$lowe(P=P, Q=Q, qbase=NULL))
+system.time(PLo4 <- dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))])
+expect_equal(PLo3, PLo4)
+
+# young:
+system.time(PYo1 <- spin:::Pmatrix$young(P=P, Q=Q, qbase=2))
+system.time(PYo2 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="2"))])
+expect_equal(PYo1, PYo2)
+
+system.time(PYo3 <- spin:::Pmatrix$young(P=P, Q=Q, qbase=NULL))
+system.time(PYo4 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))])
+expect_equal(PYo3, PYo4)
 
 # laspeyres:
 system.time(PL1 <- spin:::Pmatrix$laspey(P=P, Q=Q))
@@ -563,6 +621,17 @@ expect_equal(PGeoWa3, PGeoWa4)
 
 # compare weights versus quantities:
 expect_equal(PGeoWa1, PGeoWa3)
+
+# lowe, young and laspey should be identical if qbase=base:
+expect_equal(
+  dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="1"))],
+  dt[, laspey(p=p, r=r, n=n, q=q, base="1")]
+)
+
+expect_equal(
+  dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="1"))],
+  dt[, laspey(p=p, r=r, n=n, q=q, base="1")]
+)
 
 # END
 

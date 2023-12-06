@@ -88,7 +88,7 @@ A <- dt[, spin(p=price, r=region, n=product, q=quantity, base="1")]
 B <- dt[, spin(p=price, r=region, n=product, w=share, base="1")]
 
 expect_true(
-  all(abs(A[!rownames(A)%in%c("medgeworth","gk","geks-medgeworth"),]-B)<1e-5, na.rm=TRUE)
+  all(abs(A[rownames(A)%in%intersect(rownames(A), rownames(B)),]-B)<1e-5, na.rm=TRUE)
 )
 
 

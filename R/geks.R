@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   5 December 2023
+# Date:   6 December 2023
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -44,6 +44,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
     .check.log(x=settings$all.pairs, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
     .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
     .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+    .check.char(x=settings$qbase, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
 
   }
 
@@ -67,8 +68,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   }
 
   # set "matrix index function" based on type:
-  # indexfn <- spin:::Pmatrix[match(x=type, table=names(spin:::Pmatrix))]
-  indexfn <- Pmatrix[match(x=type, table=names(Pmatrix))]
+  indexfn <- spin:::Pmatrix[match(x=type, table=names(spin:::Pmatrix))]
 
   # initialize data:
   pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=settings$base, settings=settings)
@@ -91,6 +91,14 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
     Z <- as.matrix(x=Z, rownames="n")
   }
 
+  # set quantity base region:
+  if(any(c("lowe","young")%in%type)){
+    qbase <- spin:::set.base(r=pdata$r, base=settings$qbase, null.ok=TRUE, qbase=TRUE, settings=settings)
+    if(!is.null(qbase)) qbase <- which(colnames(P)%in%qbase)
+  }else{
+    qbase <- NULL
+  }
+
   # number of regions or time periods:
   R <- ncol(P)
 
@@ -107,12 +115,12 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
       if(is.null(q)){
         for(i in 1:R){
           idx <- i:R # tighten column selection in each iteration
-          res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], W=Z[, idx, drop=FALSE], base=1L)
+          res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], W=Z[, idx, drop=FALSE], base=1L, qbase=qbase)
         }
       }else{
         for(i in 1:R){
           idx <- i:R # tighten column selection in each iteration
-          res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], Q=Z[, idx, drop=FALSE], base=1L)
+          res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], Q=Z[, idx, drop=FALSE], base=1L, qbase=qbase)
         }
       }
 
@@ -120,9 +128,9 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
     }else{
 
       if(is.null(q)){
-        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, W=Z, base=i)
+        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, W=Z, base=i, qbase=qbase)
       }else{
-        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, Q=Z, base=i)
+        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, Q=Z, base=i, qbase=qbase)
       }
 
     }
@@ -191,17 +199,7 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
   r.lvl <- levels(factor(r))
 
   # compute bilateral price index numbers:
-  pdata <- index.pairs(r=r, n=n, p=p, q=q, w=w,
-                       settings=list(
-                         check.inputs=settings$check.inputs,
-                         missings=settings$missings,
-                         duplicates=settings$duplicates,
-                         chatty=settings$chatty,
-                         connect=settings$connect,
-                         norm.weights=settings$norm.weights,
-                         base=base, # this setting is not visible/exported
-                         type=settings$type,
-                         all.pairs=settings$all.pairs))
+  pdata <- index.pairs(r=r, n=n, p=p, q=q, w=w, settings=c(list("base"=base), settings))
 
   # get the processed index types:
   type <- setdiff(colnames(pdata), c("base","region"))

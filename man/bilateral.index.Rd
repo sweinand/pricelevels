@@ -18,13 +18,15 @@
 \alias{geolaspey}
 \alias{geopaasche}
 \alias{geowalsh}
+\alias{lowe}
+\alias{young}
 
 \title{Bilateral price indices}
 
 \description{Calculation of bilateral price indices. Currently, the following ones are implemented:
 \itemize{
   \item Unweighted indices: Jevons, Carli, Harmonic, Dutot, and CSWD
-  \item Indices based on quantities: Marshall-Edgeworth
+  \item Indices based on quantities only: Marshall-Edgeworth, Young, and Lowe
   \item Indices based on quantities or weights: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
 }
 }
@@ -39,6 +41,8 @@ cswd(...)
 
 # bilateral indices using quantites:
 medgeworth(p, r, n, q, base=NULL, settings=list())
+lowe(...)
+young(...)
 
 # bilateral indices using quantities or expenditure share weights:
 laspey(p, r, n, q, w=NULL, base=NULL, settings=list())
@@ -64,6 +68,7 @@ svartia(...)
    \itemize{
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{qbase} : A character specifying the region \eqn{b} whose quantities (and prices) should be used in \code{lowe()} and \code{young()}. If \code{NULL}, prices are averaged and quantities added up for each product, i.e. \eqn{p_i^b=\sum_{r=1}^{R} p_i^r / R} and \eqn{q_i^b=\sum_{r=1}^{R} q_i^r}.
    }}
 }
 
@@ -89,6 +94,10 @@ dt1 <- rdata(R=3, B=1, N=5)
 # compute jevons and toernqvist index:
 dt1[, jevons(p=price, r=region, n=product, base="1")]
 dt1[, toernq(p=price, r=region, n=product, q=quantity, base="1")]
+
+# compute lowe index using quantities of region 2:
+dt1[, lowe(p=price, r=region, n=product, q=quantity, base="1",
+           settings=list(qbase="2"))]
 
 # add price data:
 dt2 <- rdata(R=4, B=1, N=4)

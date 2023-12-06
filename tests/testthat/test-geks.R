@@ -16,6 +16,10 @@ expect_error(
   dt[, index.pairs(p=price, r=region, n=product, settings=list(type="laspey"))]
 )
 
+expect_warning(
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla"))]
+)
+
 expect_equal(
   is.data.table(dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))]),
   TRUE

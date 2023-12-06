@@ -28,7 +28,7 @@ The `spin`-package provides index number methods for price comparisons within a 
 
 1. Bilateral price indices:
     - Non-weighted: Jevons, Dutot, Carli, Harmonic, CSWD
-    - Weighted: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch
+    - Weighted: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch, Lowe, Young
 2. Multilateral price indices: 
     - CPD and NLCPD methods
     - GEKS method
@@ -305,6 +305,8 @@ Not each individual product or basic heading is equally important to consumers. 
 - Palgrave index [@Palgrave1886]: $$P_{\text{Palgrave}}^{sr} = \sum_{n=1}^N w_n^r \left( p_n^r / p_n^s \right)$$
 - Fisher index [@Fisher1921]: $$P_{\text{Fisher}}^{sr} = \sqrt{P_{\text{Laspeyres}}^{sr} \ P_{\text{Paasche}}^{sr}}$$
 - Drobisch index [@Drobisch1871a; @Drobisch1871b]: $$P_{\text{Drobisch}}^{sr} = \left( P_{\text{Laspeyres}}^{sr} + P_{\text{Paasche}}^{sr} \right) / 2$$
+- Lowe index [@Lowe1823]: $$P_{\text{Lowe}}^{sr} = \sum_{n=1}^{N} w_n^b \left( p_n^r / p_n^s \right) \quad , \text{with} \ w_n^{b} = \frac{p_n^s q_n^b}{\sum_{j=1}^N p_j^s q_j^b}$$
+- Young index [@Young1812]: $$P_{\text{Young}}^{sr} = \sum_{n=1}^{N} w_n^b \left( p_n^r / p_n^s \right) \quad , \text{with} \ w_n^{b} = \frac{p_n^b q_n^b}{\sum_{j=1}^N p_j^b q_j^b}$$
 - Marshall-Edgeworth index [@Marshall1887; @Edgeworth1925]: $$\begin{aligned} P_{\text{Marshall-Edgeworth}}^{sr} &= \frac{\sum_{n=1}^N p_n^r \left( q_n^r + q_n^s \right)}{\sum_{n=1}^N p_n^s \left( q_n^r + q_n^s \right)} \\ &= \sum_{n=1}^N \bar{w}_n^{sr} \left( p_n^r / p_n^s \right) \quad , \text{with} \ \bar{w}_n^{sr} = \frac{p_n^s \left( q_n^r + q_n^s \right)}{\sum_{j=1}^N p_j^s \left( q_j^r + q_j^s \right)} \end{aligned}$$
 - Walsh index [@Walsh1901]: $$\begin{aligned} P_{\text{Walsh}}^{sr} &= \frac{\sum_{n=1}^{N} \sqrt{q_n^r q_n^s} \ p_n^r}{\sum_{n=1}^{N} \sqrt{q_n^r q_n^s} \ p_n^s}\\ &= \frac{\sum_{n=1}^{N} \left( \bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr} \right) \sqrt{p_n^r / p_n^s}}{\sum_{n=1}^{N} \left( \bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr} \right) \sqrt{p_n^s / p_n^r}} \quad , \text{with} \ \bar{w}_n^{sr} = \sqrt{w_n^r w_n^s} \end{aligned}$$
 - Geometric Laspeyres index: $$P_{\text{Geo-Laspeyres}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{w_n^s}$$

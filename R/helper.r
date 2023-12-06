@@ -2,10 +2,10 @@
 
 # Title:  General helper functions
 # Author: Sebastian Weinand
-# Date:   5 December 2023
+# Date:   6 December 2023
 
 # set base region:
-set.base <- function(r, base, null.ok, settings=list()){
+set.base <- function(r, base, null.ok, qbase=FALSE, settings=list()){
 
   # @ allowed settings:
   # - chatty
@@ -14,13 +14,16 @@ set.base <- function(r, base, null.ok, settings=list()){
   # r         factor, vector of regions
   # base      character, one base region
   # null.ok   logical, base=NULL allowed or not
+  # qbase     logical, qbase=TRUE if base region quantities relevant
   # chatty    logical, print warning or not
 
   # derive base region if required and base=NULL:
   if(is.null(base) && !null.ok){
     base <- names(which.max(table(r)))[1]
     if(settings$chatty){
-      warning(paste0("Base region set to base='", base, "'"), call.=FALSE)
+      if(!qbase){
+        message(paste0("Base region set to base='", base, "'"))
+      }
     }
   }
 
@@ -28,7 +31,12 @@ set.base <- function(r, base, null.ok, settings=list()){
   if(!base%in%levels(r) && !is.null(base)){
     base <- names(which.max(table(r)))[1]
     if(settings$chatty){
-      warning(paste0("Base region not found -> reset to base='", base, "'"), call.=FALSE)
+      if(qbase){
+        warn.msg <- paste0("settings$qbase='", settings$qbase, "' not found -> reset to '", base, "'")
+      }else{
+        warn.msg <- paste0("Base region not found -> reset to base='", base, "'")
+      }
+      warning(warn.msg, call.=FALSE)
     }
   }
 

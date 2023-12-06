@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     29 November 2023
+# Date:     6 December 2023
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -44,6 +44,39 @@ Pmatched <- list(
 
     # normalize weights:
     w <- w/sum(w)
+
+    # compute index:
+    res <- weighted.mean(x=p1/p0, w=w)
+
+    # return output:
+    return(res)
+
+  },
+
+  "lowe" = function(p1, p0, pb=NULL, qb, wb=NULL){
+
+    # define weights:
+    w <- p0*qb/sum(p0*qb)
+
+    # normalize weights:
+    w <- w/sum(w)
+
+    # compute index:
+    res <- weighted.mean(x=p1/p0, w=w)
+
+    # return output:
+    return(res)
+
+  },
+
+  "young" = function(p1, p0, pb, qb, wb){
+
+    # define weights:
+    if(missing(qb)){
+      w <- wb/sum(wb)
+    }else{
+      w <- (pb*qb)/sum(pb*qb)
+    }
 
     # compute index:
     res <- weighted.mean(x=p1/p0, w=w)
@@ -308,7 +341,7 @@ Pmatched$drobisch <- function(p1, q1, w1, p0, q0, w0){
 # where they are faster.
 Pmatrix <- list(
 
-  "jevons" = function(P, Q=NULL, W=NULL, base=1L){
+  "jevons" = function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
 
     # compute index:
     res <- exp(colMeans(x=log(P/P[, base]), na.rm=TRUE))
@@ -321,7 +354,7 @@ Pmatrix <- list(
 
   },
 
-  "dutot" = function(P, Q=NULL, W=NULL, base=1L){
+  "dutot" = function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
 
     # price matrix of base region:
     Pbase <- matrix(data=P[, base], ncol=ncol(P), nrow=nrow(P))
@@ -341,7 +374,7 @@ Pmatrix <- list(
 
   },
 
-  "carli" = function(P, Q=NULL, W=NULL, base=1L){
+  "carli" = function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
 
     # compute index:
     res <- colMeans(x=P/P[, base], na.rm=TRUE)
@@ -354,7 +387,7 @@ Pmatrix <- list(
 
   },
 
-  "harmonic" = function(P, Q=NULL, W=NULL, base=1L){
+  "harmonic" = function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
 
     # compute index:
     res <- 1/colMeans(x=1/(P/P[, base]), na.rm=TRUE)
@@ -367,7 +400,7 @@ Pmatrix <- list(
 
   },
 
-  "medgeworth" = function(P, Q, W=NULL, base=1L){
+  "medgeworth" = function(P, Q, W=NULL, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- P / P[, base]
@@ -396,7 +429,73 @@ Pmatrix <- list(
 
   },
 
-  "laspey" = function(P, Q, W, base=1L){
+  "lowe" = function(P, Q, W=NULL, base=1L, qbase=1L){
+
+    # compute price ratios:
+    R <- P/P[, base]
+
+    # define weights:
+    if(is.null(qbase)){
+      W <- P[,base]*rowSums(Q, na.rm=TRUE)
+    }else{
+      W <- P[,base]*Q[,qbase]
+    }
+
+    # align dimensions of weighting matrix:
+    W <- matrix(data=W, nrow=nrow(P), ncol=ncol(P), dimnames=dimnames(P))
+
+    # set weights to NA when no intersection of prices:
+    W[is.na(R)] <- NA
+
+    # normalize weights:
+    W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+    # compute index:
+    res <- colSums(x=W*R, na.rm=TRUE)
+
+    # set to NA when no intersecting prices were found:
+    res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+    # -> colSums()-function returns 0 when everything is NA
+
+    # return output:
+    return(res)
+
+  },
+
+  "young" = function(P, Q, W=NULL, base=1L, qbase=1L){
+
+    # compute price ratios:
+    R <- P/P[, base]
+
+    # define weights:
+    if(is.null(qbase)){
+      W <- rowMeans(P, na.rm=TRUE)*rowSums(Q, na.rm=TRUE)
+    }else{
+      W <- P[,qbase]*Q[,qbase]
+    }
+
+    # align dimensions of weighting matrix:
+    W <- matrix(data=W, nrow=nrow(P), ncol=ncol(P), dimnames=dimnames(P))
+
+    # set weights to NA when no intersection of prices:
+    W[is.na(R)] <- NA
+
+    # normalize weights:
+    W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+    # compute index:
+    res <- colSums(x=W*R, na.rm=TRUE)
+
+    # set to NA when no intersecting prices were found:
+    res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+    # -> colSums()-function returns 0 when everything is NA
+
+    # return output:
+    return(res)
+
+  },
+
+  "laspey" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- P / P[, base]
@@ -429,7 +528,7 @@ Pmatrix <- list(
 
   },
 
-  "paasche" = function(P, Q, W, base=1L){
+  "paasche" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- 1 / (P / P[, base])
@@ -459,7 +558,7 @@ Pmatrix <- list(
 
   },
 
-  "palgrave" = function(P, Q, W, base=1L){
+  "palgrave" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- P / P[, base]
@@ -489,7 +588,7 @@ Pmatrix <- list(
 
   },
 
-  "walsh" = function(P, Q, W, base=1L){
+  "walsh" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- P/P[, base]
@@ -525,7 +624,7 @@ Pmatrix <- list(
 
   },
 
-  "geolaspey" = function(P, Q, W, base=1L){
+  "geolaspey" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- P / P[, base]
@@ -558,7 +657,7 @@ Pmatrix <- list(
 
   },
 
-  "geopaasche" = function(P, Q, W, base=1L){
+  "geopaasche" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- 1 / (P / P[, base])
@@ -588,7 +687,7 @@ Pmatrix <- list(
 
   },
 
-  "geowalsh" = function(P, Q, W, base=1L){
+  "geowalsh" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- log(P/P[, base])
@@ -624,7 +723,7 @@ Pmatrix <- list(
 
   },
 
-  "theil" = function(P, Q, W, base=1L){
+  "theil" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- log(P/P[, base])
@@ -660,7 +759,7 @@ Pmatrix <- list(
 
   },
 
-  "toernq" = function(P, Q, W, base=1L){
+  "toernq" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- log(P/P[, base])
@@ -696,7 +795,7 @@ Pmatrix <- list(
 
   },
 
-  "svartia" = function(P, Q, W, base=1L){
+  "svartia" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute logarithmic differences:
     R <- log(P/P[, base])
@@ -735,7 +834,7 @@ Pmatrix <- list(
 
 )
 
-Pmatrix$cswd <- function(P, Q=NULL, W=NULL, base=1L){
+Pmatrix$cswd <- function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
 
   # compute carli indices:
   Pc <- spin:::Pmatrix$carli(P=P, Q=Q, W=W, base=base)
@@ -747,7 +846,7 @@ Pmatrix$cswd <- function(P, Q=NULL, W=NULL, base=1L){
   return(sqrt(Ph*Pc))
 
 }
-Pmatrix$fisher <- function(P, Q, W, base=1L){
+Pmatrix$fisher <- function(P, Q, W, base=1L, qbase=NULL){
 
   # compute laspeyres indices:
   Pl <- spin:::Pmatrix$laspey(P=P, Q=Q, W=W, base=base)
@@ -759,7 +858,7 @@ Pmatrix$fisher <- function(P, Q, W, base=1L){
   return(sqrt(Pl*Pp))
 
 }
-Pmatrix$drobisch <- function(P, Q, W, base=1L){
+Pmatrix$drobisch <- function(P, Q, W, base=1L, qbase=NULL){
 
   # compute laspeyres indices:
   Pl <- spin:::Pmatrix$laspey(P=P, Q=Q, W=W, base=base)
@@ -810,6 +909,7 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
     # settings:
     .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
     .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+    .check.char(x=settings$qbase, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
 
   }
 
@@ -832,9 +932,6 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
 
   }
 
-  # set "matched index function" based on type:
-  indexfn <- spin:::Pmatched[match(x=type, table=names(spin:::Pmatched))]
-
   # initialize data:
   pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
 
@@ -844,9 +941,40 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   # intersection with base region prices and weights:
   pdata <- merge(x=pdata, y=pdata[r==base,], by="n", all=FALSE, suffixes=c("","_base"))
 
+  # compute lowe and young indices:
+  out.lowe <- out.young <- NULL
+  if(any(c("lowe","young")%in%type)){
+
+    # set qbase-region:
+    settings$qbase <- set.base(r=pdata$r, base=settings$qbase, null.ok=TRUE, qbase=TRUE, settings=settings)
+
+    # add data:
+    if(is.null(settings$qbase)){
+      pdata.qbase <- pdata[, list("p"=mean(p),"q"=sum(q)), by="n"]
+    }else{
+      pdata.qbase <- pdata[r==settings$qbase, list(n,p,q)]
+    }
+    pdata <- merge(x=pdata, y=pdata.qbase, by="n", all=FALSE, suffixes=c("","_qbase"))
+
+    if("lowe"%in%type){
+      out.lowe <- pdata[, spin:::Pmatched$lowe(p1=p, p0=p_base, qb=q_qbase), by="r"]
+    }
+
+    if("young"%in%type){
+      out.young <- pdata[, spin:::Pmatched$young(p1=p, p0=p_base, pb=p_qbase, qb=q_qbase), by="r"]
+    }
+
+  }
+
+  # compute remaining indices:
+  type.sub <- setdiff(type, c("lowe","young"))
+
+  # set "matched index function" based on type:
+  indexfn <- spin:::Pmatched[match(x=type.sub, table=names(spin:::Pmatched))]
+
   # loop over all indices:
-  out <- vector(mode="list", length=length(type))
-  for(j in seq_along(type)){
+  out <- vector(mode="list", length=length(type.sub))
+  for(j in seq_along(type.sub)){
 
     # compute price index for each region:
     if(is.null(q)){
@@ -858,8 +986,8 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   }
 
   # gather data:
-  names(out) <- type
-  out <- rbindlist(l=out, use.names=TRUE, fill=TRUE, idcol="index")
+  names(out) <- type.sub
+  out <- rbindlist(l=c(list("lowe"=out.lowe, "young"=out.young), out), use.names=TRUE, fill=TRUE, idcol="index")
   out <- as.matrix(x=dcast(data=out, formula=index~r, value.var="V1", fill=NA), rownames=TRUE)
   out <- out[match(x=type, table=rownames(out)), , drop=FALSE]
 
@@ -914,6 +1042,20 @@ cswd <- function(p, r, n, base=NULL, settings=list()){
 medgeworth <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="medgeworth", base=base, settings=settings)
+  res <- setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
+lowe <- function(p, r, n, q, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="lowe", base=base, settings=settings)
+  res <- setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
+young <- function(p, r, n, q, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="young", base=base, settings=settings)
   res <- setNames(as.vector(res), colnames(res))
   return(res)
 

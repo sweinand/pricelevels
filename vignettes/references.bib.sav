@@ -520,16 +520,14 @@
 
  
 @Article{Laspeyres1871,
-  author    = {Etienne Laspeyres},
-  journal   = {Jahrbücher für Nationalökonomie und Statistik},
-  title     = {{Die Berechnung einer mittleren Waarenpreissteigerung}},
-  year      = {1871},
-  month     = mar,
-  number    = {1},
-  pages     = {296--314},
-  volume    = {16},
-  doi       = {10.1515/jbnst-1981-0303},
-  publisher = {Walter de Gruyter GmbH},
+  author  = {Etienne Laspeyres},
+  journal = {Jahrbücher für Nationalökonomie und Statistik},
+  title   = {{Die Berechnung einer mittleren Waarenpreissteigerung}},
+  year    = {1871},
+  month   = mar,
+  number  = {1},
+  pages   = {296--314},
+  volume  = {16},
 }
 
 @Article{Paasche1874,
@@ -700,6 +698,23 @@
   pages   = {83--86},
   volume  = {1},
   doi     = {10.2307/1883111},
+}
+
+@Book{Young1812,
+  author    = {Arthur Young},
+  publisher = {McMillan},
+  title     = {{An Inquiry into the Progressive Value of Money in England as Marked by the Price of Agricultural Products}},
+  year      = {1812},
+  address   = {London},
+}
+
+@Book{Lowe1823,
+  author    = {Joseph Lowe},
+  publisher = {Longman, Hurst, Rees, Orme, and Brown},
+  title     = {{The Present State of England in Regard to Agriculture, Trade and Finance}},
+  year      = {1823},
+  address   = {London},
+  edition   = {2},
 }
 
 @Comment{jabref-meta: databaseType:bibtex;}
