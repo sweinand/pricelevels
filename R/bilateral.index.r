@@ -850,26 +850,25 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
 
     # compute price index for each region:
     if(is.null(q)){
-      aggdata <- pdata[, indexfn[[j]](p1=p, w1=w, p0=p_base, w0=w_base), by="r"]
+      out[[j]] <- pdata[, indexfn[[j]](p1=p, w1=w, p0=p_base, w0=w_base), by="r"]
     }else{
-      aggdata <- pdata[, indexfn[[j]](p1=p, q1=q, p0=p_base, q0=q_base), by="r"]
+      out[[j]] <- pdata[, indexfn[[j]](p1=p, q1=q, p0=p_base, q0=q_base), by="r"]
     }
-
-    # ensure that results contain all regions, also in cases
-    # where no product matches were found. This is important
-    # in cases of incomplete price data:
-    r.lvl <- levels(factor(r))
-    res <- setNames(aggdata$V1, aggdata$r)
-    res <- res[match(x=r.lvl, table=names(res))]
-    names(res) <- r.lvl
-
-    out[[j]] <- res
 
   }
 
   # gather data:
   names(out) <- type
-  out <- do.call("rbind", out)
+  out <- rbindlist(l=out, use.names=TRUE, fill=TRUE, idcol="index")
+  out <- as.matrix(x=dcast(data=out, formula=index~r, value.var="V1", fill=NA), rownames=TRUE)
+  out <- out[match(x=type, table=rownames(out)), , drop=FALSE]
+
+  # ensure that results contain all regions, also in cases
+  # where no product matches were found. This is important
+  # in cases of incomplete price data:
+  r.lvl <- levels(factor(r))
+  out <- out[ ,match(x=r.lvl, table=colnames(out)), drop=FALSE]
+  colnames(out) <- r.lvl
 
   # print output to console:
   return(out)
