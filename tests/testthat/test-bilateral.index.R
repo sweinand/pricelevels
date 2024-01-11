@@ -146,6 +146,18 @@ PLo <- setNames(PLo$V1, PLo$region)
 PYo <- dt1[, sum((price.qbase*quantity.qbase)/sum(price.qbase*quantity.qbase)*(price/price.base)), by="region"]
 PYo <- setNames(PYo$V1, PYo$region)
 
+PUv <- dt1[, (sum(price*quantity)/sum(quantity)) / (sum(price.base*quantity.base)/sum(quantity.base)), by="region"]
+PUv <- setNames(PUv$V1, PUv$region)
+
+PBan <- dt1[, (sum(price*quantity)/sum(quantity*(price+price.base)/2)) / (sum(price.base*quantity.base)/sum(quantity.base*(price+price.base)/2)), by="region"]
+PBan <- setNames(PBan$V1, PBan$region)
+
+PDav <- dt1[, (sum(price*quantity)/sum(quantity*sqrt(price*price.base))) / (sum(price.base*quantity.base)/sum(quantity.base*sqrt(price*price.base))), by="region"]
+PDav <- setNames(PDav$V1, PDav$region)
+
+PLehr <- dt1[, (sum(price*quantity)/sum(quantity*(price*quantity+price.base*quantity.base)/(quantity+quantity.base))) / (sum(price.base*quantity.base)/sum(quantity.base*(price*quantity+price.base*quantity.base)/(quantity+quantity.base))), by="region"]
+PLehr <- setNames(PLehr$V1, PLehr$region)
+
 dt1[, "w":= sqrt(share/sum(share)*share.base/sum(share.base)), by="region"]
 PGeoWa <- dt1[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
 PGeoWa <- setNames(PGeoWa$V1, PGeoWa$region)
@@ -178,6 +190,10 @@ expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="1")], PT
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="1")], PMe)
 expect_equal(dt[, lowe(p=price, r=region, n=product, q=quantity, base="1", settings=list(qbase="3"))], PLo)
 expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="1", settings=list(qbase="3"))], PYo)
+expect_equal(dt[, uvalue(p=price, r=region, n=product, q=quantity, base="1")], PUv)
+expect_equal(dt[, banerjee(p=price, r=region, n=product, q=quantity, base="1")], PBan)
+expect_equal(dt[, davies(p=price, r=region, n=product, q=quantity, base="1")], PDav)
+expect_equal(dt[, lehr(p=price, r=region, n=product, q=quantity, base="1")], PLehr)
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="1")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="1")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="1")], PSv)
@@ -238,6 +254,18 @@ PLo <- setNames(PLo$V1, PLo$region)
 PYo <- dt2[, sum((price.qbase*quantity.qbase)/sum(price.qbase*quantity.qbase)*(price/price.base)), by="region"]
 PYo <- setNames(PYo$V1, PYo$region)
 
+PUv <- dt2[, (sum(price*quantity)/sum(quantity)) / (sum(price.base*quantity.base)/sum(quantity.base)), by="region"]
+PUv <- setNames(PUv$V1, PUv$region)
+
+PBan <- dt2[, (sum(price*quantity)/sum(quantity*(price+price.base)/2)) / (sum(price.base*quantity.base)/sum(quantity.base*(price+price.base)/2)), by="region"]
+PBan <- setNames(PBan$V1, PBan$region)
+
+PDav <- dt2[, (sum(price*quantity)/sum(quantity*sqrt(price*price.base))) / (sum(price.base*quantity.base)/sum(quantity.base*sqrt(price*price.base))), by="region"]
+PDav <- setNames(PDav$V1, PDav$region)
+
+PLehr <- dt2[, (sum(price*quantity)/sum(quantity*(price*quantity+price.base*quantity.base)/(quantity+quantity.base))) / (sum(price.base*quantity.base)/sum(quantity.base*(price*quantity+price.base*quantity.base)/(quantity+quantity.base))), by="region"]
+PLehr <- setNames(PLehr$V1, PLehr$region)
+
 dt2[, "w":= sqrt(share/sum(share)*share.base/sum(share.base)), by="region"]
 PGeoWa <- dt2[, exp(sum(w/sum(w)*log(price/price.base))), by="region"]
 PGeoWa <- setNames(PGeoWa$V1, PGeoWa$region)
@@ -270,6 +298,10 @@ expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="2")], PT
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="2")], PMe)
 expect_equal(dt[, lowe(p=price, r=region, n=product, q=quantity, base="2", settings=list(qbase="3"))], PLo)
 expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="2", settings=list(qbase="3"))], PYo)
+expect_equal(dt[, uvalue(p=price, r=region, n=product, q=quantity, base="2")], PUv)
+expect_equal(dt[, banerjee(p=price, r=region, n=product, q=quantity, base="2")], PBan)
+expect_equal(dt[, davies(p=price, r=region, n=product, q=quantity, base="2")], PDav)
+expect_equal(dt[, lehr(p=price, r=region, n=product, q=quantity, base="2")], PLehr)
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="2")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="2")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="2")], PSv)
