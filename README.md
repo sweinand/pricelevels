@@ -3,8 +3,9 @@
 The `spin`-package provides index number methods for price comparisons within a country. As price comparisons between countries or other geographical entities usually rely on the same index number methods, the package has been denoted more generally as `spin` (for spatial index number methods). Currently, the following index number methods (or price indices) are implemented.
 
 1. Bilateral price indices:
-    - Non-weighted: Jevons, Dutot, Carli, Harmonic, CSWD
+    - Unweighted: Jevons, Dutot, Carli, Harmonic, CSWD
     - Weighted: (geometric) Laspeyres, (geometric) Paasche, Fisher, Törnqvist, (geometric) Walsh, Theil, Marshall-Edgeworth, Palgrave, Sato-Vartia, Drobisch, Lowe, Young
+    - Unit value related indices: unit value index, Banerjee, Davies, Lehr
 2. Multilateral price indices: 
     - CPD and NLCPD methods
     - GEKS method

@@ -5,29 +5,34 @@
 \alias{dutot}
 \alias{harmonic}
 \alias{cswd}
-\alias{laspey}
+\alias{laspeyres}
 \alias{paasche}
 \alias{fisher}
 \alias{walsh}
-\alias{toernq}
+\alias{toernqvist}
 \alias{medgeworth}
 \alias{theil}
 \alias{svartia}
 \alias{palgrave}
 \alias{drobisch}
-\alias{geolaspey}
+\alias{geolaspeyres}
 \alias{geopaasche}
 \alias{geowalsh}
 \alias{lowe}
 \alias{young}
+\alias{uvalue}
+\alias{davies}
+\alias{banerjee}
+\alias{lehr}
 
 \title{Bilateral price indices}
 
 \description{Calculation of bilateral price indices. Currently, the following ones are implemented:
 \itemize{
-  \item Unweighted indices: Jevons, Carli, Harmonic, Dutot, and CSWD
-  \item Indices based on quantities only: Marshall-Edgeworth, Young, and Lowe
-  \item Indices based on quantities or weights: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
+  \item \emph{Unweighted indices}: Jevons, Carli, Harmonic, Dutot, and CSWD
+  \item \emph{Indices based on quantities only}: Marshall-Edgeworth, Young, and Lowe
+  \item \emph{Indices based on quantities or weights}: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
+  \item \emph{Unit value ralted indices}: unit value index, Banerjee, Davies, and Lehr
 }
 }
 
@@ -43,6 +48,12 @@ cswd(...)
 medgeworth(p, r, n, q, base=NULL, settings=list())
 lowe(...)
 young(...)
+
+# unit value related indices:
+uvalue(p, r, n, q, base=NULL, settings=list())
+banerjee(...)
+davies(...)
+lehr(...)
 
 # bilateral indices using quantities or expenditure share weights:
 laspey(p, r, n, q, w=NULL, base=NULL, settings=list())
@@ -93,7 +104,7 @@ dt1 <- rdata(R=3, B=1, N=5)
 
 # compute jevons and toernqvist index:
 dt1[, jevons(p=price, r=region, n=product, base="1")]
-dt1[, toernq(p=price, r=region, n=product, q=quantity, base="1")]
+dt1[, toernqvist(p=price, r=region, n=product, q=quantity, base="1")]
 
 # compute lowe index using quantities of region 2:
 dt1[, lowe(p=price, r=region, n=product, q=quantity, base="1",

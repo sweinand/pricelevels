@@ -1,6 +1,6 @@
 \name{multeq}
 
-\alias{gk}
+\alias{gkhamis}
 \alias{gerardi}
 \alias{idb}
 \alias{rao}
@@ -10,7 +10,7 @@
 \description{
 Calculation of regional price levels using the
 \itemize{
-  \item Geary-Khamis method \code{gk()} proposed by Geary (1958) and Khamis (1972);
+  \item Geary-Khamis method \code{gkhamis()} proposed by Geary (1958) and Khamis (1972);
   \item Gerardi method \code{gerardi()} used by Eurostat (1978);
   \item Rao method \code{rao()} proposed by Rao (1990);
   \item Ikle-Dikhanov-Balk method \code{idb()} developed by Ikle (1972), Dikhanov (1997), and Balk (1996).
@@ -20,7 +20,7 @@ All methods have in common that they set up a system of interrelated equations o
 
 \usage{
 # geary-khamis index requires quantities:
-gk(p, r, n, q, base = NULL, simplify = TRUE, settings = list())
+gkhamis(p, r, n, q, base = NULL, simplify = TRUE, settings = list())
 
 # ikle-dikhanov-balk, rao, and gerardi indices:
 idb(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
@@ -31,14 +31,14 @@ gerardi(...)
 \arguments{
    \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see details). If both \code{q} and \code{w} are provided, \code{q} will be used. Note that \code{gk()} requires quantities \code{q}.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see details). If both \code{q} and \code{w} are provided, \code{q} will be used. Note that \code{gkhamis()} requires quantities \code{q}.}
    \item{base}{A character specifying the base region to which all price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average.}
    \item{simplify}{A logical indicating whether a named vector of estimated regional price levels (\code{TRUE}) should be returned, or also the average product prices.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
-   \item \code{solve} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gk()}, the analytical solution proposed by Diewert (1999) is also allowed by setting to \code{matrix}.
+   \item \code{solve} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gkhamis()}, the analytical solution proposed by Diewert (1999) is also allowed by setting to \code{matrix}.
    \item \code{tol} : the tolerance level when convergence is achieved if \code{type="iterative"}. The default is \code{1e-9}.
    \item \code{max.iter} : the maximum number of iterations if \code{type="iterative"}. The default is \code{99}.
    }}
@@ -86,12 +86,12 @@ set.seed(123)
 dt1 <- rdata(R=3, B=1, N=5)
 
 # Gery-Khamis price index can be obtained in two ways:
-dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="iterative"))]
-dt1[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
+dt1[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="iterative"))]
+dt1[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 
-# gk(), idb() and gerardi() yield same results if quantites the same:
+# gkhamis(), idb() and gerardi() yield same results if quantites the same:
 dt1[, "quantity2" := 1000*rleidv(product)]
-dt1[, gk(p=price, r=region, n=product, q=quantity2)]
+dt1[, gkhamis(p=price, r=region, n=product, q=quantity2)]
 dt1[, gerardi(p=price, r=region, n=product, q=quantity2)]
 dt1[, idb(p=price, r=region, n=product, q=quantity2)]
 dt1[, "quantity2":=NULL]

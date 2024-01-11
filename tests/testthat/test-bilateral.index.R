@@ -14,7 +14,7 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, w=weight, base="1")],
+  dt[, laspeyres(p=price, r=region, n=product, w=weight, base="1")],
   c("1"=1)
 )
 
@@ -38,6 +38,11 @@ expect_equal(
   c("1"=1)
 )
 
+expect_equal(
+  dt[, lehr(p=price, r=region, n=product, q=quantity, base="1")],
+  c("1"=1)
+)
+
 
 # Data with one product only ----------------------------------------------
 
@@ -51,7 +56,7 @@ expect_no_error(
 )
 
 expect_no_error(
-  dt[, laspey(p=price, r=region, n=product, w=weight, base="1")]
+  dt[, laspeyres(p=price, r=region, n=product, w=weight, base="1")]
 )
 
 expect_no_error(
@@ -68,6 +73,10 @@ expect_no_error(
 
 expect_no_error(
   dt[, young(p=price, r=region, n=product, q=quantity, base="1")]
+)
+
+expect_no_error(
+  dt[, lehr(p=price, r=region, n=product, q=quantity, base="1")]
 )
 
 
@@ -160,10 +169,10 @@ expect_equal(dt[, harmonic(p=price, r=region, n=product, base="1")], PHa)
 expect_equal(dt[, cswd(p=price, r=region, n=product, base="1")], PCSWD)
 
 # weighted indices:
-expect_equal(dt[, laspey(p=price, r=region, n=product, q=quantity, base="1")], PLa)
+expect_equal(dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="1")], PLa)
 expect_equal(dt[, paasche(p=price, r=region, n=product, q=quantity, base="1")], PPa)
 expect_equal(dt[, fisher(p=price, r=region, n=product, q=quantity, base="1")], PFi)
-expect_equal(dt[, toernq(p=price, r=region, n=product, q=quantity, base="1")], PTo)
+expect_equal(dt[, toernqvist(p=price, r=region, n=product, q=quantity, base="1")], PTo)
 expect_equal(dt[, walsh(p=price, r=region, n=product, q=quantity, base="1")], PWa)
 expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="1")], PTh)
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="1")], PMe)
@@ -172,7 +181,7 @@ expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="1", sett
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="1")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="1")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="1")], PSv)
-expect_equal(dt[, geolaspey(p=price, r=region, n=product, q=quantity, base="1")], PGeoLa)
+expect_equal(dt[, geolaspeyres(p=price, r=region, n=product, q=quantity, base="1")], PGeoLa)
 expect_equal(dt[, geopaasche(p=price, r=region, n=product, q=quantity, base="1")], PGeoPa)
 expect_equal(dt[, geowalsh(p=price, r=region, n=product, q=quantity, base="1")], PGeoWa)
 
@@ -252,10 +261,10 @@ expect_equal(dt[, harmonic(p=price, r=region, n=product, base="2")], PHa)
 expect_equal(dt[, cswd(p=price, r=region, n=product, base="2")], PCSWD)
 
 # weighted indices:
-expect_equal(dt[, laspey(p=price, r=region, n=product, q=quantity, base="2")], PLa)
+expect_equal(dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="2")], PLa)
 expect_equal(dt[, paasche(p=price, r=region, n=product, q=quantity, base="2")], PPa)
 expect_equal(dt[, fisher(p=price, r=region, n=product, q=quantity, base="2")], PFi)
-expect_equal(dt[, toernq(p=price, r=region, n=product, q=quantity, base="2")], PTo)
+expect_equal(dt[, toernqvist(p=price, r=region, n=product, q=quantity, base="2")], PTo)
 expect_equal(dt[, walsh(p=price, r=region, n=product, q=quantity, base="2")], PWa)
 expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="2")], PTh)
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="2")], PMe)
@@ -264,7 +273,7 @@ expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="2", sett
 expect_equal(dt[, palgrave(p=price, r=region, n=product, q=quantity, base="2")], PPal)
 expect_equal(dt[, drobisch(p=price, r=region, n=product, q=quantity, base="2")], PDr)
 expect_equal(dt[, svartia(p=price, r=region, n=product, q=quantity, base="2")], PSv)
-expect_equal(dt[, geolaspey(p=price, r=region, n=product, q=quantity, base="2")], PGeoLa)
+expect_equal(dt[, geolaspeyres(p=price, r=region, n=product, q=quantity, base="2")], PGeoLa)
 expect_equal(dt[, geopaasche(p=price, r=region, n=product, q=quantity, base="2")], PGeoPa)
 expect_equal(dt[, geowalsh(p=price, r=region, n=product, q=quantity, base="2")], PGeoWa)
 
@@ -280,12 +289,22 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, base="1")][1],
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="1")][1],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, base="2")][2],
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="2")][2],
+  c("2"=1)
+)
+
+expect_equal(
+  dt[, lehr(p=price, r=region, n=product, q=quantity, base="1")][1],
+  c("1"=1)
+)
+
+expect_equal(
+  dt[, lehr(p=price, r=region, n=product, q=quantity, base="2")][2],
   c("2"=1)
 )
 
@@ -293,8 +312,8 @@ expect_equal(
 dt[, "share" := (price*quantity)/sum(price*quantity), by="region"]
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, base="1")],
-  dt[, laspey(p=price, r=region, n=product, w=share, base="1")]
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, laspeyres(p=price, r=region, n=product, w=share, base="1")]
 )
 
 expect_equal(
@@ -308,8 +327,8 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, toernq(p=price, r=region, n=product, q=quantity, base="1")],
-  dt[, toernq(p=price, r=region, n=product, w=share, base="1")]
+  dt[, toernqvist(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, toernqvist(p=price, r=region, n=product, w=share, base="1")]
 )
 
 expect_equal(
@@ -318,8 +337,8 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, geolaspey(p=price, r=region, n=product, q=quantity, base="1")],
-  dt[, geolaspey(p=price, r=region, n=product, w=share, base="1")]
+  dt[, geolaspeyres(p=price, r=region, n=product, q=quantity, base="1")],
+  dt[, geolaspeyres(p=price, r=region, n=product, w=share, base="1")]
 )
 
 expect_equal(
@@ -357,11 +376,11 @@ expect_equal(
 
 
 expect_error(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, settings=list(chatty="abc"))]
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, settings=list(chatty="abc"))]
 )
 
 expect_error(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, settings=list(connect="abc"))]
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, settings=list(connect="abc"))]
 )
 
 expect_error(
@@ -381,25 +400,25 @@ dt2[, "product":=factor(product, labels=6:9)]
 dt <- rbind(dt1, dt2)
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, base="1",
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="1",
               settings=list(chatty=FALSE, connect=TRUE))][1],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, base="1",
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="1",
               settings=list(chatty=FALSE, connect=TRUE))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, base="4",
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="4",
               settings=list(chatty=FALSE, connect=TRUE))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
-  dt[, laspey(p=price, r=region, n=product, q=quantity, base="4",
+  dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="4",
               settings=list(chatty=FALSE, connect=TRUE))][4],
   c("4"=1)
 )
@@ -478,13 +497,33 @@ system.time(PYo3 <- spin:::Pmatrix$young(P=P, Q=Q, qbase=NULL))
 system.time(PYo4 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))])
 expect_equal(PYo3, PYo4)
 
+# uvalue:
+system.time(PUv1 <- spin:::Pmatrix$uvalue(P=P, Q=Q))
+system.time(PUv2 <- dt[, uvalue(p=p, r=r, n=n, q=q, base="1")])
+expect_equal(PUv1, PUv2)
+
+# banerjee:
+system.time(PBa1 <- spin:::Pmatrix$banerjee(P=P, Q=Q))
+system.time(PBa2 <- dt[, banerjee(p=p, r=r, n=n, q=q, base="1")])
+expect_equal(PBa1, PBa2)
+
+# davies:
+system.time(PDa1 <- spin:::Pmatrix$davies(P=P, Q=Q))
+system.time(PDa2 <- dt[, davies(p=p, r=r, n=n, q=q, base="1")])
+expect_equal(PDa1, PDa2)
+
+# lehr:
+system.time(PLe1 <- spin:::Pmatrix$lehr(P=P, Q=Q))
+system.time(PLe2 <- dt[, lehr(p=p, r=r, n=n, q=q, base="1")])
+expect_equal(PLe1, PLe2)
+
 # laspeyres:
-system.time(PL1 <- spin:::Pmatrix$laspey(P=P, Q=Q))
-system.time(PL2 <- dt[, laspey(p=p, q=q, r=r, n=n, base="1")])
+system.time(PL1 <- spin:::Pmatrix$laspeyres(P=P, Q=Q))
+system.time(PL2 <- dt[, laspeyres(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PL1, PL2)
 
-system.time(PL3 <- spin:::Pmatrix$laspey(P=P, W=W))
-system.time(PL4 <- dt[, laspey(p=p, w=share, r=r, n=n, base="1")])
+system.time(PL3 <- spin:::Pmatrix$laspeyres(P=P, W=W))
+system.time(PL4 <- dt[, laspeyres(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PL3, PL4)
 
 # compare weights versus quantities:
@@ -563,12 +602,12 @@ expect_equal(PTh3, PTh4)
 expect_equal(PTh1, PTh3)
 
 # toernqvist:
-system.time(PT1 <- spin:::Pmatrix$toernq(P=P, Q=Q))
-system.time(PT2 <- dt[, toernq(p=p, q=q, r=r, n=n, base="1")])
+system.time(PT1 <- spin:::Pmatrix$toernqvist(P=P, Q=Q))
+system.time(PT2 <- dt[, toernqvist(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PT1, PT2)
 
-system.time(PT3 <- spin:::Pmatrix$toernq(P=P, W=W))
-system.time(PT4 <- dt[, toernq(p=p, w=share, r=r, n=n, base="1")])
+system.time(PT3 <- spin:::Pmatrix$toernqvist(P=P, W=W))
+system.time(PT4 <- dt[, toernqvist(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PT3, PT4)
 
 # compare weights versus quantities:
@@ -587,12 +626,12 @@ expect_equal(PSv3, PSv4)
 expect_equal(PSv1, PSv3)
 
 # geolaspey:
-system.time(PGeoLa1 <- spin:::Pmatrix$geolaspey(P=P, Q=Q))
-system.time(PGeoLa2 <- dt[, geolaspey(p=p, q=q, r=r, n=n, base="1")])
+system.time(PGeoLa1 <- spin:::Pmatrix$geolaspeyres(P=P, Q=Q))
+system.time(PGeoLa2 <- dt[, geolaspeyres(p=p, q=q, r=r, n=n, base="1")])
 expect_equal(PGeoLa1, PGeoLa2)
 
-system.time(PGeoLa3 <- spin:::Pmatrix$geolaspey(P=P, W=W))
-system.time(PGeoLa4 <- dt[, geolaspey(p=p, w=share, r=r, n=n, base="1")])
+system.time(PGeoLa3 <- spin:::Pmatrix$geolaspeyres(P=P, W=W))
+system.time(PGeoLa4 <- dt[, geolaspeyres(p=p, w=share, r=r, n=n, base="1")])
 expect_equal(PGeoLa3, PGeoLa4)
 
 # compare weights versus quantities:
@@ -625,12 +664,12 @@ expect_equal(PGeoWa1, PGeoWa3)
 # lowe, young and laspey should be identical if qbase=base:
 expect_equal(
   dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="1"))],
-  dt[, laspey(p=p, r=r, n=n, q=q, base="1")]
+  dt[, laspeyres(p=p, r=r, n=n, q=q, base="1")]
 )
 
 expect_equal(
   dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="1"))],
-  dt[, laspey(p=p, r=r, n=n, q=q, base="1")]
+  dt[, laspeyres(p=p, r=r, n=n, q=q, base="1")]
 )
 
 # END

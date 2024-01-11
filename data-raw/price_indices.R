@@ -1,7 +1,7 @@
 # START
 
 # Title:    Available price indices
-# Date:     6 December 2023
+# Date:     11 January 2024
 
 library(data.table)
 
@@ -20,7 +20,7 @@ multP <- copy(bilP)
 multP[, "name" := paste("geks", name, sep="-")]
 multP[, "type" := "multilateral"]
 multP <- rbind(multP,
-               data.table("name"=c("cpd","nlcpd","gk","rao","idb","gerardi"),
+               data.table("name"=c("cpd","nlcpd","gkhamis","rao","idb","gerardi"),
                           "type"="multilateral",
                           "uses_none"=c(T,T,F,F,F,F),
                           "uses_q"=c(T,T,T,T,T,T),

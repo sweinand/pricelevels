@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     6 December 2023
+# Date:     11 January 2024
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -86,7 +86,7 @@ Pmatched <- list(
 
   },
 
-  "laspey" = function(p1, q1, w1, p0, q0, w0){
+  "laspeyres" = function(p1, q1, w1, p0, q0, w0){
 
     # derive normalized weights:
     if(missing(q0)){
@@ -162,7 +162,7 @@ Pmatched <- list(
 
   },
 
-  "geolaspey" = function(p1, q1, w1, p0, q0, w0){
+  "geolaspeyres" = function(p1, q1, w1, p0, q0, w0){
 
     # derive normalized weights:
     if(missing(q0)){
@@ -246,7 +246,7 @@ Pmatched <- list(
 
   },
 
-  "toernq" = function(p1, q1, w1, p0, q0, w0){
+  "toernqvist" = function(p1, q1, w1, p0, q0, w0){
 
     # set weights:
     if(missing(q0) | missing(q1)){
@@ -293,6 +293,70 @@ Pmatched <- list(
 
     # return output:
     return(res)
+
+  },
+
+  "uvalue" = function(p1, q1, w1=NULL, p0, q0, w0=NULL){
+
+    # expenditures:
+    e0 <- sum(p0*q0)
+    e1 <- sum(p1*q1)
+
+    # adjustment factors:
+    z <- 1
+    af0 <- sum(q0*z)
+    af1 <- sum(q1*z)
+
+    # index:
+    return((e1/af1) / (e0/af0))
+
+  },
+
+  "banerjee" = function(p1, q1, w1=NULL, p0, q0, w0=NULL){
+
+    # expenditures:
+    e0 <- sum(p0*q0)
+    e1 <- sum(p1*q1)
+
+    # adjustment factors:
+    z <- (p0+p1)/2
+    af0 <- sum(q0*z)
+    af1 <- sum(q1*z)
+
+    # index:
+    return((e1/af1) / (e0/af0))
+
+  },
+
+  "davies" = function(p1, q1, w1=NULL, p0, q0, w0=NULL){
+
+    # expenditures:
+    e0 <- sum(p0*q0)
+    e1 <- sum(p1*q1)
+
+    # adjustment factors:
+    z <- sqrt(p0*p1)
+    af0 <- sum(q0*z)
+    af1 <- sum(q1*z)
+
+    # index:
+    return((e1/af1) / (e0/af0))
+
+  },
+
+  "lehr" = function(p1, q1, w1=NULL, p0, q0, w0=NULL){
+
+    # expenditures:
+    e0 <- sum(p0*q0)
+    e1 <- sum(p1*q1)
+
+    # adjustment factors:
+    z <- (p0*q0+p1*q1)/(q0+q1)
+    af0 <- sum(q0*z)
+    af1 <- sum(q1*z)
+
+    # index:
+    return((e1/af1) / (e0/af0))
 
   }
 
@@ -495,7 +559,7 @@ Pmatrix <- list(
 
   },
 
-  "laspey" = function(P, Q, W, base=1L, qbase=NULL){
+  "laspeyres" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- P / P[, base]
@@ -624,7 +688,7 @@ Pmatrix <- list(
 
   },
 
-  "geolaspey" = function(P, Q, W, base=1L, qbase=NULL){
+  "geolaspeyres" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- P / P[, base]
@@ -759,7 +823,7 @@ Pmatrix <- list(
 
   },
 
-  "toernq" = function(P, Q, W, base=1L, qbase=NULL){
+  "toernqvist" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
     R <- log(P/P[, base])
@@ -829,6 +893,110 @@ Pmatrix <- list(
 
     # print output to console:
     return(res)
+
+  },
+
+  "uvalue" = function(P, Q, W=NULL, base=1L, qbase=NULL){
+
+    # price and quantity matrices for base:
+    Pbase <- matrix(data=P[, base], ncol=ncol(P), nrow=nrow(P))
+    Qbase <- matrix(data=Q[, base], ncol=ncol(Q), nrow=nrow(Q))
+
+    # set NAs to avoid that calculations are based on different sets:
+    P[is.na(Pbase*Qbase)] <- NA
+    Q[is.na(Pbase*Qbase)] <- NA
+    Pbase[is.na(P*Q)] <- NA
+    Qbase[is.na(P*Q)] <- NA
+
+    # expenditures:
+    E0 <- colSums(Pbase*Qbase, na.rm=TRUE)
+    E1 <- colSums(P*Q, na.rm=TRUE)
+
+    # adjustment factors:
+    Z <- 1
+    AF0 <- colSums(Qbase*Z, na.rm=TRUE)
+    AF1 <- colSums(Q*Z, na.rm=TRUE)
+
+    # index:
+    return((E1/AF1) / (E0/AF0))
+
+  },
+
+  "banerjee" = function(P, Q, W=NULL, base=1L, qbase=NULL){
+
+    # price and quantity matrices for base:
+    Pbase <- matrix(data=P[, base], ncol=ncol(P), nrow=nrow(P))
+    Qbase <- matrix(data=Q[, base], ncol=ncol(Q), nrow=nrow(Q))
+
+    # set NAs to avoid that calculations are based on different sets:
+    P[is.na(Pbase*Qbase)] <- NA
+    Q[is.na(Pbase*Qbase)] <- NA
+    Pbase[is.na(P*Q)] <- NA
+    Qbase[is.na(P*Q)] <- NA
+
+    # expenditures:
+    E0 <- colSums(Pbase*Qbase, na.rm=TRUE)
+    E1 <- colSums(P*Q, na.rm=TRUE)
+
+    # adjustment factors:
+    Z <- (Pbase+P)/2
+    AF0 <- colSums(Qbase*Z, na.rm=TRUE)
+    AF1 <- colSums(Q*Z, na.rm=TRUE)
+
+    # index:
+    return((E1/AF1) / (E0/AF0))
+
+  },
+
+  "davies" = function(P, Q, W=NULL, base=1L, qbase=NULL){
+
+    # price and quantity matrices for base:
+    Pbase <- matrix(data=P[, base], ncol=ncol(P), nrow=nrow(P))
+    Qbase <- matrix(data=Q[, base], ncol=ncol(Q), nrow=nrow(Q))
+
+    # set NAs to avoid that calculations are based on different sets:
+    P[is.na(Pbase*Qbase)] <- NA
+    Q[is.na(Pbase*Qbase)] <- NA
+    Pbase[is.na(P*Q)] <- NA
+    Qbase[is.na(P*Q)] <- NA
+
+    # expenditures:
+    E0 <- colSums(Pbase*Qbase, na.rm=TRUE)
+    E1 <- colSums(P*Q, na.rm=TRUE)
+
+    # adjustment factors:
+    Z <- sqrt(Pbase*P)
+    AF0 <- colSums(Qbase*Z, na.rm=TRUE)
+    AF1 <- colSums(Q*Z, na.rm=TRUE)
+
+    # index:
+    return((E1/AF1) / (E0/AF0))
+
+  },
+
+  "lehr" = function(P, Q, W=NULL, base=1L, qbase=NULL){
+
+    # price and quantity matrices for base:
+    Pbase <- matrix(data=P[, base], ncol=ncol(P), nrow=nrow(P))
+    Qbase <- matrix(data=Q[, base], ncol=ncol(Q), nrow=nrow(Q))
+
+    # set NAs to avoid that calculations are based on different sets:
+    P[is.na(Pbase*Qbase)] <- NA
+    Q[is.na(Pbase*Qbase)] <- NA
+    Pbase[is.na(P*Q)] <- NA
+    Qbase[is.na(P*Q)] <- NA
+
+    # expenditures:
+    E0 <- colSums(Pbase*Qbase, na.rm=TRUE)
+    E1 <- colSums(P*Q, na.rm=TRUE)
+
+    # adjustment factors:
+    Z <- (Pbase*Qbase+P*Q)/(Qbase+Q)
+    AF0 <- colSums(Qbase*Z, na.rm=TRUE)
+    AF1 <- colSums(Q*Z, na.rm=TRUE)
+
+    # index:
+    return((E1/AF1) / (E0/AF0))
 
   }
 
@@ -1046,6 +1214,34 @@ medgeworth <- function(p, r, n, q, base=NULL, settings=list()){
   return(res)
 
 }
+uvalue <- function(p, r, n, q, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="uvalue", base=base, settings=settings)
+  res <- setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
+davies <- function(p, r, n, q, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="davies", base=base, settings=settings)
+  res <- setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
+banerjee <- function(p, r, n, q, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="banerjee", base=base, settings=settings)
+  res <- setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
+lehr <- function(p, r, n, q, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="lehr", base=base, settings=settings)
+  res <- setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
 lowe <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="lowe", base=base, settings=settings)
@@ -1060,7 +1256,7 @@ young <- function(p, r, n, q, base=NULL, settings=list()){
   return(res)
 
 }
-laspey <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+laspeyres <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="laspey", base=base, settings=settings)
   res <- setNames(as.vector(res), colnames(res))
@@ -1102,7 +1298,7 @@ walsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
   return(res)
 
 }
-geolaspey <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+geolaspeyres <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geolaspey", base=base, settings=settings)
   res <- setNames(as.vector(res), colnames(res))
@@ -1130,7 +1326,7 @@ theil <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
   return(res)
 
 }
-toernq <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+toernqvist <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="toernq", base=base, settings=settings)
   res <- setNames(as.vector(res), colnames(res))

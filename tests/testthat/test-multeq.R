@@ -9,12 +9,12 @@ set.seed(123)
 dt <- rdata(R=1, B=1, N=4)
 
 expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product)],
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product)],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))],
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))],
   c("1"=1)
 )
 
@@ -42,16 +42,16 @@ set.seed(123)
 dt <- rdata(R=4, B=1, N=1)
 
 expect_no_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product)]
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product)]
 )
 
 expect_no_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product)],
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product)],
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 expect_no_error(
@@ -74,12 +74,12 @@ expect_no_error(
 set.seed(123)
 dt <- rdata(R=3, B=1, N=4, gaps=0.2)
 
-# gk():
-gk.est <- dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
-gk.est1 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="1")]
-gk.est2 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="2")]
-gk.est3 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
-gk.est4 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE, settings=list(solve="matrix"))]
+# gkhamis():
+gk.est <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)]
+gk.est1 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="1")]
+gk.est2 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="2")]
+gk.est3 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+gk.est4 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE, settings=list(solve="matrix"))]
 
 expect_equal(is.vector(gk.est1), TRUE)
 expect_equal(is.vector(gk.est2), TRUE)
@@ -95,10 +95,10 @@ expect_equal(gk.est1, gk.est/gk.est[1])
 expect_equal(gk.est1, gk.est2/gk.est2[1])
 
 # ikd():
-ikd.est <- dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
-ikd.est1 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="1")]
-ikd.est2 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="2")]
-ikd.est3 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+ikd.est <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)]
+ikd.est1 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="1")]
+ikd.est2 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="2")]
+ikd.est3 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
 
 expect_equal(is.vector(ikd.est1), TRUE)
 expect_equal(is.vector(ikd.est2), TRUE)
@@ -111,10 +111,10 @@ expect_equal(ikd.est1, ikd.est/ikd.est[1])
 expect_equal(ikd.est1, ikd.est2/ikd.est2[1])
 
 # rao():
-rao.est <- dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
-rao.est1 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="1")]
-rao.est2 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="2")]
-rao.est3 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+rao.est <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)]
+rao.est1 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="1")]
+rao.est2 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="2")]
+rao.est3 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
 
 expect_equal(is.vector(rao.est1), TRUE)
 expect_equal(is.vector(rao.est2), TRUE)
@@ -127,10 +127,10 @@ expect_equal(rao.est1, rao.est/rao.est[1])
 expect_equal(rao.est1, rao.est2/rao.est2[1])
 
 # gerardi():
-gerardi.est <- dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)]
-gerardi.est1 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="1")]
-gerardi.est2 <- dt[, gk(p=price, q=quantity, r=region, n=product, base="2")]
-gerardi.est3 <- dt[, gk(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+gerardi.est <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)]
+gerardi.est1 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="1")]
+gerardi.est2 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="2")]
+gerardi.est3 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
 
 expect_equal(is.vector(gerardi.est1), TRUE)
 expect_equal(is.vector(gerardi.est2), TRUE)
@@ -166,7 +166,7 @@ expect_equal(
 
 # quantities missing:
 expect_error(
-  dt[, gk(p=price, r=region, n=product, w=quantity)]
+  dt[, gkhamis(p=price, r=region, n=product, w=quantity)]
 )
 
 # weights and quantities missing:
@@ -186,22 +186,22 @@ expect_error(
 
 # wrong setting:
 expect_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="abc"))]
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="abc"))]
 )
 
 # abbreviated setting ok:
 expect_no_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(solve="iter"))]
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="iter"))]
 )
 
 # negative tolerance not allowed:
 expect_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(tol=-2))]
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(tol=-2))]
 )
 
 # negative maximum number of iterations not allowed:
 expect_error(
-  dt[, gk(p=price, q=quantity, r=region, n=product, settings=list(max.iter=-2))]
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(max.iter=-2))]
 )
 
 # solve-method not allowed:
@@ -232,49 +232,49 @@ dt2[, "product":=factor(product, labels=6:9)]
 dt <- rbind(dt1, dt2)
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="1",
            settings=list(chatty=FALSE, connect=TRUE))][1],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="1",
            settings=list(chatty=FALSE, connect=TRUE))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="4",
            settings=list(chatty=FALSE, connect=TRUE))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="4",
            settings=list(chatty=FALSE, connect=TRUE))][4],
   c("4"=1)
 )
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="1",
              settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][1],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="1",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="1",
              settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="4",
              settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
-  dt[, gk(p=price, r=region, n=product, q=quantity, base="4",
+  dt[, gkhamis(p=price, r=region, n=product, q=quantity, base="4",
              settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][4],
   c("4"=1)
 )
@@ -283,19 +283,19 @@ expect_equal(
 # Misc --------------------------------------------------------------------
 
 
-# test if ikd(), gk(), and gerardi() identical if no gaps
+# test if ikd(), gkhamis(), and gerardi() identical if no gaps
 # and quantities are the same across regions:
 set.seed(123)
 dt <- rdata(R=5, B=1, N=9, gaps=0)
 dt[, "quantity" := 1000*rleidv(product)]
 
 expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)],
   dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
 )
 
 expect_equal(
-  dt[, gk(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)],
   dt[, gerardi(p=price, q=quantity, r=region, n=product, base=NULL)]
 )
 

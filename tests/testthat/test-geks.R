@@ -13,7 +13,7 @@ expect_error(
 )
 
 expect_error(
-  dt[, index.pairs(p=price, r=region, n=product, settings=list(type="laspey"))]
+  dt[, index.pairs(p=price, r=region, n=product, settings=list(type="laspeyres"))]
 )
 
 expect_warning(
@@ -102,9 +102,9 @@ expect_equal(
 )
 
 # geks():
-geks.est <- dt[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernq"))]
-geks.est1 <- dt[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernq"))]
-geks.est2 <- dt[, geks(p=price, r=region, n=product, w=weight, base="2", settings=list(type="toernq"))]
+geks.est <- dt[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernqvist"))]
+geks.est1 <- dt[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernqvist"))]
+geks.est2 <- dt[, geks(p=price, r=region, n=product, w=weight, base="2", settings=list(type="toernqvist"))]
 
 expect_equal(is.vector(geks.est1), TRUE)
 expect_equal(is.vector(geks.est2), TRUE)
@@ -115,17 +115,17 @@ expect_equal(geks.est1, geks.est2/geks.est2[1])
 expect_equal(geks.est1, geks.est/geks.est[1])
 
 # expenditure share weights versus quantities identical:
-geks.est3 <- dt[, geks(p=price, r=region, n=product, w=share, base="1", settings=list(type="toernq"))]
-geks.est4 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernq"))]
+geks.est3 <- dt[, geks(p=price, r=region, n=product, w=share, base="1", settings=list(type="toernqvist"))]
+geks.est4 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist"))]
 expect_equal(geks.est3, geks.est4)
 
 # wmethod='shares' still transitive:
-geks.est5 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernq", wmethod="shares"))]
-geks.est6 <- dt[, geks(p=price, r=region, n=product, q=quantity, base=NULL, settings=list(type="toernq", wmethod="shares"))]
+geks.est5 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist", wmethod="shares"))]
+geks.est6 <- dt[, geks(p=price, r=region, n=product, q=quantity, base=NULL, settings=list(type="toernqvist", wmethod="shares"))]
 expect_equal(geks.est5, geks.est6/geks.est6[1])
 
 # multiple index types at once:
-geks.est7 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type=c("toernq","jevons")))]
+geks.est7 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type=c("toernqvist","jevons")))]
 expect_equal(is.matrix(geks.est7), TRUE)
 expect_equal(dim(geks.est7), c(2,3))
 expect_true(all(grepl("geks-", rownames(geks.est7))))
@@ -136,17 +136,17 @@ expect_true(all(grepl("geks-", rownames(geks.est7))))
 
 expect_no_error(
   dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
-            settings=list(type="toernq", chatty=FALSE))]
+            settings=list(type="toernqvist", chatty=FALSE))]
 )
 
 expect_error(
   dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
-            settings=list(type="toernq", wmethod="bla", chatty=FALSE))]
+            settings=list(type="toernqvist", wmethod="bla", chatty=FALSE))]
 )
 
 expect_error(
   dt[, index.pairs(p=price, r=region, n=product, q=quantity,
-                   settings=list(type="toernq", all.pairs="bla", chatty=FALSE))]
+                   settings=list(type="toernqvist", all.pairs="bla", chatty=FALSE))]
 )
 
 expect_error(
@@ -224,12 +224,12 @@ dt[, "weights" := 1]
 
 expect_equal(
   dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))]$jevons,
-  dt[, index.pairs(price, region, product, w=weights, settings=list(type="toernq"))]$toernq
+  dt[, index.pairs(price, region, product, w=weights, settings=list(type="toernqvist"))]$toernqvist
 )
 
 expect_equal(
   dt[, index.pairs(price, region, product, settings=list(type = "carli"))]$carli,
-  dt[, index.pairs(price, region, product, w=weights, settings=list(type = "laspey"))]$laspey
+  dt[, index.pairs(price, region, product, w=weights, settings=list(type = "laspeyres"))]$laspeyres
 )
 
 expect_equal(
@@ -243,9 +243,9 @@ set.seed(123)
 dt <- rdata(R=3, B=1, N=4)
 dt[, "weight" := rweights(r=region, b=product, type=~b)]
 
-geks.est1 <- dt[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernq"))]
-geks.est2 <- dt[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernq"))]
-toernq.est1 <- dt[, toernq(p=price, r=region, n=product, w=weight, base="1")]
+geks.est1 <- dt[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernqvist"))]
+geks.est2 <- dt[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernqvist"))]
+toernq.est1 <- dt[, toernqvist(p=price, r=region, n=product, w=weight, base="1")]
 
 expect_equal(geks.est1[1], c("1"=1))
 expect_equal(prod(geks.est2), 1)
@@ -259,13 +259,13 @@ dt <- rdata(R=5, B=1, N=9)
 # reciprocal of paasche identical to laspeyres:
 expect_equal(
   t(1/as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="paasche"))], formula=base~region, value.var="paasche"), rownames="base")),
-  as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="laspey"))], formula=base~region, value.var="laspey"), rownames="base")
+  as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="laspeyres"))], formula=base~region, value.var="laspeyres"), rownames="base")
 )
 
 # hence, geks-fisher, geks-laspeyres, and geks-paasche identical:
 expect_equal(
   dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="fisher"))],
-  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="laspey"))]
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="laspeyres"))]
 )
 
 expect_equal(

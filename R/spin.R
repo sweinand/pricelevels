@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   5 December 2023
+# Date:   11 January 2024
 
 # list available price indices:
 list.indices <- function(){
@@ -176,8 +176,8 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
           pdata[, spin::gerardi(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
-        "gk"=if("gk"%in%type){
-          pdata[, spin::gk(p=p, r=r, n=n, q=q, base=base, settings=settings)]
+        "gkhamis"=if("gkhamis"%in%type){
+          pdata[, spin::gkhamis(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         }
 
       )

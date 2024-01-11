@@ -2,7 +2,7 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     6 December 2023
+# Date:     11 January 2024
 
 # print output for class 'multeq':
 print.multeq <- function(x){
@@ -175,7 +175,7 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
 }
 
 # geary-khamis:
-gk <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
+gkhamis <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
 
   # see CPI Manual (2020, p. 448)
   # https://www.ilo.org/wcmsp5/groups/public/---dgreports/---stat/documents/publication/wcms_761444.pdf
