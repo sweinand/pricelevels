@@ -21,8 +21,8 @@ rdata(R, B, N, gaps=0, weights=~b+r, sales=0, settings=list())
 \arguments{
    \item{r, n, b}{A character vector or factor of regional entities \code{r}, individual products \code{n}, and product groups (or basic headings) \code{b}, respectively.}
    \item{R, B, N}{A single integer specifying the number of regions \code{R} and product groups \code{B}, respectively, and a vector of length \code{B} specifying the number of individual products \code{N} in each product group.}
-   \item{weights, type}{A formula specifiyng the sampling of expenditure weights for product groups. If \code{type=~1}, product groups receive identical weights, while weights are product group specific for \code{type=~b}. If weights should vary among product groups and regions, use \code{type=~b+r}. As long as there are no data gaps, the weights add up to 1 for each region.}
-   \item{gaps, sales, amount}{Percentage amount of gaps and sales (between 0 and 1), respecitvely, to be introduced in the data.}
+   \item{weights, type}{A formula specifying the sampling of expenditure weights for product groups. If \code{type=~1}, product groups receive identical weights, while weights are product group specific for \code{type=~b}. If weights should vary among product groups and regions, use \code{type=~b+r}. As long as there are no data gaps, the weights add up to 1 for each region.}
+   \item{gaps, sales, amount}{Percentage amount of gaps and sales (between 0 and 1), respectively, to be introduced in the data.}
    \item{prob}{A vector of probability weights, see also \code{\link{sample}()}. Either \code{NULL} or the same length as \code{r} and \code{n}. Larger values make gaps occur more likely at this position.}
    \item{pairs}{A logical indicating if gaps should be introduced such that there are always at least two observations per product available (\code{pairs=TRUE}). Only in this case, all products provide valuable information for a spatial price comparison. Otherwise, if \code{pairs=FALSE}, there can be products with only one observation. See also the Details section.}
    \item{exclude}{Data.frame of two (character) variables \code{r} and \code{n}, specifying regions and products to be excluded from introducing gaps. Default is \code{NULL}, meaning that gaps are allowed to occur in all regions and products present in the data. Missing values (\code{NA}) are translated into no gaps for the corresponding product or region, e.g. \code{data.frame(r="r1", n=NA)} means that there will be no gaps in region \code{r1}.}
@@ -62,7 +62,7 @@ or a list with the sampled data and its underlying parameter values, if \code{se
 }
 
 \details{
-Function \code{rgaps()} ensures that gaps do not lead to non-connected price data (see \code{\link{is.connected}()}). Therefore, it could happen that the amount of gaps specified in \code{rgaps()} is only approximate, in particluar, in cases where certain regions and/or products should additionally be exluded from exhibiting gaps by \code{exclude}.
+Function \code{rgaps()} ensures that gaps do not lead to non-connected price data (see \code{\link{is.connected}()}). Therefore, it could happen that the amount of gaps specified in \code{rgaps()} is only approximate, in particular, in cases where certain regions and/or products should additionally be excluded from exhibiting gaps by \code{exclude}.
 
 If \code{rgaps(pairs=FALSE)}, the minimum number of observations for a connected data set is \eqn{R+N-1}. Otherwise, for \code{rgaps(pairs=TRUE)}, this number is defined by \eqn{2N+\text{max}(0, R-N-1)}.
 

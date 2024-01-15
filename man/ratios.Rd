@@ -25,7 +25,7 @@ ratios(p, r, n, base=NULL, static=FALSE, drop=FALSE)
 \value{A named vector. The names indicate the base region chosen.}
 
 \details{
-If \code{base} is not available for a specific product, \eqn{n}, and \code{static=FALSE}, another base region is used instead. This is particularly important in cases of missing prices. Othwerise, for \code{static=TRUE}, computation is not possible and gives \code{NA}.
+If \code{base} is not available for a specific product, \eqn{n}, and \code{static=FALSE}, another base region is used instead. This is particularly important in cases of missing prices. Otherwise, for \code{static=TRUE}, computation is not possible and gives \code{NA}.
 
 If there are duplicated observations, only one of these duplicates is used as the base price. For example, if two prices are available for product \eqn{n} in base region \eqn{r}, \code{ratios()} divides both prices by the first one.
 }

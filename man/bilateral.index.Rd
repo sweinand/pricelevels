@@ -33,7 +33,7 @@
   \item \emph{Unweighted indices}: Jevons, Carli, Harmonic, Dutot, and CSWD
   \item \emph{Indices based on quantities only}: Marshall-Edgeworth, Young, and Lowe
   \item \emph{Indices based on quantities or weights}: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
-  \item \emph{Unit value ralted indices}: unit value index, Banerjee, Davies, and Lehr
+  \item \emph{Unit value related indices}: unit value index, Banerjee, Davies, and Lehr
 }
 }
 

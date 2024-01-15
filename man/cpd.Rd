@@ -18,7 +18,7 @@ nlcpd(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list(), ...)
 \arguments{
    \item{p}{A numeric vector of prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or weights \code{w}. By default, no weights are used in the regression (\code{q=NULL} and \code{w=NULL}). While \code{w} can be any weights considered as approriate for weighted regression, \code{q} will result in an expenditure share weighted regression (see details). If both \code{q} and \code{w} are provided, \code{q} will be used.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or weights \code{w}. By default, no weights are used in the regression (\code{q=NULL} and \code{w=NULL}). While \code{w} can be any weights considered as appropriate for weighted regression, \code{q} will result in an expenditure share weighted regression (see details). If both \code{q} and \code{w} are provided, \code{q} will be used.}
    \item{base}{A character specifying the base to which the estimated logarithmic regional price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average, similar to \code{\link{contr.sum}}.}
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
@@ -48,7 +48,7 @@ The NLCPD method inflates the CPD model by product-specific elasticities \eqn{\d
 
 \deqn{\ln p_i^r = \ln \pi_i + \delta_i \ln P^r + u_i^r}
 
-Note that both the CPD and the NLCPD method require a normalization of the estimated price levels \eqn{\widehat{\ln P^r}} to avoid multicollinearity. If \code{base=NULL}, normalization \eqn{\sum_{r=1}^{R} \widehat{\ln P^r}=0} is used in both functions; otherwise, one price level is set to 0. The NLCPD method additionaly imposes the restriction \eqn{\sum_{i=1}^{N} w_i \widehat{\delta_i}=1}, which is satisfied by the CPD method by definiton. The \eqn{w_i} can be defined by \code{w.delta}.
+Note that both the CPD and the NLCPD method require a normalization of the estimated price levels \eqn{\widehat{\ln P^r}} to avoid multicollinearity. If \code{base=NULL}, normalization \eqn{\sum_{r=1}^{R} \widehat{\ln P^r}=0} is used in both functions; otherwise, one price level is set to 0. The NLCPD method additionally imposes the restriction \eqn{\sum_{i=1}^{N} w_i \widehat{\delta_i}=1}, which is satisfied by the CPD method by definition. The \eqn{w_i} can be defined by \code{w.delta}.
 
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 

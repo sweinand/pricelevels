@@ -72,7 +72,7 @@ library(data.table) # load data.table-package
 Data for spatial price comparisons usually have three dimensions:
 
 * the *region* $(r=1,\ldots,R)$, which can be a country, city, or any other regional entity,
-* the *basic heading* $(b=1,\ldots,B)$, which is a group of similar products for which expenditure weights, $w_{b}$ or $w_{b}^{r}$, are avaiable,
+* the *basic heading* $(b=1,\ldots,B)$, which is a group of similar products for which expenditure weights, $w_{b}$ or $w_{b}^{r}$, are available,
 * and the *individual product* $(n=1,\ldots,N_b)$, for which prices $p_{bn}^r$ are recorded.
 
 For transaction and supermarket scanner data, purchased quantities $q_{bn}^r$ of the individual products are often available.
@@ -465,7 +465,7 @@ The `geks()`-function internally calls the function `index.pairs()` to compute t
 $$P_{\text{GEKS-J}}^{1r} = \prod_{s=1}^{R} \left( \dot{P}^{1s}_{\text{J}} \dot{P}^{sr}_{\text{J}} \right)^{1/R} \ ,$$
 if the Jevons index is used and region `1` serves as the base region [@ILO2020 p. 448].
 
-Again, the following checks show that the price index numbers derived with the GEKS-Törnvist index are transitive:
+Again, the following checks show that the price index numbers derived with the GEKS-Törnqvist index are transitive:
 ```{r}
 # estimate GEKS-Törnqvist using different base regions and 
 # applying weights in second aggregation stage:
@@ -550,7 +550,7 @@ dt[, "quantity":=rnorm(n=.N, mean=999, sd=100)]
 # price matrix:
 with(dt, tapply(X=price, list(product, region), mean))
 ```
-The price matrix shows that prices for poducts `1` to `3` are available in regions `a`, `b`, and `c`, while prices for products `4` to `7` were recorded in regions `c`, `d`, and `e`. Since in region `c` the prices are complete, the data are connected - either through direct or indirect regional links.
+The price matrix shows that prices for products `1` to `3` are available in regions `a`, `b`, and `c`, while prices for products `4` to `7` were recorded in regions `c`, `d`, and `e`. Since in region `c` the prices are complete, the data are connected - either through direct or indirect regional links.
 ```{r}
 dt[, is.connected(r=region, n=product)] # true
 ```

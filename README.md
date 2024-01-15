@@ -9,7 +9,7 @@ The `spin`-package provides index number methods for price comparisons within a 
 2. Multilateral price indices: 
     - CPD and NLCPD methods
     - GEKS method
-    - Multilateral systems of equations: Geary-Khamis, Iklé-Dikhanov-Balk, Geradi, Rao
+    - Multilateral systems of equations: Geary-Khamis, Iklé-Dikhanov-Balk, Gerardi, Rao
 
 Moreover, the package offers functions for sampling and characterizing price data. Details can be found in the package vignette.
 
