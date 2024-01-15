@@ -104,7 +104,7 @@ dt[, cpd(p=price, r=region, n=product, q=quantity, base="1")]
 dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="1")]
 
 # compare with toernqvist index:
-dt[, toernq(p=price, r=region, n=product, q=quantity, base="1")]
+dt[, toernqvist(p=price, r=region, n=product, q=quantity, base="1")]
 
 # computational speed in nlcpd() usually increases if use.jac=TRUE:
 set.seed(123)

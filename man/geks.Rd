@@ -110,6 +110,7 @@ dt <- rbind(dt1, dt2)
 dt[, is.connected(r=region, n=product)] # non-connected now
 
 # compute all index pairs and geks:
+require(data.table)
 as.matrix(dcast(
   data=dt[, index.pairs(p=price, r=region, n=product)],
   formula=base~region,
