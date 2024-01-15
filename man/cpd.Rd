@@ -1,4 +1,4 @@
-\name{stochastic.index}
+\name{cpd}
 
 \alias{cpd}
 \alias{nlcpd}
@@ -10,9 +10,9 @@ Function \code{cpd()} estimates regional price levels by the Country-Product-Dum
 }
 
 \usage{
-cpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE)
+cpd(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
 
-nlcpd(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list(), ...)
+nlcpd(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list(), ...)
 }
 
 \arguments{

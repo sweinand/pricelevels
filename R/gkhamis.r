@@ -2,10 +2,10 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     11 January 2024
+# Date:     15 January 2024
 
 # print output for class 'multeq':
-print.multeq <- function(x){
+print.multeq <- function(x, ...){
   print(x$par)
   invisible(x)
 }

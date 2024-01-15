@@ -8,9 +8,9 @@
 \description{Function \code{index.pairs()} computes bilateral index numbers for all pairs of regions. Based on that, function \code{geks()} derives regional price levels using the GEKS method proposed by Gini (1924, 1931), Elteto and Koves (1964), and Szulc (1964).}
 
 \usage{
-index.pairs(p, r, n, q = NULL, w = NULL, settings = list())
+index.pairs(p, r, n, q=NULL, w=NULL, settings=list())
 
-geks(p, r, n, q = NULL, w = NULL, base = NULL, simplify = TRUE, settings = list())
+geks(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \arguments{

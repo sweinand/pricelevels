@@ -1,4 +1,4 @@
-\name{price.matrix}
+\name{neighbors}
 
 \alias{neighbors}
 \alias{connect}
@@ -15,13 +15,13 @@ Function \code{is.connected()} checks if all regions in the price matrix are con
 \usage{
 is.connected(r, n)
 
-neighbors(r, n, simplify = FALSE)
+neighbors(r, n, simplify=FALSE)
 
 connect(r, n)
 
-comparisons(r, n, ngbs = NULL)
+comparisons(r, n, ngbs=NULL)
 
-sparsity(r, n, useable = FALSE)
+sparsity(r, n, useable=FALSE)
 }
 
 \arguments{

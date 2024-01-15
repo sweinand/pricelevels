@@ -1,4 +1,4 @@
-\name{multeq}
+\name{gkhamis}
 
 \alias{gkhamis}
 \alias{gerardi}
@@ -20,12 +20,12 @@ All methods have in common that they set up a system of interrelated equations o
 
 \usage{
 # geary-khamis index requires quantities:
-gkhamis(p, r, n, q, base = NULL, simplify = TRUE, settings = list())
+gkhamis(p, r, n, q, base=NULL, simplify=TRUE, settings=list())
 
 # ikle-dikhanov-balk, rao, and gerardi indices:
 idb(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
-rao(...)
-gerardi(...)
+rao(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
+gerardi(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \arguments{

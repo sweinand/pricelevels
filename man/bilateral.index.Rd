@@ -1,5 +1,6 @@
 \name{bilateral.index}
 
+\alias{bilateral.index}
 \alias{jevons}
 \alias{carli}
 \alias{dutot}
@@ -39,35 +40,35 @@
 \usage{
 # bilateral unweighted indices:
 jevons(p, r, n, base=NULL, settings=list())
-carli(...)
-harmonic(...)
-dutot(...)
-cswd(...)
+carli(p, r, n, base=NULL, settings=list())
+harmonic(p, r, n, base=NULL, settings=list())
+dutot(p, r, n, base=NULL, settings=list())
+cswd(p, r, n, base=NULL, settings=list())
 
 # bilateral indices using quantites:
 medgeworth(p, r, n, q, base=NULL, settings=list())
-lowe(...)
-young(...)
+lowe(p, r, n, q, base=NULL, settings=list())
+young(p, r, n, q, base=NULL, settings=list())
 
 # unit value related indices:
 uvalue(p, r, n, q, base=NULL, settings=list())
-banerjee(...)
-davies(...)
-lehr(...)
+banerjee(p, r, n, q, base=NULL, settings=list())
+davies(p, r, n, q, base=NULL, settings=list())
+lehr(p, r, n, q, base=NULL, settings=list())
 
 # bilateral indices using quantities or expenditure share weights:
 laspeyres(p, r, n, q, w=NULL, base=NULL, settings=list())
-paasche(...)
-palgrave(...)
-fisher(...)
-drobisch(...)
-walsh(...)
-geolaspeyres(...)
-geopaasche(...)
-toernqvist(...)
-geowalsh(...)
-theil(...)
-svartia(...)
+paasche(p, r, n, q, w=NULL, base=NULL, settings=list())
+palgrave(p, r, n, q, w=NULL, base=NULL, settings=list())
+fisher(p, r, n, q, w=NULL, base=NULL, settings=list())
+drobisch(p, r, n, q, w=NULL, base=NULL, settings=list())
+walsh(p, r, n, q, w=NULL, base=NULL, settings=list())
+geolaspeyres(p, r, n, q, w=NULL, base=NULL, settings=list())
+geopaasche(p, r, n, q, w=NULL, base=NULL, settings=list())
+toernqvist(p, r, n, q, w=NULL, base=NULL, settings=list())
+geowalsh(p, r, n, q, w=NULL, base=NULL, settings=list())
+theil(p, r, n, q, w=NULL, base=NULL, settings=list())
+svartia(p, r, n, q, w=NULL, base=NULL, settings=list())
 }
 
 \arguments{

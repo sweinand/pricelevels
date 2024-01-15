@@ -9,7 +9,7 @@ Groupwise calculation of price ratios with flexible setting of base prices by pr
 }
 
 \usage{
-ratios(p, r, n, base = NULL, static = FALSE, drop = FALSE)
+ratios(p, r, n, base=NULL, static=FALSE, drop=FALSE)
 }
 
 \arguments{

@@ -12,7 +12,7 @@
 list.indices()
 
 # compute all price indices:
-spin(p, r, n, q = NULL, w = NULL, base = NULL, settings = list())
+spin(p, r, n, q=NULL, w=NULL, base=NULL, settings=list())
 }
 
 \arguments{

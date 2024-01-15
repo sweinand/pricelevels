@@ -11,11 +11,11 @@
 The sampling of prices relies on the NLCPD model (see \code{\link{nlcpd}()}), while expenditure weights for product groups are sampled using function \code{rweights()}. Purchased quantities are assigned to individual products. Moreover, random sales and gaps (using function \code{rgaps()}) can be introduced in the sampled data.}
 
 \usage{
-rgaps(r, n, amount = 0, prob = NULL, pairs = FALSE, exclude = NULL)
+rgaps(r, n, amount=0, prob=NULL, pairs=FALSE, exclude=NULL)
 
-rweights(r, b, type = ~1)
+rweights(r, b, type=~1)
 
-rdata(R, B, N, gaps = 0, weights = ~b+r, sales = 0, settings = list())
+rdata(R, B, N, gaps=0, weights=~b+r, sales=0, settings=list())
 }
 
 \arguments{
