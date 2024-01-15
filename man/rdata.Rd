@@ -20,7 +20,6 @@ rdata(R, B, N, gaps = 0, weights = ~b+r, sales = 0, settings = list())
 
 \arguments{
    \item{r, n, b}{A character vector or factor of regional entities \code{r}, individual products \code{n}, and product groups (or basic headings) \code{b}, respectively.}
-   \item{p, q}{A numeric vector of prices \code{p} and quantities \code{q}, respectively.}
    \item{R, B, N}{A single integer specifying the number of regions \code{R} and product groups \code{B}, respectively, and a vector of length \code{B} specifying the number of individual products \code{N} in each product group.}
    \item{weights, type}{A formula specifiyng the sampling of expenditure weights for product groups. If \code{type=~1}, product groups receive identical weights, while weights are product group specific for \code{type=~b}. If weights should vary among product groups and regions, use \code{type=~b+r}. As long as there are no data gaps, the weights add up to 1 for each region.}
    \item{gaps, sales, amount}{Percentage amount of gaps and sales (between 0 and 1), respecitvely, to be introduced in the data.}
