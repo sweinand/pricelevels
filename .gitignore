@@ -2,5 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-R/cd.R
 inst/doc
+dev/
+scripts/
