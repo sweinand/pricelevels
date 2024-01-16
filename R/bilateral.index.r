@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     11 January 2024
+# Date:     16 January 2024
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -365,10 +365,10 @@ Pmatched <- list(
 Pmatched$cswd <- function(p1, q1=NULL, w1=NULL, p0, q0=NULL, w0=NULL){
 
   # compute carli indices:
-  Pc <- spin:::Pmatched$carli(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
+  Pc <- Pmatched$carli(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
 
   # compute harmonic indices:
-  Ph <- spin:::Pmatched$harmonic(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
+  Ph <- Pmatched$harmonic(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
 
   # compute index:
   return(sqrt(Pc*Ph))
@@ -377,10 +377,10 @@ Pmatched$cswd <- function(p1, q1=NULL, w1=NULL, p0, q0=NULL, w0=NULL){
 Pmatched$fisher <- function(p1, q1, w1, p0, q0, w0){
 
   # compute laspeyres indices:
-  Pl <- spin:::Pmatched$laspey(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
+  Pl <- Pmatched$laspey(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
 
   # compute paasche indices:
-  Pp <- spin:::Pmatched$paasche(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
+  Pp <- Pmatched$paasche(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
 
   # compute index:
   return(sqrt(Pl*Pp))
@@ -389,10 +389,10 @@ Pmatched$fisher <- function(p1, q1, w1, p0, q0, w0){
 Pmatched$drobisch <- function(p1, q1, w1, p0, q0, w0){
 
   # compute laspeyres indices:
-  Pl <- spin:::Pmatched$laspey(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
+  Pl <- Pmatched$laspey(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
 
   # compute paasche indices:
-  Pp <- spin:::Pmatched$paasche(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
+  Pp <- Pmatched$paasche(p1=p1, q1=q1, w1=w1, p0=p0, q0=q0, w0=w0)
 
   # compute Fisher:
   return((Pl+Pp)/2)
@@ -1005,10 +1005,10 @@ Pmatrix <- list(
 Pmatrix$cswd <- function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
 
   # compute carli indices:
-  Pc <- spin:::Pmatrix$carli(P=P, Q=Q, W=W, base=base)
+  Pc <- Pmatrix$carli(P=P, Q=Q, W=W, base=base)
 
   # compute harmonic indices:
-  Ph <- spin:::Pmatrix$harmonic(P=P, Q=Q, W=W, base=base)
+  Ph <- Pmatrix$harmonic(P=P, Q=Q, W=W, base=base)
 
   # compute index:
   return(sqrt(Ph*Pc))
@@ -1017,10 +1017,10 @@ Pmatrix$cswd <- function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
 Pmatrix$fisher <- function(P, Q, W, base=1L, qbase=NULL){
 
   # compute laspeyres indices:
-  Pl <- spin:::Pmatrix$laspey(P=P, Q=Q, W=W, base=base)
+  Pl <- Pmatrix$laspey(P=P, Q=Q, W=W, base=base)
 
   # compute paasche indices:
-  Pp <- spin:::Pmatrix$paasche(P=P, Q=Q, W=W, base=base)
+  Pp <- Pmatrix$paasche(P=P, Q=Q, W=W, base=base)
 
   # compute Fisher:
   return(sqrt(Pl*Pp))
@@ -1029,10 +1029,10 @@ Pmatrix$fisher <- function(P, Q, W, base=1L, qbase=NULL){
 Pmatrix$drobisch <- function(P, Q, W, base=1L, qbase=NULL){
 
   # compute laspeyres indices:
-  Pl <- spin:::Pmatrix$laspey(P=P, Q=Q, W=W, base=base)
+  Pl <- Pmatrix$laspey(P=P, Q=Q, W=W, base=base)
 
   # compute paasche indices:
-  Pp <- spin:::Pmatrix$paasche(P=P, Q=Q, W=W, base=base)
+  Pp <- Pmatrix$paasche(P=P, Q=Q, W=W, base=base)
 
   # compute index:
   return((Pl+Pp)/2)
@@ -1062,27 +1062,27 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   if(settings$check.inputs){
 
     # main inputs:
-    .check.num(x=p, int=c(0, Inf))
-    .check.char(x=r)
-    .check.char(x=n)
-    .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
-    .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
-    .check.char(x=type, min.len=1, max.len=Inf, na.ok=FALSE)
-    .check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
-    .check.lengths(x=r, y=n)
-    .check.lengths(x=r, y=p)
-    .check.lengths(x=r, y=q)
-    .check.lengths(x=r, y=w)
+    check.num(x=p, int=c(0, Inf))
+    check.char(x=r)
+    check.char(x=n)
+    check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+    check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+    check.char(x=type, min.len=1, max.len=Inf, na.ok=FALSE)
+    check.char(x=base, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+    check.lengths(x=r, y=n)
+    check.lengths(x=r, y=p)
+    check.lengths(x=r, y=q)
+    check.lengths(x=r, y=w)
 
     # settings:
-    .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
-    .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
-    .check.char(x=settings$qbase, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+    check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+    check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+    check.char(x=settings$qbase, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
 
   }
 
   # allowed index types:
-  type.vals <- spin:::pindices[type=="bilateral", ]
+  type.vals <- pindices[type=="bilateral", ]
 
   # check against allowed index types:
   type <- match.arg(arg=type, choices=type.vals$name, several.ok=TRUE)
@@ -1101,10 +1101,10 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   }
 
   # initialize data:
-  pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
+  pdata <- arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
 
   # set base region:
-  base <- spin:::set.base(r=pdata$r, base=base, null.ok=FALSE, settings=settings)
+  base <- set.base(r=pdata$r, base=base, null.ok=FALSE, settings=settings)
 
   # intersection with base region prices and weights:
   pdata <- merge(x=pdata, y=pdata[r==base,], by="n", all=FALSE, suffixes=c("","_base"))
@@ -1125,11 +1125,11 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
     pdata <- merge(x=pdata, y=pdata.qbase, by="n", all=FALSE, suffixes=c("","_qbase"))
 
     if("lowe"%in%type){
-      out.lowe <- pdata[, spin:::Pmatched$lowe(p1=p, p0=p_base, qb=q_qbase), by="r"]
+      out.lowe <- pdata[, Pmatched$lowe(p1=p, p0=p_base, qb=q_qbase), by="r"]
     }
 
     if("young"%in%type){
-      out.young <- pdata[, spin:::Pmatched$young(p1=p, p0=p_base, pb=p_qbase, qb=q_qbase), by="r"]
+      out.young <- pdata[, Pmatched$young(p1=p, p0=p_base, pb=p_qbase, qb=q_qbase), by="r"]
     }
 
   }
@@ -1138,7 +1138,7 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   type.sub <- setdiff(type, c("lowe","young"))
 
   # set "matched index function" based on type:
-  indexfn <- spin:::Pmatched[match(x=type.sub, table=names(spin:::Pmatched))]
+  indexfn <- Pmatched[match(x=type.sub, table=names(Pmatched))]
 
   # loop over all indices:
   out <- vector(mode="list", length=length(type.sub))
@@ -1175,168 +1175,168 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
 jevons <- function(p, r, n, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, w=NULL, q=NULL, type="jevons", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 dutot <- function(p, r, n, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, w=NULL, q=NULL, type="dutot", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 carli <- function(p, r, n, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, w=NULL, q=NULL, type="carli", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 harmonic <- function(p, r, n, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, w=NULL, q=NULL, type="harmonic", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 cswd <- function(p, r, n, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, w=NULL, q=NULL, type="cswd", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 medgeworth <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="medgeworth", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 uvalue <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="uvalue", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 davies <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="davies", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 banerjee <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="banerjee", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 lehr <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="lehr", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 lowe <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="lowe", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 young <- function(p, r, n, q, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=NULL, type="young", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 laspeyres <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="laspey", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 paasche <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="paasche", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 palgrave <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="palgrave", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 fisher <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="fisher", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 drobisch <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="drobisch", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 walsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="walsh", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 geolaspeyres <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geolaspey", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 geopaasche <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geopaasche", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 geowalsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geowalsh", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 theil <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="theil", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 toernqvist <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="toernq", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }
 svartia <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="svartia", base=base, settings=settings)
-  res <- setNames(as.vector(res), colnames(res))
+  res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
 }

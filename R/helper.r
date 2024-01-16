@@ -2,7 +2,7 @@
 
 # Title:  General helper functions
 # Author: Sebastian Weinand
-# Date:   6 December 2023
+# Date:   16 January 2024
 
 # set base region:
 set.base <- function(r, base, null.ok, qbase=FALSE, settings=list()){
@@ -78,7 +78,7 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
   if(settings$missings){
 
     # if both q and w are provided, q will be checked:
-    nas <- dt[, complete.cases(r, n, p, z)]
+    nas <- dt[, stats::complete.cases(r, n, p, z)]
     dt <- dt[nas,]
     if(settings$chatty & sum(!nas)>0L){
       warning(paste(sum(!nas), "incomplete case(s) found and removed"), call.=FALSE)
@@ -94,13 +94,13 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
   # subset to connected data:
   if(settings$connect){
 
-    if(dt[, !spin::is.connected(r=r, n=n)]){
+    if(dt[, !is.connected(r=r, n=n)]){
 
       # subset based on input:
       if(!base%in%levels(factor(dt$r)) || is.null(base)){
-        dt <- dt[spin::connect(r=r, n=n), ]
+        dt <- dt[connect(r=r, n=n), ]
       }else{
-        dt[, "ng" := spin::neighbors(r=r, n=n, simplify=TRUE)]
+        dt[, "ng" := neighbors(r=r, n=n, simplify=TRUE)]
         dt <- dt[ng%in%dt[r%in%base, unique(ng)], ]
       }
 

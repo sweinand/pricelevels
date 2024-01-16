@@ -2,10 +2,10 @@
 
 # Title:  Input checks
 # Author: Sebastian Weinand
-# Date:   5 November 2023
+# Date:   16 January 2024
 
 # check character and factor inputs:
-.check.char <- function(x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=TRUE){
+check.char <- function(x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=TRUE){
 
   input <- deparse(substitute(x))
   msg_prefix <- paste("Non-valid input for", input, "->")
@@ -25,7 +25,7 @@
 }
 
 # check logical inputs:
-.check.log <- function(x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=TRUE){
+check.log <- function(x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=TRUE){
 
   input <- deparse(substitute(x))
   msg_prefix <- paste("Non-valid input for", input, "->")
@@ -46,7 +46,7 @@
 }
 
 # check numeric inputs:
-.check.num <- function(x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=TRUE, int=c(-Inf, Inf)){
+check.num <- function(x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=TRUE, int=c(-Inf, Inf)){
 
   input <- deparse(substitute(x))
   msg_prefix <- paste("Non-valid input for", input, "->")
@@ -67,7 +67,7 @@
 }
 
 # check identical length of input vectors:
-.check.lengths <- function(x, y){
+check.lengths <- function(x, y){
 
   input_x <- deparse(substitute(x))
   input_y <- deparse(substitute(y))

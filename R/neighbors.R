@@ -2,16 +2,16 @@
 
 # Title:  Interregional connections
 # Author: Sebastian Weinand
-# Date:   2023-07-05
+# Date:   16 January 2024
 
 # divide into connected regions:
 neighbors <- function(r, n, simplify = FALSE){
 
   # input checks:
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
+  check.char(x=r)
+  check.char(x=n)
+  check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  check.lengths(x=r, y=n)
 
   # coerce input vectors to character:
   region <- as.character(r)
@@ -128,33 +128,33 @@ neighbors <- function(r, n, simplify = FALSE){
 
 # connect price data:
 connect <- function(r, n){
-  
+
   # @description:
-  # simple wrapper of neighbors() for connecting 
+  # simple wrapper of neighbors() for connecting
   # price data by keeping the only the connected
   # observations with maximum number of observations
-  
+
   # @value:
   # logical indicating the observations to be kept
-  
+
   # divide into connected region groups:
   ngbs <- neighbors(r = r, n = n, simplify = TRUE)
-  
+
   # frequency count of observations by group:
   ngbs.tab <- table(ngbs, useNA = "no")
-  
+
   # logical indicating the observations to be kept:
   ngbs %in% names(which.max(ngbs.tab))
-  
+
 }
 
 # flag if region-product-sample is connected:
 is.connected <- function(r, n){
 
   # input checks:
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.lengths(x=r, y=n)
+  check.char(x=r)
+  check.char(x=n)
+  check.lengths(x=r, y=n)
 
   # coerce input vectors to character:
   region <- as.character(r)
@@ -223,9 +223,9 @@ is.connected <- function(r, n){
 comparisons <- function(r, n, ngbs=NULL){
 
   # input checks:
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.lengths(x=r, y=n)
+  check.char(x=r)
+  check.char(x=n)
+  check.lengths(x=r, y=n)
   if(!is.null(ngbs)){if(!is.list(ngbs)){stop("'Wrong input for 'ngbs': list or NULL expected.")}}
 
   # coerce input vectors to character:
@@ -327,10 +327,10 @@ comparisons <- function(r, n, ngbs=NULL){
 sparsity <- function(r, n, useable=FALSE){
 
   # input checks:
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.log(x=useable, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
+  check.char(x=r)
+  check.char(x=n)
+  check.log(x=useable, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  check.lengths(x=r, y=n)
 
   # number of regions by product:
   freq_tab <- as.matrix(table(n, r, useNA = "no"), drop = FALSE)

@@ -2,7 +2,7 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     15 January 2024
+# Date:     16 January 2024
 
 # print output for class 'multeq':
 print.multeq <- function(x, ...){
@@ -11,7 +11,7 @@ print.multeq <- function(x, ...){
 }
 
 # solve interrelated equations:
-solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, type, settings=list()){
+solve_multeq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, type, settings=list()){
 
   # set default if missing:
   if(missing(q)) q <- NULL
@@ -34,25 +34,25 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
   if(settings$check.inputs){
 
     # main inputs:
-    .check.num(x=p, int=c(0, Inf))
-    .check.char(x=r)
-    .check.char(x=n)
-    .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
-    .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
-    .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
-    .check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
-    .check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
-    .check.lengths(x=r, y=n)
-    .check.lengths(x=r, y=p)
-    .check.lengths(x=r, y=q)
-    .check.lengths(x=r, y=w)
+    check.num(x=p, int=c(0, Inf))
+    check.char(x=r)
+    check.char(x=n)
+    check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+    check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+    check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+    check.char(x=type, min.len=1, max.len=1, na.ok=FALSE)
+    check.log(x=simplify, miss.ok=TRUE, min.len=1, max.len=1, na.ok=FALSE)
+    check.lengths(x=r, y=n)
+    check.lengths(x=r, y=p)
+    check.lengths(x=r, y=q)
+    check.lengths(x=r, y=w)
 
     # settings:
-    .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
-    .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
-    .check.char(x=settings$solve, min.len=1, max.len=1, na.ok=FALSE)
-    .check.num(x=settings$tol, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
-    .check.num(x=settings$max.iter, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
+    check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+    check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+    check.char(x=settings$solve, min.len=1, max.len=1, na.ok=FALSE)
+    check.num(x=settings$tol, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
+    check.num(x=settings$max.iter, min.len=1, max.len=1, na.ok=FALSE, int=c(0,Inf))
 
   }
 
@@ -75,10 +75,10 @@ solvemulteq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, t
   }
 
   # initialize data:
-  pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
+  pdata <- arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
 
   # set base region:
-  base <- spin:::set.base(r=pdata$r, base=base, null.ok=TRUE, settings=settings)
+  base <- set.base(r=pdata$r, base=base, null.ok=TRUE, settings=settings)
 
   # Diewert (1999) solution for geary-khamis:
   if(type=="gk" && settings$solve=="matrix"){
@@ -182,20 +182,20 @@ gkhamis <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
 
   # definition of average product prices:
   v.def <- function(p, q, w=NULL, n, P){
-    res <- ave(x=q*p/P, n, FUN=sum) / ave(x=q, n, FUN=sum)
+    res <- stats::ave(x=q*p/P, n, FUN=sum) / stats::ave(x=q, n, FUN=sum)
     names(res) <- n
     return(res)
   }
 
   # definition of price levels:
   P.def <- function(p, q, w=NULL, r, v){
-    res <- ave(x=p*q, r, FUN=sum) / ave(x=v*q, r, FUN=sum)
+    res <- stats::ave(x=p*q, r, FUN=sum) / stats::ave(x=v*q, r, FUN=sum)
     names(res) <- r
     return(res)
   }
 
   # compute index:
-  res <- spin:::solvemulteq(
+  res <- solve_multeq(
     p=p, r=r, n=n, q=q, w=NULL,
     base=base, simplify=simplify, settings=settings,
     P.FUN=P.def, v.FUN=v.def, type="gk")
@@ -213,21 +213,21 @@ idb <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
   # definition of average product prices:
   v.def <- function(p, q=NULL, w, n, P){
-    res <- 1 / (ave(x=w*(P/p), n, FUN=sum) / ave(x=w, n, FUN=sum))
+    res <- 1 / (stats::ave(x=w*(P/p), n, FUN=sum) / stats::ave(x=w, n, FUN=sum))
     names(res) <- n
     return(res)
   }
 
   # definition of price levels:
   P.def <- function(p, q=NULL, w, r, v){
-    res <- 1/ave(x=w*(v/p), r, FUN=sum)
+    res <- 1/stats::ave(x=w*(v/p), r, FUN=sum)
     # res <- ave(x=p*q, r, FUN=sum) / ave(x=v*q, r, FUN=sum)
     names(res) <- r
     return(res)
   }
 
   # compute index:
-  res <- spin:::solvemulteq(
+  res <- solve_multeq(
     p=p, r=r, n=n, q=q, w=w,
     base=base, simplify=simplify, settings=settings,
     P.FUN=P.def, v.FUN=v.def, type="idb")
@@ -245,20 +245,20 @@ rao <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
   # definition of average product prices:
   v.def <- function(p, q=NULL, w, n, P){
-    res <- exp(ave(x=w*log(p/P), n, FUN=sum))^(1/ave(x=w, n, FUN=sum))
+    res <- exp(stats::ave(x=w*log(p/P), n, FUN=sum))^(1/stats::ave(x=w, n, FUN=sum))
     names(res) <- n
     return(res)
   }
 
   # definition of price levels:
   P.def <- function(p, q=NULL, w, r, v){
-    res <- exp(ave(x=w*log(p/v), r, FUN=sum))
+    res <- exp(stats::ave(x=w*log(p/v), r, FUN=sum))
     names(res) <- r
     return(res)
   }
 
   # compute index:
-  res <- spin:::solvemulteq(
+  res <- solve_multeq(
     p=p, r=r, n=n, q=q, w=w,
     base=base, simplify=simplify, settings=settings,
     P.FUN=P.def, v.FUN=v.def, type="rao")
@@ -276,21 +276,21 @@ gerardi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list(
 
   # definition of average product prices:
   v.def <- function(p, q=NULL, w=NULL, n, P){
-    res <- exp(ave(x=log(p), n, FUN=mean))
+    res <- exp(stats::ave(x=log(p), n, FUN=mean))
     names(res) <- n
     return(res)
   }
 
   # definition of price levels:
   P.def <- function(p, q=NULL, w, r, v){
-    res <- 1/ave(x=w*(v/p), r, FUN=sum)
+    res <- 1/stats::ave(x=w*(v/p), r, FUN=sum)
     # res <- ave(x=p*q, r, FUN=sum) / ave(x=v*q, r, FUN=sum)
     names(res) <- r
     return(res)
   }
 
   # compute index:
-  res <- spin:::solvemulteq(
+  res <- solve_multeq(
     p=p, r=r, n=n, q=q, w=w,
     base=base, simplify=simplify, settings=settings,
     P.FUN=P.def, v.FUN=v.def, type="gerardi")

@@ -2,20 +2,20 @@
 
 # Title:  Groupwise calculation of price ratios
 # Author: Sebastian Weinand
-# Date:   6 November 2023
+# Date:   16 January 2024
 
 # wrapper function for calculating price ratios per group:
 ratios <- function(p, r, n, base=NULL, static=FALSE, drop=FALSE){
 
   # input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
-  .check.log(x=static, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.log(x=drop, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=p)
+  check.num(x=p, int=c(0, Inf))
+  check.char(x=r)
+  check.char(x=n)
+  check.char(x=base, min.len=1, max.len=1, miss.ok=TRUE, null.ok=TRUE, na.ok=FALSE)
+  check.log(x=static, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  check.log(x=drop, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
+  check.lengths(x=r, y=n)
+  check.lengths(x=r, y=p)
 
   # select base region:
   set.base.per.product <- function(p, r, base){
@@ -66,7 +66,7 @@ ratios <- function(p, r, n, base=NULL, static=FALSE, drop=FALSE){
   if(drop) out <- out[is_base != TRUE, ]
 
   # coerce into named vector:
-  out <- setNames(out$ratio, out$region.y)
+  out <- stats::setNames(out$ratio, out$region.y)
 
   # print output to console:
   return(out)

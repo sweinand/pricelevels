@@ -110,15 +110,15 @@ dt <- rdata(R=7, B=1, N=13)
 
 # no sales:
 expect_true(
-  all(dt[, spin:::.rsales(p=price, q=quantity, amount=0)]$price_is_sale==FALSE)
+  all(dt[, spin:::rsales(p=price, q=quantity, amount=0)]$price_is_sale==FALSE)
 )
 
 expect_true(
-  any(dt[, spin:::.rsales(p=price, q=quantity, amount=0.1)]$price_is_sale)
+  any(dt[, spin:::rsales(p=price, q=quantity, amount=0.1)]$price_is_sale)
 )
 
 expect_true(
-  all(dt[, spin:::.rsales(p=price, q=quantity, amount=1)]$price_is_sale)
+  all(dt[, spin:::rsales(p=price, q=quantity, amount=1)]$price_is_sale)
 )
 
 

@@ -2,12 +2,12 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   11 January 2024
+# Date:   16 January 2024
 
 # list available price indices:
 list.indices <- function(){
 
-  return(sort(spin:::pindices$name))
+  return(sort(pindices$name))
 
 }
 
@@ -36,30 +36,30 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   settings$norm.weights <- TRUE # also for cpd() and nlcpd()
 
   # main input checks:
-  .check.num(x=p, int=c(0, Inf))
-  .check.char(x=r)
-  .check.char(x=n)
-  .check.num(x=w, null.ok=TRUE, int=c(0, Inf))
-  .check.num(x=q, null.ok=TRUE, int=c(0, Inf))
-  .check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
-  .check.lengths(x=r, y=n)
-  .check.lengths(x=r, y=p)
-  .check.lengths(x=r, y=w)
-  .check.lengths(x=r, y=q)
+  check.num(x=p, int=c(0, Inf))
+  check.char(x=r)
+  check.char(x=n)
+  check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+  check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+  check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+  check.lengths(x=r, y=n)
+  check.lengths(x=r, y=p)
+  check.lengths(x=r, y=w)
+  check.lengths(x=r, y=q)
 
   # check settings:
-  .check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
-  .check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
-  .check.char(x=type, min.len=1, max.len=Inf, null.ok=TRUE, na.ok=FALSE)
+  check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+  check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+  check.char(x=type, min.len=1, max.len=Inf, null.ok=TRUE, na.ok=FALSE)
 
   # allowed index types:
   if(is.null(q) && is.null(w)){
-    type.vals <- spin:::pindices[uses_none==TRUE, name]
+    type.vals <- pindices[uses_none==TRUE, name]
   }else{
     if(is.null(q)){
-      type.vals <- spin:::pindices[uses_none==TRUE | uses_w==TRUE, name]
+      type.vals <- pindices[uses_none==TRUE | uses_w==TRUE, name]
     }else{
-      type.vals <- spin:::pindices[uses_none==TRUE | uses_q==TRUE, name]
+      type.vals <- pindices[uses_none==TRUE | uses_q==TRUE, name]
     }
   }
 
@@ -71,16 +71,16 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   }
 
   # initialize data:
-  pdata <- spin:::arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
+  pdata <- arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
 
   # set base region:
-  base <- spin:::set.base(r=pdata$r, base=base, null.ok=FALSE, settings=settings)
+  base <- set.base(r=pdata$r, base=base, null.ok=FALSE, settings=settings)
 
   # overwrite settings to avoid double checking:
   settings$missings <- settings$duplicates <- settings$connect <- settings$check.inputs <- FALSE
 
   # class of bilateral indices and geks indices:
-  type.bil <- type[type%in%spin:::pindices[type=="bilateral", name]]
+  type.bil <- type[type%in%pindices[type=="bilateral", name]]
   type.geks <- gsub(pattern="^geks-", replacement="", x=grep(pattern="^geks-", x=type, value=TRUE))
 
   # unweighted indices:
@@ -89,19 +89,19 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
     Pout <- list(
 
       if(length(type.bil)>0){
-       pdata[, spin:::bilateral.index(p=p, r=r, n=n, base=base, type=type.bil, settings=settings)]
+       pdata[, bilateral.index(p=p, r=r, n=n, base=base, type=type.bil, settings=settings)]
       },
 
       "cpd"=if("cpd"%in%type){
-        pdata[, spin::cpd(p=p, r=r, n=n, base=base, settings=settings)]
+        pdata[, cpd(p=p, r=r, n=n, base=base, settings=settings)]
       },
 
       "nlcpd"=if("nlcpd"%in%type){
-        pdata[, spin::nlcpd(p=p, r=r, n=n, base=base, settings=settings)]
+        pdata[, nlcpd(p=p, r=r, n=n, base=base, settings=settings)]
       },
 
       if(length(type.geks)>0){
-        pdata[, spin:::geks.main(p=p, r=r, n=n, base=base, settings=c(list("type"=type.geks), settings))]
+        pdata[, geks.main(p=p, r=r, n=n, base=base, settings=c(list("type"=type.geks), settings))]
       }
 
     )
@@ -114,31 +114,31 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
       Pout <- list(
 
         if(length(type.bil)>0){
-          pdata[, spin:::bilateral.index(p=p, r=r, n=n, w=w, base=base, type=type.bil, settings=settings)]
+          pdata[, bilateral.index(p=p, r=r, n=n, w=w, base=base, type=type.bil, settings=settings)]
         },
 
         "cpd"=if("cpd"%in%type){
-          pdata[, spin::cpd(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+          pdata[, cpd(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
         "nlcpd"=if("nlcpd"%in%type){
-          pdata[, spin::nlcpd(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+          pdata[, nlcpd(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
         if(length(type.geks)>0){
-          pdata[, spin:::geks.main(p=p, r=r, n=n, w=w, base=base, settings=c(list("type"=type.geks), settings))]
+          pdata[, geks.main(p=p, r=r, n=n, w=w, base=base, settings=c(list("type"=type.geks), settings))]
         },
 
         "rao"=if("rao"%in%type){
-          pdata[, spin::rao(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+          pdata[, rao(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
         "idb"=if("idb"%in%type){
-          pdata[, spin::idb(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+          pdata[, idb(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         },
 
         "gerardi"=if("gerardi"%in%type){
-          pdata[, spin::gerardi(p=p, r=r, n=n, w=w, base=base, settings=settings)]
+          pdata[, gerardi(p=p, r=r, n=n, w=w, base=base, settings=settings)]
         }
 
       )
@@ -149,35 +149,35 @@ spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
       Pout <- list(
 
         if(length(type.bil)>0){
-          pdata[, spin:::bilateral.index(p=p, r=r, n=n, q=q, base=base, type=type.bil, settings=settings)]
+          pdata[, bilateral.index(p=p, r=r, n=n, q=q, base=base, type=type.bil, settings=settings)]
         },
 
         "cpd"=if("cpd"%in%type){
-          pdata[, spin::cpd(p=p, r=r, n=n, q=q, base=base, settings=settings)]
+          pdata[, cpd(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "nlcpd"=if("nlcpd"%in%type){
-          pdata[, spin::nlcpd(p=p, r=r, n=n, q=q, base=base, settings=settings)]
+          pdata[, nlcpd(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         if(length(type.geks)>0){
-          pdata[, spin:::geks.main(p=p, r=r, n=n, q=q, base=base, settings=c(list("type"=type.geks), settings))]
+          pdata[, geks.main(p=p, r=r, n=n, q=q, base=base, settings=c(list("type"=type.geks), settings))]
         },
 
         "rao"=if("rao"%in%type){
-          pdata[, spin::rao(p=p, r=r, n=n, q=q, base=base, settings=settings)]
+          pdata[, rao(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "idb"=if("idb"%in%type){
-          pdata[, spin::idb(p=p, r=r, n=n, q=q, base=base, settings=settings)]
+          pdata[, idb(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "gerardi"=if("gerardi"%in%type){
-          pdata[, spin::gerardi(p=p, r=r, n=n, q=q, base=base, settings=settings)]
+          pdata[, gerardi(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         },
 
         "gkhamis"=if("gkhamis"%in%type){
-          pdata[, spin::gkhamis(p=p, r=r, n=n, q=q, base=base, settings=settings)]
+          pdata[, gkhamis(p=p, r=r, n=n, q=q, base=base, settings=settings)]
         }
 
       )
