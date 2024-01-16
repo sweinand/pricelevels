@@ -28,47 +28,57 @@
 
 \title{Bilateral price indices}
 
-\description{Calculation of bilateral price indices. Currently, the following ones are implemented:
-\itemize{
-  \item \emph{Unweighted indices}: Jevons, Carli, Harmonic, Dutot, and CSWD
-  \item \emph{Indices based on quantities only}: Marshall-Edgeworth, Young, and Lowe
-  \item \emph{Indices based on quantities or weights}: (geometric) Laspeyres, (geometric) Paasche, Fisher, Toernqvist, (geometric) Walsh, Palgrave, Sato-Vartia, Theil, and Drobisch
-  \item \emph{Unit value related indices}: unit value index, Banerjee, Davies, and Lehr
-}
+\description{Calculation of bilateral price indices. Currently, the following ones are implemented (see below in alphabetic order).
 }
 
 \usage{
-# bilateral unweighted indices:
-jevons(p, r, n, base=NULL, settings=list())
+banerjee(p, r, n, q, base=NULL, settings=list())
+
 carli(p, r, n, base=NULL, settings=list())
-harmonic(p, r, n, base=NULL, settings=list())
-dutot(p, r, n, base=NULL, settings=list())
+
 cswd(p, r, n, base=NULL, settings=list())
 
-# bilateral indices using quantites:
-medgeworth(p, r, n, q, base=NULL, settings=list())
-lowe(p, r, n, q, base=NULL, settings=list())
-young(p, r, n, q, base=NULL, settings=list())
-
-# unit value related indices:
-uvalue(p, r, n, q, base=NULL, settings=list())
-banerjee(p, r, n, q, base=NULL, settings=list())
 davies(p, r, n, q, base=NULL, settings=list())
+
+drobisch(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+dutot(p, r, n, base=NULL, settings=list())
+
+fisher(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+geolaspeyres(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+geopaasche(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+geowalsh(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+harmonic(p, r, n, base=NULL, settings=list())
+
+jevons(p, r, n, base=NULL, settings=list())
+
+laspeyres(p, r, n, q, w=NULL, base=NULL, settings=list())
+
 lehr(p, r, n, q, base=NULL, settings=list())
 
-# bilateral indices using quantities or expenditure share weights:
-laspeyres(p, r, n, q, w=NULL, base=NULL, settings=list())
+lowe(p, r, n, q, base=NULL, settings=list())
+
+medgeworth(p, r, n, q, base=NULL, settings=list())
+
 paasche(p, r, n, q, w=NULL, base=NULL, settings=list())
+
 palgrave(p, r, n, q, w=NULL, base=NULL, settings=list())
-fisher(p, r, n, q, w=NULL, base=NULL, settings=list())
-drobisch(p, r, n, q, w=NULL, base=NULL, settings=list())
-walsh(p, r, n, q, w=NULL, base=NULL, settings=list())
-geolaspeyres(p, r, n, q, w=NULL, base=NULL, settings=list())
-geopaasche(p, r, n, q, w=NULL, base=NULL, settings=list())
-toernqvist(p, r, n, q, w=NULL, base=NULL, settings=list())
-geowalsh(p, r, n, q, w=NULL, base=NULL, settings=list())
-theil(p, r, n, q, w=NULL, base=NULL, settings=list())
+
 svartia(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+toernqvist(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+theil(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+uvalue(p, r, n, q, base=NULL, settings=list())
+
+walsh(p, r, n, q, w=NULL, base=NULL, settings=list())
+
+young(p, r, n, q, base=NULL, settings=list())
 }
 
 \arguments{
