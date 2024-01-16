@@ -5,7 +5,7 @@ Version: 1.0.0
 Author: Sebastian Weinand
 Maintainer: Sebastian Weinand <s.weinand90@googlemail.com>
 Description: Index number methods for spatial price comparisons.
-License: EUPL-1.2
+License: EUPL
 Depends: R (>= 4.0.1)
 Imports: data.table (>= 1.14.0), minpack.lm (>= 1.2-1)
 Encoding: UTF-8
