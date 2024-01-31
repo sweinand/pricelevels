@@ -38,4 +38,4 @@ The `pricelevels`-package provides index number methods for price comparisons wi
 
 Moreover, the package offers functions for sampling and characterizing price data. Details can be found in the package vignette.
 
-The `pricelevels`-functions are designed based on `R`'s [`data.table`](https://github.com/Rdatatable/data.table) package.
+The `pricelevels`-functions are designed based on `R`'s [`data.table`](https://cran.r-project.org/web/packages/data.table/index.html)-package.
