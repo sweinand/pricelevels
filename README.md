@@ -1,4 +1,4 @@
-# Spatial price level compariosns (`pricelevels`)
+# Price level comparisons (`pricelevels`)
 
 The `pricelevels`-package provides index number methods for price comparisons within or between countries. As price comparisons over time usually rely on the same index number methods, the package has been denoted more generally as `pricelevels`, though its primary focus is on spatial price comparisons. Currently, the following index number methods (or price indices) are implemented.
 
