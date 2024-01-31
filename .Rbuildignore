@@ -3,3 +3,4 @@
 ^data-raw$
 ^scripts$
 ^dev$
+^cran-comments\.md$
