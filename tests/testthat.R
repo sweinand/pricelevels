@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(spin)
+library(pricelevels)
 
-test_check("spin")
+test_check("pricelevels")
