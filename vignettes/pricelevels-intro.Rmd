@@ -1,5 +1,5 @@
 ---
-title: "Introduction to the spin-package"
+title: "Introduction to the pricelevels-package"
 author: Sebastian Weinand
 date: "`r Sys.setlocale('LC_TIME', 'English'); format(Sys.Date(),'%d %B %Y')`"
 output: 
@@ -9,7 +9,7 @@ output:
     # number_sections: true
 bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{Introduction to the spin-package}
+  %\VignetteIndexEntry{Introduction to the pricelevels-package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 ```
 
 <br/><br/>
-The `spin`-package provides index number methods for price comparisons within a country. As price comparisons between countries or other geographical entities usually rely on the same index number methods, the package has been denoted more generally as `spin` (for spatial index number methods). Currently, the following index number methods (or price indices) are implemented.
+The `pricelevels`-package provides index number methods for price comparisons within or between countries. As price comparisons over time usually rely on the same index number methods, the package has been denoted more generally as `pricelevels`, though its primary focus is on spatial price comparisons. Currently, the following index number methods (or price indices) are implemented.
 
 1. **Bilateral price indices**:
     - Elementary (unweighted) indices:
@@ -62,9 +62,9 @@ The `spin`-package provides index number methods for price comparisons within a 
 
 Moreover, the package offers functions for sampling and characterizing price data. This vignette highlights the main package features. It contains four sections. The first is on price data, the second on bilateral indices, and the third on multilateral indices. The last section section is on some further package features.
 
-The `spin`-functions are designed based on `R`'s [`data.table`](https://github.com/Rdatatable/data.table) package.
+The `pricelevels`-functions are designed based on `R`'s [`data.table`](https://github.com/Rdatatable/data.table) package.
 ```{r setup, warning=FALSE}
-library(spin) # load package
+library(pricelevels) # load package
 library(data.table) # load data.table-package
 ```
 
@@ -82,7 +82,7 @@ Having such detailed data can pose some additional challenges. Not every individ
 
 ## Characteristics
 
-The `spin`-package offers various functions to characterize price data and to deal with the issue of data gaps. As a first step, it's good to check the sparsity (*share of gaps*) of a dataset and if the dataset is connected.
+The `pricelevels`-package offers various functions to characterize price data and to deal with the issue of data gaps. As a first step, it's good to check the sparsity (*share of gaps*) of a dataset and if the dataset is connected.
 
 ### Connected price data
 
@@ -137,7 +137,7 @@ Both approaches allow to perform a price comparison on a subset of the data by e
 
 ## Simulation
 
-The quality of price data is of utmost importance for the reliability of a regional price comparison. To assess the impact of gaps on the reliability of price index numbers, it is helpful to control the amount of gaps in the price data. At the same time, however, it must be ensured that the price data stay connected. A simplistic approach of simulating price data would not guarantee this. Therefore, the `spin`-package offers some functions for data sampling.
+The quality of price data is of utmost importance for the reliability of a regional price comparison. To assess the impact of gaps on the reliability of price index numbers, it is helpful to control the amount of gaps in the price data. At the same time, however, it must be ensured that the price data stay connected. A simplistic approach of simulating price data would not guarantee this. Therefore, the `pricelevels`-package offers some functions for data sampling.
 
 In the following, we want to simulate random price data for 5 products within the same basic heading in 4 regions. This can be easily achieved if there are no data gaps. First, products and regions are sampled. Second, random prices are added. 
 ```{r}
@@ -270,7 +270,7 @@ head(dt)
 
 ## Elementary (unweighted) indices
 
-If prices are collected by statistical offices locally (*local or field-based price collection*), quantities or any other information of the economic importance of the individual products are usually lacking. Therefore, the prices must be aggregated without any weights. The most prominent *elementary price indices* are implemented in the `spin`-package:
+If prices are collected by statistical offices locally (*local or field-based price collection*), quantities or any other information of the economic importance of the individual products are usually lacking. Therefore, the prices must be aggregated without any weights. The most prominent *elementary price indices* are implemented in the `pricelevels`-package:
 
 - Carli index [@Carli1804]: $$P_{\text{Carli}}^{sr} = \frac{1}{N} \sum_{n=1}^{N} p_n^r / p_n^s$$
 - Jevons index [@Jevons1865]: $$P_{\text{Jevons}}^{sr} = \prod_{n=1}^{N} \left( p_n^r / p_n^s \right)^{1/N}$$
@@ -345,7 +345,7 @@ The unit value indices have the drawback that the resulting price index might sh
 
 ## Quantity or expenditure share weighted indices
 
-Not each individual product or basic heading is equally important to consumers. Household consumption considerably varies across basic headings but also for individual products within a basic heading. Neglecting these differences may cause a bias in the price index numbers as the price differences of less important products receive the same weight as more important ones. Therefore, any weighting information available should be included in the price comparison. The `spin`-package offers the following weighted bilateral price indices. They equally work with quantities, $q_n^r$, and weights, $w_n^r$, when the weights can be expressed as regional expenditure shares, i.e., $w_n^r = p_n^r q_n^r / \sum_{j=1}^N p_j^r q_j^r$.
+Not each individual product or basic heading is equally important to consumers. Household consumption considerably varies across basic headings but also for individual products within a basic heading. Neglecting these differences may cause a bias in the price index numbers as the price differences of less important products receive the same weight as more important ones. Therefore, any weighting information available should be included in the price comparison. The `pricelevels`-package offers the following weighted bilateral price indices. They equally work with quantities, $q_n^r$, and weights, $w_n^r$, when the weights can be expressed as regional expenditure shares, i.e., $w_n^r = p_n^r q_n^r / \sum_{j=1}^N p_j^r q_j^r$.
 
 - Laspeyres index [@Laspeyres1871]: $$P_{\text{Laspeyres}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^s}{\sum_{n=1}^{N} p_n^s q_n^s} = \sum_{n=1}^{N} w_n^s \left( p_n^r / p_n^s \right)$$
 - Paasche index [@Paasche1874]: $$P_{\text{Paasche}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} p_n^s q_n^r} = \frac{1}{\sum_{n=1}^{N} w_n^r \left( p_n^s / p_n^r \right)}$$
@@ -376,7 +376,7 @@ While the Laspeyres index uses the quantities (or expenditure shares) of the bas
 
 # Multilateral price indices
 
-Multilateral price indices simultaneously use the prices of all regions involved in the price comparison to compute a set of transitive price index numbers - irrespective of any data gaps. The `spin`-package offers the three most prominent multilateral price indices, and a newly developed extension:
+Multilateral price indices simultaneously use the prices of all regions involved in the price comparison to compute a set of transitive price index numbers - irrespective of any data gaps. The `pricelevels`-package offers the three most prominent multilateral price indices, and a newly developed extension:
 
 - CPD and NLCPD methods: `cpd()` and `nlcpd()`
 - GEKS method: `geks()`
@@ -454,7 +454,7 @@ The results indicate that both the CPD method and the NLCPD method produce trans
 
 The GEKS method [@Gini1924; @Gini1931; @Elteto1964; @Szulc1964] is a two-step approach. First, prices are aggregated into bilateral index numbers for every pair of regions in the data. Second, the bilateral index numbers are transformed into a set of transitive index numbers by estimating the linear regression model
 $$\ln \dot{P}^{sr} = \ln \left( P^r / P^s \right) + \ln \epsilon^{sr} \quad \text{with} \ \ln \epsilon^{sr} \sim N(0,\sigma^2) \ ,$$
-where $\dot{P}^{sr}$ is the bilateral price index for regions $s$ and $r$ computed in the first stage. For this computation any bilateral index could theoretically be used (and is supported in the `spin`-package). @Rao1986, however, recommend that the bilateral price index satisfies the country reversal test. If, for example, the Jevons index is used in the computations, then it is more precise to denote the resulting index numbers as the GEKS-Jevons price index.
+where $\dot{P}^{sr}$ is the bilateral price index for regions $s$ and $r$ computed in the first stage. For this computation any bilateral index could theoretically be used (and is supported in the `pricelevels`-package). @Rao1986, however, recommend that the bilateral price index satisfies the country reversal test. If, for example, the Jevons index is used in the computations, then it is more precise to denote the resulting index numbers as the GEKS-Jevons price index.
 ```{r}
 # GEKS using Törnqvist:
 dt.gaps[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="toernqvist"))]
@@ -481,7 +481,7 @@ all.equal(P1.geks[2], P1.geks[3]*P3.geks[2], check.attributes=FALSE)
 
 ## Multilateral systems of equations
 
-The following price indices belong to this very general class of multilateral price indices and are implemented in the `spin`-package.
+The following price indices belong to this very general class of multilateral price indices and are implemented in the `pricelevels`-package.
 
 - Geary-Khamis method `gkhamis()` proposed by  @Geary1958 and @Khamis1972;
 - Gerardi method `gerardi()` used by @Eurostat1978;
@@ -574,7 +574,7 @@ with(dt2, tapply(X=price, list(product, region), mean))
 # check if connected:
 dt2[, is.connected(r=region, n=product)]
 ```
-In this case, no price comparison involving all regions is possible. The price indices implemented in the `spin`-package deal with this issue by using either the block of regions that includes the base region or the biggest block of regions for a price comparison on a subset of the data.
+In this case, no price comparison involving all regions is possible. The price indices implemented in the `pricelevels`-package deal with this issue by using either the block of regions that includes the base region or the biggest block of regions for a price comparison on a subset of the data.
 ```{r}
 # bilateral jevons index:
 dt2[, jevons(p=price, r=region, n=product, base="a")]
@@ -582,7 +582,7 @@ dt2[, jevons(p=price, r=region, n=product, base="a")]
 # multilateral unweighted cpd index:
 dt2[, cpd(p=price, r=region, n=product, base="a")]
 ```
-As can be seen, the two functions return the price levels for regions `a` and `b` only, while the price levels for regions `c` and `d` are set to `NA`. The functions also print a corresponding warning. All `spin`-warnings can be suppressed in the settings if wanted.
+As can be seen, the two functions return the price levels for regions `a` and `b` only, while the price levels for regions `c` and `d` are set to `NA`. The functions also print a corresponding warning. All `pricelevels`-warnings can be suppressed in the settings if wanted.
 ```{r}
 dt2[, cpd(p=price, r=region, n=product, base="a", settings=list(chatty=FALSE))]
 ```
@@ -621,18 +621,18 @@ dt[, geks(p=price, r=region, n=product, base="1", setting=list(type="jevons"))]
 # jevons:
 dt[, jevons(p=price, r=region, n=product, base="1")]
 ```
-However, this approach is not convenient and also not efficient as each price index function checks the same user inputs, removes the same missing values and duplicated observations, and connects the same data if needed. This can be time consuming for bigger datasets. The `spin`-package therefore offers the `spin()`-function, which can be used to efficiently calculate multiple price indices at once.
+However, this approach is not convenient and also not efficient as each price index function checks the same user inputs, removes the same missing values and duplicated observations, and connects the same data if needed. This can be time consuming for bigger datasets. The `pricelevels`-package therefore offers the `pricelevels()`-function, which can be used to efficiently calculate multiple price indices at once.
 ```{r}
-dt[, spin(p=price, r=region, n=product, base="1", settings=list(type=c("jevons","cpd","geks-jevons")))]
+dt[, pricelevels(p=price, r=region, n=product, base="1", settings=list(type=c("jevons","cpd","geks-jevons")))]
 ```
-If the user wants to compute all unweighted price indices available in the `spin`-package, this can be achieved by setting `settings$type=NULL`:
+If the user wants to compute all unweighted price indices available in the `pricelevels`-package, this can be achieved by setting `settings$type=NULL`:
 ```{r}
-dt[, spin(p=price, r=region, n=product, base="1")]
+dt[, pricelevels(p=price, r=region, n=product, base="1")]
 ```
-Similarly, if there are quantities or weights available in the data, all weighted and unweighted price indices available in the `spin`-package are computed at once:
+Similarly, if there are quantities or weights available in the data, all weighted and unweighted price indices available in the `pricelevels`-package are computed at once:
 ```{r}
-dt[, spin(p=price, r=region, n=product, q=quantity, base="1")]
+dt[, pricelevels(p=price, r=region, n=product, q=quantity, base="1")]
 ```
-It is important to note that only the simplified output including the regions' price levels is returned. Moreover, the user has to provide a specific base region as bilateral indices do not allow a comparison to the average regional price level. However, any additional settings of some price index function (e.g., `settings$use.jac=TRUE` for `nlcpd()`) can be used in `spin()` as well.
+It is important to note that only the simplified output including the regions' price levels is returned. Moreover, the user has to provide a specific base region as bilateral indices do not allow a comparison to the average regional price level. However, any additional settings of some price index function (e.g., `settings$use.jac=TRUE` for `nlcpd()`) can be used in `pricelevels()` as well.
 
 # References

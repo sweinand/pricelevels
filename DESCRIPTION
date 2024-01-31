@@ -1,10 +1,10 @@
-Package: spin
+Package: pricelevels
 Type: Package
-Title: Spatial Index Numbers
+Title: Spatial price level comparisons
 Version: 1.0.0
 Author: Sebastian Weinand
 Maintainer: Sebastian Weinand <s.weinand90@googlemail.com>
-Description: Index number methods for spatial price comparisons.
+Description: Index number methods for spatial price level comparisons.
 License: EUPL
 Depends: R (>= 4.0.1)
 Imports: data.table (>= 1.14.0), minpack.lm (>= 1.2-1)
@@ -16,4 +16,3 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-RoxygenNote: 7.2.3

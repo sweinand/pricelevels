@@ -12,7 +12,7 @@ list.indices <- function(){
 }
 
 # spatial price indices:
-spin <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
+pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
   # set default if missing:
   if(missing(q)) q <- NULL

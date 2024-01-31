@@ -1,6 +1,6 @@
-\name{spin}
+\name{pricelevels}
 
-\alias{spin}
+\alias{pricelevels}
 \alias{list.indices}
 
 \title{Spatial price indices}
@@ -12,7 +12,7 @@
 list.indices()
 
 # compute all price indices:
-spin(p, r, n, q=NULL, w=NULL, base=NULL, settings=list())
+pricelevels(p, r, n, q=NULL, w=NULL, base=NULL, settings=list())
 }
 
 \arguments{
@@ -45,10 +45,10 @@ set.seed(123)
 dt1 <- rdata(R=3, B=1, N=5)
 
 # compute unweighted indices:
-dt1[, spin(p=price, r=region, n=product, base="1")]
+dt1[, pricelevels(p=price, r=region, n=product, base="1")]
 
 # compute all indices relying on quantities:
-dt1[, spin(p=price, r=region, n=product, q=quantity, base="1")]
+dt1[, pricelevels(p=price, r=region, n=product, q=quantity, base="1")]
 
 # add price data:
 dt2 <- rdata(R=4, B=1, N=4)
@@ -58,8 +58,8 @@ dt <- rbind(dt1, dt2)
 dt[, is.connected(r=region, n=product)] # non-connected now
 
 # compute all unweighted indices:
-dt[, spin(p=price, r=region, n=product, base="1")]
+dt[, pricelevels(p=price, r=region, n=product, base="1")]
 
 # change base region:
-dt[, spin(p=price, r=region, n=product, base="4")]
+dt[, pricelevels(p=price, r=region, n=product, base="4")]
 }

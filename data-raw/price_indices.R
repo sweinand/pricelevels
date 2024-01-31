@@ -1,15 +1,15 @@
 # START
 
 # Title:    Available price indices
-# Date:     11 January 2024
+# Date:     31 January 2024
 
 library(data.table)
 
 # bilateral price indices:
-bilPunw <- sapply(X=spin:::Pmatrix, FUN=function(z) is.null(formals(z)$Q))
-bilPq <- sapply(X=spin:::Pmatrix, FUN=function(z) !is.null(formals(z)$Q))
-bilPw <- sapply(X=spin:::Pmatrix, FUN=function(z) !is.null(formals(z)$W))
-bilP <- data.table("name"=names(spin:::Pmatrix),
+bilPunw <- sapply(X=pricelevels:::Pmatrix, FUN=function(z) is.null(formals(z)$Q))
+bilPq <- sapply(X=pricelevels:::Pmatrix, FUN=function(z) !is.null(formals(z)$Q))
+bilPw <- sapply(X=pricelevels:::Pmatrix, FUN=function(z) !is.null(formals(z)$W))
+bilP <- data.table("name"=names(pricelevels:::Pmatrix),
                    "type"="bilateral",
                    "uses_none"=bilPunw,
                    "uses_q"=bilPq,

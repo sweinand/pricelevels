@@ -225,8 +225,8 @@ expect_error(
 
 # example data:
 set.seed(123)
-dt1 <- spin::rdata(R=3, B=1, N=5)
-dt2 <- spin::rdata(R=4, B=1, N=4)
+dt1 <- pricelevels::rdata(R=3, B=1, N=5)
+dt2 <- pricelevels::rdata(R=4, B=1, N=4)
 dt2[, "region":=factor(region, labels=4:7)]
 dt2[, "product":=factor(product, labels=6:9)]
 dt <- rbind(dt1, dt2)
