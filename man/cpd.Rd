@@ -106,6 +106,7 @@ dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="1")]
 # compare with toernqvist index:
 dt[, toernqvist(p=price, r=region, n=product, q=quantity, base="1")]
 
+\dontrun{
 # computational speed in nlcpd() usually increases if use.jac=TRUE:
 set.seed(123)
 dt3 <- rdata(R=20, B=1, N=30)
@@ -116,4 +117,5 @@ system.time(m2 <- dt3[, nlcpd(p=price, r=region, n=product, q=quantity,
                               settings=list(use.jac=TRUE), simplify=FALSE,
                               control=minpack.lm::nls.lm.control("maxiter"=200))])
 all.equal(m1$par, m2$par, tol=1e-05)
+}
 }
