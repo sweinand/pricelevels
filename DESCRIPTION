@@ -9,7 +9,6 @@ License: EUPL
 Depends: R (>= 4.0.1)
 Imports: data.table (>= 1.14.0), minpack.lm (>= 1.2-1)
 Encoding: UTF-8
-LazyData: true
 Suggests: 
     knitr,
     rmarkdown,
