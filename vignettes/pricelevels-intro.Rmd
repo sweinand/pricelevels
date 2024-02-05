@@ -32,6 +32,7 @@ The `pricelevels`-package provides index number methods for price comparisons wi
       * Dutot: `dutot()`
       * Carli: `carli()`
       * Harmonic: `harmonic()`
+      * BMW: `bmw()`
       * CSWD: `cswd()`
     - Unit value related indices:
       * Unit value index: `uvalue()`
@@ -276,6 +277,7 @@ If prices are collected by statistical offices locally (*local or field-based pr
 - Jevons index [@Jevons1865]: $$P_{\text{Jevons}}^{sr} = \prod_{n=1}^{N} \left( p_n^r / p_n^s \right)^{1/N}$$
 - Harmonic mean index [@Jevons1865; @Coggeshall1886]: $$P_{\text{Harmonic}}^{sr} = \frac{N}{\sum_{n=1}^{N} p_n^s / p_n^r}$$
 - Dutot index [@Dutot1738]: $$P_{\text{Dutot}}^{sr} = \frac{\sum_{n=1}^{N} p_n^r}{\sum_{n=1}^{N} p_n^s}$$
+- BMW index [@Balk2005; @Mehrhoff2007; Walsh]: $$P^{sr}_{\text{BMW}} = \frac{\sum_{n=1}^N \sqrt{p_n^r / p_n^s} }{ \sum_{n=1}^{N} \sqrt{p_n^s / p_n^r} }$$
 - CSWD index [@Carruthers1980; @Dalen1992]: $$P_{\text{CSWD}}^{sr} = \sqrt{P_{\text{Carli}}^{sr} \ P_{\text{Harmonic}}^{sr}} \ ,$$
 
 where the indices express the prices of each region $r$ relative to the base region $s$ based on the prices of the individual products $n \left(n=1,\ldots,N\right)$.

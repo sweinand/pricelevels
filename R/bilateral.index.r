@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     16 January 2024
+# Date:     5 February 2024
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -34,6 +34,12 @@ Pmatched <- list(
   "harmonic" = function(p1, q1=NULL, w1=NULL, p0, q0=NULL, w0=NULL){
 
     return(1/mean(p0/p1))
+
+  },
+
+  "bmw" = function(p1, q1=NULL, w1=NULL, p0, q0=NULL, w0=NULL){
+
+    return(sum((p1/p0)^0.5) / sum((p0/p1)^0.5))
 
   },
 
@@ -455,6 +461,26 @@ Pmatrix <- list(
 
     # compute index:
     res <- 1/colMeans(x=1/(P/P[, base]), na.rm=TRUE)
+
+    # set to NA when no intersecting prices were found:
+    res[is.nan(res)] <- NA
+
+    # print output to console:
+    return(res)
+
+  },
+
+  "bmw" = function(P, Q=NULL, W=NULL, base=1L, qbase=NULL){
+
+    # price matrix of base region:
+    Pbase <- matrix(data=P[, base], ncol=ncol(P), nrow=nrow(P))
+
+    # set NAs to avoid that means are based on different sets:
+    P[is.na(Pbase)] <- NA
+    Pbase[is.na(P)] <- NA
+
+    # compute index:
+    res <- colSums(x=sqrt(P/Pbase), na.rm=TRUE)/colSums(x=sqrt(Pbase/P), na.rm=TRUE)
 
     # set to NA when no intersecting prices were found:
     res[is.nan(res)] <- NA
@@ -1196,6 +1222,13 @@ carli <- function(p, r, n, base=NULL, settings=list()){
 harmonic <- function(p, r, n, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, w=NULL, q=NULL, type="harmonic", base=base, settings=settings)
+  res <- stats::setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
+bmw <- function(p, r, n, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, w=NULL, q=NULL, type="bmw", base=base, settings=settings)
   res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 

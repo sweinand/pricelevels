@@ -110,6 +110,9 @@ PHa <- setNames(PHa$V1, PHa$region)
 PDu <- dt1[, mean(price)/mean(price.base), by="region"]
 PDu <- setNames(PDu$V1, PDu$region)
 
+PBmw <- dt1[, sum(sqrt(price/price.base))/sum(sqrt(price.base/price)), by="region"]
+PBmw <- setNames(PBmw$V1, PBmw$region)
+
 PCSWD <- sqrt(PHa*PCa)
 
 PLa <- dt1[, sum(price*quantity.base)/sum(price.base*quantity.base), by="region"]
@@ -179,6 +182,7 @@ expect_equal(dt[, carli(p=price, r=region, n=product, base="1")], PCa)
 expect_equal(dt[, dutot(p=price, r=region, n=product, base="1")], PDu)
 expect_equal(dt[, harmonic(p=price, r=region, n=product, base="1")], PHa)
 expect_equal(dt[, cswd(p=price, r=region, n=product, base="1")], PCSWD)
+expect_equal(dt[, bmw(p=price, r=region, n=product, base="1")], PBmw)
 
 # weighted indices:
 expect_equal(dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="1")], PLa)
@@ -217,6 +221,9 @@ PHa <- setNames(PHa$V1, PHa$region)
 
 PDu <- dt2[, mean(price)/mean(price.base), by="region"]
 PDu <- setNames(PDu$V1, PDu$region)
+
+PBmw <- dt2[, sum(sqrt(price/price.base))/sum(sqrt(price.base/price)), by="region"]
+PBmw <- setNames(PBmw$V1, PBmw$region)
 
 PCSWD <- sqrt(PHa*PCa)
 
@@ -287,6 +294,7 @@ expect_equal(dt[, carli(p=price, r=region, n=product, base="2")], PCa)
 expect_equal(dt[, dutot(p=price, r=region, n=product, base="2")], PDu)
 expect_equal(dt[, harmonic(p=price, r=region, n=product, base="2")], PHa)
 expect_equal(dt[, cswd(p=price, r=region, n=product, base="2")], PCSWD)
+expect_equal(dt[, bmw(p=price, r=region, n=product, base="2")], PBmw)
 
 # weighted indices:
 expect_equal(dt[, laspeyres(p=price, r=region, n=product, q=quantity, base="2")], PLa)
@@ -500,6 +508,11 @@ expect_equal(PD1, PD2)
 system.time(PH1 <- pricelevels:::Pmatrix$harmonic(P=P, Q=Q))
 system.time(PH2 <- dt[, harmonic(p=p, r=r, n=n, base="1")])
 expect_equal(PH1, PH2)
+
+# bmw:
+system.time(PBmw1 <- pricelevels:::Pmatrix$bmw(P=P, Q=Q))
+system.time(PBmw2 <- dt[, bmw(p=p, r=r, n=n, base="1")])
+expect_equal(PBmw1, PBmw2)
 
 # cswd:
 system.time(PCSWD1 <- pricelevels:::Pmatrix$cswd(P=P, Q=Q))

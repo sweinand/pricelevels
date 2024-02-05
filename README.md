@@ -8,6 +8,7 @@ The `pricelevels`-package provides index number methods for price comparisons wi
       * Dutot: `dutot()`
       * Carli: `carli()`
       * Harmonic: `harmonic()`
+      * BMW: `bmw()`
       * CSWD: `cswd()`
     - Unit value related indices:
       * Unit value index: `uvalue()`

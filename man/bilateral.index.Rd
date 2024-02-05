@@ -1,6 +1,7 @@
 \name{bilateral.index}
 
 \alias{bilateral.index}
+\alias{bmw}
 \alias{jevons}
 \alias{carli}
 \alias{dutot}
@@ -33,6 +34,8 @@
 
 \usage{
 banerjee(p, r, n, q, base=NULL, settings=list())
+
+bmw(p, r, n, base=NULL, settings=list())
 
 carli(p, r, n, base=NULL, settings=list())
 
