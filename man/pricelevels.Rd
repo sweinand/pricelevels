@@ -40,7 +40,7 @@ The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p
 \value{A matrix price levels where the rows contain the index methods and the columns the regions.}
 
 \examples{
-# sample complete price data:
+\donttest{# sample complete price data:
 set.seed(123)
 dt1 <- rdata(R=3, B=1, N=5)
 
@@ -61,5 +61,5 @@ dt[, is.connected(r=region, n=product)] # non-connected now
 dt[, pricelevels(p=price, r=region, n=product, base="1")]
 
 # change base region:
-dt[, pricelevels(p=price, r=region, n=product, base="4")]
+dt[, pricelevels(p=price, r=region, n=product, base="4")]}
 }
