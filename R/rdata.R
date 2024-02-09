@@ -2,7 +2,7 @@
 
 # Title:    Sampling of random price and quantity data
 # Author:   Sebastian Weinand
-# Date:     16 January 2024
+# Date:     5 February 2024
 
 # non-exported helper functions:
 rpi <- function(n, mean=exp(1), sd=exp(1), min=log(1), max=Inf){
@@ -136,6 +136,9 @@ min_obs <- function(r0, n0, pairs=FALSE, exclude=NULL){
 
   # keep specific regions and/or products:
   if(!is.null(exclude)){
+
+    # address global bindings note when checking:
+    r <- n <- NULL
 
     # drop NA-NA-combinations because this would translate into
     # 'keep all observations':
@@ -347,6 +350,9 @@ rweights <- function(r, b, type=~1){
     expand.grid(
       "r"=unique(dt$r, na.rm=TRUE),
       "b"=unique(dt$b, na.rm=TRUE)))
+
+  # address global bindings note when checking:
+  w <- w_adj <- NULL
 
   # set default weights:
   dt.full[, "w" := 1]

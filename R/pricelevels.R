@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   16 January 2024
+# Date:   5 February 2024
 
 # list available price indices:
 list.indices <- function(){
@@ -54,12 +54,12 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
   # allowed index types:
   if(is.null(q) && is.null(w)){
-    type.vals <- pindices[uses_none==TRUE, name]
+    type.vals <- pindices$name[pindices$uses_none==TRUE]
   }else{
     if(is.null(q)){
-      type.vals <- pindices[uses_none==TRUE | uses_w==TRUE, name]
+      type.vals <- pindices$name[pindices$uses_none==TRUE | pindices$uses_w==TRUE]
     }else{
-      type.vals <- pindices[uses_none==TRUE | uses_q==TRUE, name]
+      type.vals <- pindices$name[pindices$uses_none==TRUE | pindices$uses_q==TRUE]
     }
   }
 
@@ -80,7 +80,7 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   settings$missings <- settings$duplicates <- settings$connect <- settings$check.inputs <- FALSE
 
   # class of bilateral indices and geks indices:
-  type.bil <- type[type%in%pindices[type=="bilateral", name]]
+  type.bil <- type[type%in%pindices$name[pindices$type=="bilateral"]]
   type.geks <- gsub(pattern="^geks-", replacement="", x=grep(pattern="^geks-", x=type, value=TRUE))
 
   # unweighted indices:

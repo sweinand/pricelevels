@@ -2,7 +2,7 @@
 
 # Title:  Groupwise calculation of price ratios
 # Author: Sebastian Weinand
-# Date:   16 January 2024
+# Date:   5 February 2024
 
 # wrapper function for calculating price ratios per group:
 ratios <- function(p, r, n, base=NULL, static=FALSE, drop=FALSE){
@@ -32,41 +32,41 @@ ratios <- function(p, r, n, base=NULL, static=FALSE, drop=FALSE){
   base <- set.base(r=factor(r), base=base, null.ok=FALSE, settings=list(chatty=TRUE))
 
   # gather data into data.table:
-  dt <- data.table("region"=r, "product"=n, "price"=p)
+  dt <- data.table("r"=r, "n"=n, "p"=p)
 
   # add row identifier for ordering and flagging of duplicates:
   dt[, "rid" := 1:.N]
 
   # set base region for each product:
   if(static){
-    dt[, "is_base" := region==base, by="product"]
+    dt[, "is_base" := r==base, by="n"]
   }else{
-    dt[, "is_base" := set.base.per.product(p=price, r=region, base=base), by="product"]
+    dt[, "is_base" := set.base.per.product(p=p, r=r, base=base), by="n"]
   }
 
   # subset to unique observations of base region:
-  dt_base <- unique(x=dt[is_base==TRUE, ], by=c("region", "product"))
+  dt_base <- unique(x=dt[dt$is_base==TRUE, ], by=c("r", "n"))
 
   # add base observations to intial data:
-  out <- merge(x=dt, y=dt_base, by="product", all.x=TRUE)
+  out <- merge(x=dt, y=dt_base, by="n", all.x=TRUE)
 
   # fill base:
-  if(static) out[is.na(region.y), "region.y" := base]
+  if(static) out$r.y[is.na(out$r.y)] <- base
 
   # apply function:
-  out[, "ratio" := price.x/price.y]
+  out$ratio <- out$p.x/out$p.y
 
   # detect extact base price also when there are duplicates:
-  out[, "is_base" := rid.x==rid.y]
+  out$is_base <- out$rid.x==out$rid.y
 
   # preserve inital ordering:
   setorderv(x=out, cols="rid.x")
 
   # drop base observations:
-  if(drop) out <- out[is_base != TRUE, ]
+  if(drop) out <- out[out$is_base != TRUE, ]
 
   # coerce into named vector:
-  out <- stats::setNames(out$ratio, out$region.y)
+  out <- stats::setNames(out$ratio, out$r.y)
 
   # print output to console:
   return(out)

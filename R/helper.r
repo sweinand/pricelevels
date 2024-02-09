@@ -101,7 +101,8 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
         dt <- dt[connect(r=r, n=n), ]
       }else{
         dt[, "ng" := neighbors(r=r, n=n, simplify=TRUE)]
-        dt <- dt[ng%in%dt[r%in%base, unique(ng)], ]
+        ngbs <- unique(dt$ng[dt$r%in%base])
+        dt <- dt[dt$ng%in%ngbs,]
       }
 
       # warning message:

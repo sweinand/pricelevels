@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   16 January 2024
+# Date:   5 February 2024
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
@@ -173,6 +173,9 @@ nlcpd_self_start <- function(p, r, n, w, w.delta, base=NULL, strategy="s1"){
     }
 
     if(strategy == "s3"){
+      # address global bindings note when checking:
+      d <- w_delta <- NULL
+
       dt$lnP <- lnP[match(dt$r, names(lnP))]
       dt$pi <- pi[match(dt$n, names(pi))]
       dt.delta <- dt[ , list("d"=sum(lnP*(log(p)-pi)/sum(lnP^2)), "w_delta"=w_delta[1]), by="n"]

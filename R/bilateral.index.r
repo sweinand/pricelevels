@@ -1116,11 +1116,11 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   # error handling for quantity and weights:
   if(settings$check.inputs){
 
-    if(any(type%in%type.vals[uses_q==TRUE & uses_w==TRUE, name]) && is.null(q) && is.null(w)){
+    if(any(type%in%type.vals$name[type.vals$uses_q==TRUE & type.vals$uses_w==TRUE]) && is.null(q) && is.null(w)){
       stop(paste0("Non-valid input -> 'q' or 'w' required but both missing"), call.=FALSE)
     }
 
-    if(any(type%in%type.vals[uses_q==TRUE & uses_w==FALSE, name]) && is.null(q)){
+    if(any(type%in%type.vals$name[type.vals$uses_q==TRUE & type.vals$uses_w==FALSE]) && is.null(q)){
       stop(paste0("Non-valid input -> 'q' required but missing"), call.=FALSE)
     }
 

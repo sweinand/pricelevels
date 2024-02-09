@@ -2,7 +2,7 @@
 
 # Title:  Interregional connections
 # Author: Sebastian Weinand
-# Date:   16 January 2024
+# Date:   5 February 2024
 
 # divide into connected regions:
 neighbors <- function(r, n, simplify = FALSE){
@@ -274,14 +274,14 @@ comparisons <- function(r, n, ngbs=NULL){
     X1[lower.tri(X1, diag = FALSE)] <- 0
 
     # transform to data.table:
-    ngbs1 <- as.data.table(as.data.frame(as.table(X1), stringsAsFactors = FALSE))
+    ngbs1 <- as.data.frame(as.table(X1), stringsAsFactors = FALSE)
 
     # set names:
-    setnames(x = ngbs1, c("var1", "var2", "freq"))
+    names(ngbs1) <- c("var1", "var2", "freq")
 
     # remove further redundant pairs, e.g. comparison of A with A,
     # and pairs which are not present in the data:
-    ngbs1 <- ngbs1[(var1 != var2) & freq > 0, list(var1, var2)]
+    ngbs1 <- ngbs1[(ngbs1$var1!=ngbs1$var2) & ngbs$freq>0, ]
 
     # divide into groups of connected regions:
     if(is.null(ngbs)){ngbs <- neighbors(r = region, n = product, simplify = FALSE)}
