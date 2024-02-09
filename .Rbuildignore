@@ -4,3 +4,4 @@
 ^scripts$
 ^dev$
 ^cran-comments\.md$
+^CRAN-SUBMISSION$
