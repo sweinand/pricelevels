@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   5 February 2024
+# Date:   14 March 2024
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -291,7 +291,7 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
     # compute model matrix:
     lnP <- stats::model.matrix(~r, xlev=r.lvl.all)-stats::model.matrix(~rb, xlev=r.lvl.all)
     colnames(lnP) <- sub(pattern="^r", replacement="", x=colnames(lnP))
-    lnP <- lnP[,-1]
+    lnP <- lnP[,-1, drop=FALSE]
 
     # GEKS regression formula:
     geks_mod <- log(index) ~ lnP - 1
@@ -306,6 +306,7 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
 
     # extract estimated regional price levels:
     out <- as.matrix(stats::coef(geks_reg_out))
+    if(nlevels(r)>1 && ncol(lnP)<=1) rownames(out) <- paste0("lnP", colnames(lnP))
     rownames(out) <- gsub(pattern="^lnP", replacement="", x=rownames(out))
 
     # add price level of base region:
