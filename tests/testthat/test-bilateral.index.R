@@ -19,11 +19,6 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, paasche(p=price, r=region, n=product, q=quantity, base="1")],
-  c("1"=1)
-)
-
-expect_equal(
   dt[, theil(p=price, r=region, n=product, q=quantity, base="1")],
   c("1"=1)
 )
@@ -57,10 +52,6 @@ expect_no_error(
 
 expect_no_error(
   dt[, laspeyres(p=price, r=region, n=product, w=weight, base="1")]
-)
-
-expect_no_error(
-  dt[, paasche(p=price, r=region, n=product, q=quantity, base="1")]
 )
 
 expect_no_error(
@@ -490,217 +481,217 @@ W <- as.matrix(
   rownames="n")
 
 # jevons:
-system.time(PJ1 <- pricelevels:::Pmatrix$jevons(P=P, Q=Q))
-system.time(PJ2 <- dt[, jevons(p=p, r=r, n=n, base="1")])
+PJ1 <- pricelevels:::Pmatrix$jevons(P=P, Q=Q)
+PJ2 <- dt[, jevons(p=p, r=r, n=n, base="1")]
 expect_equal(PJ1, PJ2)
 
 # carli:
-system.time(PC1 <- pricelevels:::Pmatrix$carli(P=P, Q=Q))
-system.time(PC2 <- dt[, carli(p=p, r=r, n=n, base="1")])
+PC1 <- pricelevels:::Pmatrix$carli(P=P, Q=Q)
+PC2 <- dt[, carli(p=p, r=r, n=n, base="1")]
 expect_equal(PC1, PC2)
 
 # dutot:
-system.time(PD1 <- pricelevels:::Pmatrix$dutot(P=P, Q=Q))
-system.time(PD2 <- dt[, dutot(p=p, r=r, n=n, base="1")])
+PD1 <- pricelevels:::Pmatrix$dutot(P=P, Q=Q)
+PD2 <- dt[, dutot(p=p, r=r, n=n, base="1")]
 expect_equal(PD1, PD2)
 
 # harmonic:
-system.time(PH1 <- pricelevels:::Pmatrix$harmonic(P=P, Q=Q))
-system.time(PH2 <- dt[, harmonic(p=p, r=r, n=n, base="1")])
+PH1 <- pricelevels:::Pmatrix$harmonic(P=P, Q=Q)
+PH2 <- dt[, harmonic(p=p, r=r, n=n, base="1")]
 expect_equal(PH1, PH2)
 
 # bmw:
-system.time(PBmw1 <- pricelevels:::Pmatrix$bmw(P=P, Q=Q))
-system.time(PBmw2 <- dt[, bmw(p=p, r=r, n=n, base="1")])
+PBmw1 <- pricelevels:::Pmatrix$bmw(P=P, Q=Q)
+PBmw2 <- dt[, bmw(p=p, r=r, n=n, base="1")]
 expect_equal(PBmw1, PBmw2)
 
 # cswd:
-system.time(PCSWD1 <- pricelevels:::Pmatrix$cswd(P=P, Q=Q))
-system.time(PCSWD2 <- dt[, cswd(p=p, r=r, n=n, base="1")])
+PCSWD1 <- pricelevels:::Pmatrix$cswd(P=P, Q=Q)
+PCSWD2 <- dt[, cswd(p=p, r=r, n=n, base="1")]
 expect_equal(PCSWD1, PCSWD2)
 
 # marshall-edgeworth:
-system.time(PMe1 <- pricelevels:::Pmatrix$medgeworth(P=P, Q=Q))
-system.time(PMe2 <- dt[, medgeworth(p=p, r=r, n=n, q=q, base="1")])
+PMe1 <- pricelevels:::Pmatrix$medgeworth(P=P, Q=Q)
+PMe2 <- dt[, medgeworth(p=p, r=r, n=n, q=q, base="1")]
 expect_equal(PMe1, PMe2)
 
 # lowe:
-system.time(PLo1 <- pricelevels:::Pmatrix$lowe(P=P, Q=Q, qbase=2))
-system.time(PLo2 <- dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="2"))])
+PLo1 <- pricelevels:::Pmatrix$lowe(P=P, Q=Q, qbase=2)
+PLo2 <- dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="2"))]
 expect_equal(PLo1, PLo2)
 
-system.time(PLo3 <- pricelevels:::Pmatrix$lowe(P=P, Q=Q, qbase=NULL))
-system.time(PLo4 <- dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))])
+PLo3 <- pricelevels:::Pmatrix$lowe(P=P, Q=Q, qbase=NULL)
+PLo4 <- dt[, lowe(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))]
 expect_equal(PLo3, PLo4)
 
 # young:
-system.time(PYo1 <- pricelevels:::Pmatrix$young(P=P, Q=Q, qbase=2))
-system.time(PYo2 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="2"))])
+PYo1 <- pricelevels:::Pmatrix$young(P=P, Q=Q, qbase=2)
+PYo2 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="2"))]
 expect_equal(PYo1, PYo2)
 
-system.time(PYo3 <- pricelevels:::Pmatrix$young(P=P, Q=Q, qbase=NULL))
-system.time(PYo4 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))])
+PYo3 <- pricelevels:::Pmatrix$young(P=P, Q=Q, qbase=NULL)
+PYo4 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))]
 expect_equal(PYo3, PYo4)
 
 # uvalue:
-system.time(PUv1 <- pricelevels:::Pmatrix$uvalue(P=P, Q=Q))
-system.time(PUv2 <- dt[, uvalue(p=p, r=r, n=n, q=q, base="1")])
+PUv1 <- pricelevels:::Pmatrix$uvalue(P=P, Q=Q)
+PUv2 <- dt[, uvalue(p=p, r=r, n=n, q=q, base="1")]
 expect_equal(PUv1, PUv2)
 
 # banerjee:
-system.time(PBa1 <- pricelevels:::Pmatrix$banerjee(P=P, Q=Q))
-system.time(PBa2 <- dt[, banerjee(p=p, r=r, n=n, q=q, base="1")])
+PBa1 <- pricelevels:::Pmatrix$banerjee(P=P, Q=Q)
+PBa2 <- dt[, banerjee(p=p, r=r, n=n, q=q, base="1")]
 expect_equal(PBa1, PBa2)
 
 # davies:
-system.time(PDa1 <- pricelevels:::Pmatrix$davies(P=P, Q=Q))
-system.time(PDa2 <- dt[, davies(p=p, r=r, n=n, q=q, base="1")])
+PDa1 <- pricelevels:::Pmatrix$davies(P=P, Q=Q)
+PDa2 <- dt[, davies(p=p, r=r, n=n, q=q, base="1")]
 expect_equal(PDa1, PDa2)
 
 # lehr:
-system.time(PLe1 <- pricelevels:::Pmatrix$lehr(P=P, Q=Q))
-system.time(PLe2 <- dt[, lehr(p=p, r=r, n=n, q=q, base="1")])
+PLe1 <- pricelevels:::Pmatrix$lehr(P=P, Q=Q)
+PLe2 <- dt[, lehr(p=p, r=r, n=n, q=q, base="1")]
 expect_equal(PLe1, PLe2)
 
 # laspeyres:
-system.time(PL1 <- pricelevels:::Pmatrix$laspeyres(P=P, Q=Q))
-system.time(PL2 <- dt[, laspeyres(p=p, q=q, r=r, n=n, base="1")])
+PL1 <- pricelevels:::Pmatrix$laspeyres(P=P, Q=Q)
+PL2 <- dt[, laspeyres(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PL1, PL2)
 
-system.time(PL3 <- pricelevels:::Pmatrix$laspeyres(P=P, W=W))
-system.time(PL4 <- dt[, laspeyres(p=p, w=share, r=r, n=n, base="1")])
+PL3 <- pricelevels:::Pmatrix$laspeyres(P=P, W=W)
+PL4 <- dt[, laspeyres(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PL3, PL4)
 
 # compare weights versus quantities:
 expect_equal(PL1, PL3)
 
 # paasche:
-system.time(PP1 <- pricelevels:::Pmatrix$paasche(P=P, Q=Q))
-system.time(PP2 <- dt[, paasche(p=p, q=q, r=r, n=n, base="1")])
+PP1 <- pricelevels:::Pmatrix$paasche(P=P, Q=Q)
+PP2 <- dt[, paasche(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PP1, PP2)
 
-system.time(PP3 <- pricelevels:::Pmatrix$paasche(P=P, W=W))
-system.time(PP4 <- dt[, paasche(p=p, w=share, r=r, n=n, base="1")])
+PP3 <- pricelevels:::Pmatrix$paasche(P=P, W=W)
+PP4 <- dt[, paasche(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PP3, PP4)
 
 # compare weights versus quantities:
 expect_equal(PP1, PP3)
 
 # fisher:
-system.time(PF1 <- pricelevels:::Pmatrix$fisher(P=P, Q=Q))
-system.time(PF2 <- dt[, fisher(p=p, q=q, r=r, n=n,base="1")])
+PF1 <- pricelevels:::Pmatrix$fisher(P=P, Q=Q)
+PF2 <- dt[, fisher(p=p, q=q, r=r, n=n,base="1")]
 expect_equal(PF1, PF2)
 
-system.time(PF3 <- pricelevels:::Pmatrix$fisher(P=P, W=W))
-system.time(PF4 <- dt[, fisher(p=p, w=share, r=r, n=n, base="1")])
+PF3 <- pricelevels:::Pmatrix$fisher(P=P, W=W)
+PF4 <- dt[, fisher(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PF3, PF4)
 
 # compare weights versus quantities:
 expect_equal(PF1, PF3)
 
 # palgrave:
-system.time(PPal1 <- pricelevels:::Pmatrix$palgrave(P=P, Q=Q))
-system.time(PPal2 <- dt[, palgrave(p=p, q=q, r=r, n=n, base="1")])
+PPal1 <- pricelevels:::Pmatrix$palgrave(P=P, Q=Q)
+PPal2 <- dt[, palgrave(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PPal1, PPal2)
 
-system.time(PPal3 <- pricelevels:::Pmatrix$palgrave(P=P, W=W))
-system.time(PPal4 <- dt[, palgrave(p=p, w=share, r=r, n=n, base="1")])
+PPal3 <- pricelevels:::Pmatrix$palgrave(P=P, W=W)
+PPal4 <- dt[, palgrave(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PPal3, PPal4)
 
 # compare weights versus quantities:
 expect_equal(PPal1, PPal3)
 
 # drobisch:
-system.time(PDr1 <- pricelevels:::Pmatrix$drobisch(P=P, Q=Q))
-system.time(PDr2 <- dt[, drobisch(p=p, q=q, r=r, n=n, base="1")])
+PDr1 <- pricelevels:::Pmatrix$drobisch(P=P, Q=Q)
+PDr2 <- dt[, drobisch(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PDr1, PDr2)
 
-system.time(PDr3 <- pricelevels:::Pmatrix$drobisch(P=P, W=W))
-system.time(PDr4 <- dt[, drobisch(p=p, w=share, r=r, n=n, base="1")])
+PDr3 <- pricelevels:::Pmatrix$drobisch(P=P, W=W)
+PDr4 <- dt[, drobisch(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PDr3, PDr4)
 
 # compare weights versus quantities:
 expect_equal(PDr1, PDr3)
 
 # walsh:
-system.time(PW1 <- pricelevels:::Pmatrix$walsh(P=P, Q=Q))
-system.time(PW2 <- dt[, walsh(p=p, q=q, r=r, n=n, base="1")])
+PW1 <- pricelevels:::Pmatrix$walsh(P=P, Q=Q)
+PW2 <- dt[, walsh(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PW1, PW2)
 
-system.time(PW3 <- pricelevels:::Pmatrix$walsh(P=P, W=W))
-system.time(PW4 <- dt[, walsh(p=p, w=share, r=r, n=n, base="1")])
+PW3 <- pricelevels:::Pmatrix$walsh(P=P, W=W)
+PW4 <- dt[, walsh(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PW3, PW4)
 
 # compare weights versus quantities:
 expect_equal(PW1, PW3)
 
 # theil:
-system.time(PTh1 <- pricelevels:::Pmatrix$theil(P=P, Q=Q))
-system.time(PTh2 <- dt[, theil(p=p, q=q, r=r, n=n, base="1")])
+PTh1 <- pricelevels:::Pmatrix$theil(P=P, Q=Q)
+PTh2 <- dt[, theil(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PTh1, PTh2)
 
-system.time(PTh3 <- pricelevels:::Pmatrix$theil(P=P, W=W))
-system.time(PTh4 <- dt[, theil(p=p, w=share, r=r, n=n, base="1")])
+PTh3 <- pricelevels:::Pmatrix$theil(P=P, W=W)
+PTh4 <- dt[, theil(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PTh3, PTh4)
 
 # compare weights versus quantities:
 expect_equal(PTh1, PTh3)
 
 # toernqvist:
-system.time(PT1 <- pricelevels:::Pmatrix$toernqvist(P=P, Q=Q))
-system.time(PT2 <- dt[, toernqvist(p=p, q=q, r=r, n=n, base="1")])
+PT1 <- pricelevels:::Pmatrix$toernqvist(P=P, Q=Q)
+PT2 <- dt[, toernqvist(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PT1, PT2)
 
-system.time(PT3 <- pricelevels:::Pmatrix$toernqvist(P=P, W=W))
-system.time(PT4 <- dt[, toernqvist(p=p, w=share, r=r, n=n, base="1")])
+PT3 <- pricelevels:::Pmatrix$toernqvist(P=P, W=W)
+PT4 <- dt[, toernqvist(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PT3, PT4)
 
 # compare weights versus quantities:
 expect_equal(PT1, PT3)
 
 # sato-vartia:
-system.time(PSv1 <- pricelevels:::Pmatrix$svartia(P=P, Q=Q))
-system.time(PSv2 <- dt[, svartia(p=p, q=q, r=r, n=n, base="1")])
+PSv1 <- pricelevels:::Pmatrix$svartia(P=P, Q=Q)
+PSv2 <- dt[, svartia(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PSv1, PSv2)
 
-system.time(PSv3 <- pricelevels:::Pmatrix$svartia(P=P, W=W))
-system.time(PSv4 <- dt[, svartia(p=p, w=share, r=r, n=n, base="1")])
+PSv3 <- pricelevels:::Pmatrix$svartia(P=P, W=W)
+PSv4 <- dt[, svartia(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PSv3, PSv4)
 
 # compare weights versus quantities:
 expect_equal(PSv1, PSv3)
 
 # geolaspey:
-system.time(PGeoLa1 <- pricelevels:::Pmatrix$geolaspeyres(P=P, Q=Q))
-system.time(PGeoLa2 <- dt[, geolaspeyres(p=p, q=q, r=r, n=n, base="1")])
+PGeoLa1 <- pricelevels:::Pmatrix$geolaspeyres(P=P, Q=Q)
+PGeoLa2 <- dt[, geolaspeyres(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PGeoLa1, PGeoLa2)
 
-system.time(PGeoLa3 <- pricelevels:::Pmatrix$geolaspeyres(P=P, W=W))
-system.time(PGeoLa4 <- dt[, geolaspeyres(p=p, w=share, r=r, n=n, base="1")])
+PGeoLa3 <- pricelevels:::Pmatrix$geolaspeyres(P=P, W=W)
+PGeoLa4 <- dt[, geolaspeyres(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PGeoLa3, PGeoLa4)
 
 # compare weights versus quantities:
 expect_equal(PGeoLa1, PGeoLa3)
 
 # geopaasche:
-system.time(PGeoPa1 <- pricelevels:::Pmatrix$geopaasche(P=P, Q=Q))
-system.time(PGeoPa2 <- dt[, geopaasche(p=p, q=q, r=r, n=n, base="1")])
+PGeoPa1 <- pricelevels:::Pmatrix$geopaasche(P=P, Q=Q)
+PGeoPa2 <- dt[, geopaasche(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PGeoPa1, PGeoPa2)
 
-system.time(PGeoPa3 <- pricelevels:::Pmatrix$geopaasche(P=P, W=W))
-system.time(PGeoPa4 <- dt[, geopaasche(p=p, w=share, r=r, n=n, base="1")])
+PGeoPa3 <- pricelevels:::Pmatrix$geopaasche(P=P, W=W)
+PGeoPa4 <- dt[, geopaasche(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PGeoPa3, PGeoPa4)
 
 # compare weights versus quantities:
 expect_equal(PGeoPa1, PGeoPa3)
 
 # geowalsh:
-system.time(PGeoWa1 <- pricelevels:::Pmatrix$geowalsh(P=P, Q=Q))
-system.time(PGeoWa2 <- dt[, geowalsh(p=p, q=q, r=r, n=n, base="1")])
+PGeoWa1 <- pricelevels:::Pmatrix$geowalsh(P=P, Q=Q)
+PGeoWa2 <- dt[, geowalsh(p=p, q=q, r=r, n=n, base="1")]
 expect_equal(PGeoWa1, PGeoWa2)
 
-system.time(PGeoWa3 <- pricelevels:::Pmatrix$geowalsh(P=P, W=W))
-system.time(PGeoWa4 <- dt[, geowalsh(p=p, w=share, r=r, n=n, base="1")])
+PGeoWa3 <- pricelevels:::Pmatrix$geowalsh(P=P, W=W)
+PGeoWa4 <- dt[, geowalsh(p=p, w=share, r=r, n=n, base="1")]
 expect_equal(PGeoWa3, PGeoWa4)
 
 # compare weights versus quantities:

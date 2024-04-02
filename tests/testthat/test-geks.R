@@ -8,41 +8,24 @@
 set.seed(123)
 dt <- rdata(R=1, B=1, N=4)
 
-expect_error(
-  dt[, index.pairs(p=price, r=region, n=product, settings=list(type="bla"))]
-)
-
-expect_error(
-  dt[, index.pairs(p=price, r=region, n=product, settings=list(type="laspeyres"))]
-)
-
-expect_warning(
-  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla"))]
-)
-
-expect_equal(
-  is.data.table(dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))]),
-  TRUE
-)
-
-expect_equal(
-  colnames(dt[, index.pairs(p=price, r=region, n=product, settings=list(type=c("jevons","carli")))]),
-  c("base","region","jevons","carli")
-)
-
 expect_equal(
   dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))],
   data.table("base"=as.factor(1), "region"=as.factor(1), "jevons"=1, key=c("base","region"))
 )
 
 expect_equal(
-  dt[, index.pairs(p=price, r=region, n=product, settings=list(type=c("jevons","carli")))],
-  data.table("base"=as.factor(1), "region"=as.factor(1), "jevons"=1, "carli"=1, key=c("base","region"))
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))],
+  data.table("base"=as.factor(1), "region"=as.factor(1), "jevons"=1, "paasche"=1, key=c("base","region"))
 )
 
 expect_equal(
-  dt[, geks(p=price, r=region, n=product)],
+  dt[, geks(p=price, r=region, n=product, settings=list(type="jevons"))],
   c("1"=1)
+)
+
+expect_equal(
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))],
+  matrix(data=1, nrow=2, dimnames=list(c("geks-jevons","geks-paasche"), "1"))
 )
 
 
@@ -58,7 +41,15 @@ expect_no_error(
 )
 
 expect_no_error(
-  dt[, geks(p=price, r=region, n=product)],
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))]
+)
+
+expect_no_error(
+  dt[, geks(p=price, r=region, n=product, settings=list(type="jevons"))]
+)
+
+expect_no_error(
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))]
 )
 
 
@@ -134,23 +125,30 @@ expect_true(all(grepl("geks-", rownames(geks.est7))))
 # Settings ----------------------------------------------------------------
 
 
-expect_no_error(
-  dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
-            settings=list(type="toernqvist", chatty=FALSE))]
-)
-
-expect_error(
-  dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
-            settings=list(type="toernqvist", wmethod="bla", chatty=FALSE))]
-)
-
 expect_error(
   dt[, index.pairs(p=price, r=region, n=product, q=quantity,
-                   settings=list(type="toernqvist", all.pairs="bla", chatty=FALSE))]
+                   settings=list(type="toernqvist", all.pairs="bla"))]
 )
 
 expect_error(
   dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="bla"))]
+)
+
+expect_error(
+  dt[, index.pairs(p=price, r=region, n=product, settings=list(type="laspeyres"))]
+)
+
+expect_warning(
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla"))]
+)
+
+expect_error(
+  dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
+            settings=list(type="toernqvist", wmethod="bla"))]
+)
+
+expect_warning(
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla"))]
 )
 
 

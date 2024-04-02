@@ -19,17 +19,12 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, rao(p=price, q=quantity, r=region, n=product)],
+  dt[, ikle(p=price, q=quantity, r=region, n=product)],
   c("1"=1)
 )
 
 expect_equal(
-  dt[, idb(p=price, q=quantity, r=region, n=product)],
-  c("1"=1)
-)
-
-expect_equal(
-  dt[, gerardi(p=price, q=quantity, r=region, n=product)],
+  dt[, mdutot(p=price, r=region, n=product)],
   c("1"=1)
 )
 
@@ -55,15 +50,11 @@ expect_equal(
 )
 
 expect_no_error(
-  dt[, idb(p=price, q=quantity, r=region, n=product)]
-)
-
-expect_no_error(
   dt[, rao(p=price, q=quantity, r=region, n=product)]
 )
 
 expect_no_error(
-  dt[, gerardi(p=price, q=quantity, r=region, n=product)]
+  dt[, mcarli(p=price, r=region, n=product)]
 )
 
 
@@ -94,11 +85,11 @@ expect_equal(mean(gk.est), 1)
 expect_equal(gk.est1, gk.est/gk.est[1])
 expect_equal(gk.est1, gk.est2/gk.est2[1])
 
-# ikd():
-ikd.est <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)]
-ikd.est1 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="1")]
-ikd.est2 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="2")]
-ikd.est3 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+# ikle():
+ikd.est <- dt[, ikle(p=price, q=quantity, r=region, n=product, base=NULL)]
+ikd.est1 <- dt[, ikle(p=price, q=quantity, r=region, n=product, base="1")]
+ikd.est2 <- dt[, ikle(p=price, q=quantity, r=region, n=product, base="2")]
+ikd.est3 <- dt[, ikle(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
 
 expect_equal(is.vector(ikd.est1), TRUE)
 expect_equal(is.vector(ikd.est2), TRUE)
@@ -111,10 +102,10 @@ expect_equal(ikd.est1, ikd.est/ikd.est[1])
 expect_equal(ikd.est1, ikd.est2/ikd.est2[1])
 
 # rao():
-rao.est <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)]
-rao.est1 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="1")]
-rao.est2 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="2")]
-rao.est3 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+rao.est <- dt[, rao(p=price, q=quantity, r=region, n=product, base=NULL)]
+rao.est1 <- dt[, rao(p=price, q=quantity, r=region, n=product, base="1")]
+rao.est2 <- dt[, rao(p=price, q=quantity, r=region, n=product, base="2")]
+rao.est3 <- dt[, rao(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
 
 expect_equal(is.vector(rao.est1), TRUE)
 expect_equal(is.vector(rao.est2), TRUE)
@@ -122,25 +113,25 @@ expect_equal(is.list(rao.est3), TRUE)
 expect_equal(names(rao.est3), c("par","niter","tol"))
 expect_equal(rao.est1[1], c("1"=1))
 expect_equal(rao.est2[2], c("2"=1))
-expect_equal(mean(rao.est), 1)
+expect_equal(exp(mean(log(rao.est))), 1) # different to others!
 expect_equal(rao.est1, rao.est/rao.est[1])
 expect_equal(rao.est1, rao.est2/rao.est2[1])
 
-# gerardi():
-gerardi.est <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)]
-gerardi.est1 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="1")]
-gerardi.est2 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, base="2")]
-gerardi.est3 <- dt[, gkhamis(p=price, q=quantity, r=region, n=product, simplify=FALSE)]
+# mjevons():
+mj.est <- dt[, mjevons(p=price, r=region, n=product, base=NULL)]
+mj.est1 <- dt[, mjevons(p=price, r=region, n=product, base="1")]
+mj.est2 <- dt[, mjevons(p=price, r=region, n=product, base="2")]
+mj.est3 <- dt[, mjevons(p=price, r=region, n=product, simplify=FALSE)]
 
-expect_equal(is.vector(gerardi.est1), TRUE)
-expect_equal(is.vector(gerardi.est2), TRUE)
-expect_equal(is.list(gerardi.est3), TRUE)
-expect_equal(names(gerardi.est3), c("par","niter","tol"))
-expect_equal(gerardi.est1[1], c("1"=1))
-expect_equal(gerardi.est2[2], c("2"=1))
-expect_equal(mean(gerardi.est), 1)
-expect_equal(gerardi.est1, gerardi.est/gerardi.est[1])
-expect_equal(gerardi.est1, gerardi.est2/gerardi.est2[1])
+expect_equal(is.vector(mj.est1), TRUE)
+expect_equal(is.vector(mj.est2), TRUE)
+expect_equal(is.list(mj.est3), TRUE)
+expect_equal(names(mj.est3), c("par","niter","tol"))
+expect_equal(mj.est1[1], c("1"=1))
+expect_equal(mj.est2[2], c("2"=1))
+expect_equal(exp(mean(log(mj.est))), 1) # different to others!
+expect_equal(mj.est1, mj.est/mj.est[1])
+expect_equal(mj.est1, mj.est2/mj.est2[1])
 
 # test quantities versus shares as weights:
 dt[, "share" := (price*quantity)/sum(price*quantity), by="region"]
@@ -151,47 +142,32 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, idb(p=price, w=share, r=region, n=product, base=NULL)]
+  dt[, ikle(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, ikle(p=price, w=share, r=region, n=product, base=NULL)]
 )
 
 expect_equal(
-  dt[, gerardi(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, gerardi(p=price, w=share, r=region, n=product, base=NULL)]
+  dt[, rhajargasht(p=price, q=quantity, r=region, n=product, base=NULL)],
+  dt[, rhajargasht(p=price, w=share, r=region, n=product, base=NULL)]
 )
 
 
 # Settings ----------------------------------------------------------------
 
 
-# quantities missing:
+# missing quantities:
 expect_error(
-  dt[, gkhamis(p=price, r=region, n=product, w=quantity)]
+  dt[, gkhamis(p=price, r=region, n=product)]
 )
 
-# weights and quantities missing:
+# missing quantities and weights:
 expect_error(
   dt[, rao(p=price, r=region, n=product)]
-)
-
-# weights and quantities missing:
-expect_error(
-  dt[, idb(p=price, r=region, n=product)]
-)
-
-# weights and quantities missing:
-expect_error(
-  dt[, gerardi(p=price, r=region, n=product)]
 )
 
 # wrong setting:
 expect_error(
   dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="abc"))]
-)
-
-# abbreviated setting ok:
-expect_no_error(
-  dt[, gkhamis(p=price, q=quantity, r=region, n=product, settings=list(solve="iter"))]
 )
 
 # negative tolerance not allowed:
@@ -206,17 +182,7 @@ expect_error(
 
 # solve-method not allowed:
 expect_error(
-  dt[, idb(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
-)
-
-# solve-method not allowed:
-expect_error(
-  dt[, rao(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
-)
-
-# solve-method not allowed:
-expect_error(
-  dt[, gerardi(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
+  dt[, ikle(p=price, q=quantity, r=region, n=product, settings=list(solve="matrix"))]
 )
 
 
@@ -283,7 +249,7 @@ expect_equal(
 # Misc --------------------------------------------------------------------
 
 
-# test if ikd(), gkhamis(), and gerardi() identical if no gaps
+# test if ikle(), gkhamis(), and gerardi() identical if no gaps
 # and quantities are the same across regions:
 set.seed(123)
 dt <- rdata(R=5, B=1, N=9, gaps=0)
@@ -291,7 +257,7 @@ dt[, "quantity" := 1000*rleidv(product)]
 
 expect_equal(
   dt[, gkhamis(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
+  dt[, ikle(p=price, q=quantity, r=region, n=product, base=NULL)]
 )
 
 expect_equal(
@@ -301,7 +267,30 @@ expect_equal(
 
 expect_equal(
   dt[, gerardi(p=price, q=quantity, r=region, n=product, base=NULL)],
-  dt[, idb(p=price, q=quantity, r=region, n=product, base=NULL)]
+  dt[, ikle(p=price, q=quantity, r=region, n=product, base=NULL)]
+)
+
+# test if unweighted are identical to weighted ones using weights of 1
+# if there are no gaps (with gaps, renormalization of weights causes
+# differences):
+expect_equal(
+  dt[, rao(p=price, w=rep(1,.N), r=region, n=product, base=NULL)],
+  dt[, mjevons(p=price, r=region, n=product, base=NULL)]
+)
+
+expect_equal(
+  dt[, rhajargasht(p=price, w=rep(1,.N), r=region, n=product, base=NULL)],
+  dt[, mcarli(p=price, r=region, n=product, base=NULL)]
+)
+
+expect_equal(
+  dt[, ikle(p=price, w=rep(1,.N), r=region, n=product, base=NULL)],
+  dt[, mharmonic(p=price, r=region, n=product, base=NULL)]
+)
+
+expect_equal(
+  dt[, gkhamis(p=price, q=rep(1,.N), r=region, n=product, base=NULL)],
+  dt[, mdutot(p=price, r=region, n=product, base=NULL)]
 )
 
 # test if rao() is identical to cpd() even if there are gaps:
