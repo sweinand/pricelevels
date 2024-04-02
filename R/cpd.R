@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   5 February 2024
+# Date:   16 March 2024
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
@@ -193,42 +193,30 @@ nlcpd_self_start <- function(p, r, n, w, w.delta, base=NULL, strategy="s1"){
 }
 
 # non-exported helper function to check NLCPD parameter start values:
-nlcpd_start_check <- function(x, r, n, len=NULL){
+nlcpd_set_start <- function(x, r, n, base=NULL){
 
   input <- deparse(substitute(x))
   msg_prefix <- paste("Non-valid input for", input, "->")
   n <- factor(n)
   r <- factor(r)
 
-  # check list:
-  if(!is.list(x)) stop(paste(msg_prefix, "must be a list"), call. = FALSE)
-  if(length(x) != 3L) stop(paste(msg_prefix, "must be of length 3L"), call. = FALSE)
-  if(!all(c("lnP","pi","delta") %in% names(x))) stop(paste(msg_prefix, "list names must be 'lnP', 'pi', 'delta'"), call. = FALSE)
+  # check input:
+  if(!is.vector(x)) stop(paste(msg_prefix, "must be a named vector"), call. = FALSE)
+  if(is.null(names(x))) stop(paste(msg_prefix, "must be a named vector"), call. = FALSE)
+  check.num(x=x, min.len=1, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
 
-  # check elements:
-  if(length(x$lnP)>0) check.num(x=x$lnP, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
-  if(length(x$pi)>0) check.num(x=x$pi, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
-  if(length(x$delta)>0) check.num(x=x$delta, min.len=0, max.len=Inf, miss.ok=FALSE, null.ok=FALSE, na.ok=FALSE, int=c(-Inf,Inf))
+  # set order and names of start parameters:
+  par.order <- c(
+    paste0("pi.", levels(n)),
+    paste0("lnP.", if(is.null(base)){levels(r)[-nlevels(r)]}else{levels(r)[-1]}),
+    if(nlevels(n)>1) paste0("delta.", levels(n)[-1]))
+  # order important if use.jac=TRUE!
 
-  # check element names:
-  if(is.null(names(x$lnP))) stop(paste(msg_prefix, "'lnP' must have names"), call. = FALSE)
-  if(is.null(names(x$pi))) stop(paste(msg_prefix, "'pi' must have names"), call. = FALSE)
-  if(is.null(names(x$delta))) stop(paste(msg_prefix, "'delta' must have names"), call. = FALSE)
-
-  # subset to matches:
-  x$lnP <- x$lnP[names(x$lnP)%in%levels(r)]
-  x$pi <- x$pi[names(x$pi)%in%levels(n)]
-  x$delta <- x$delta[names(x$delta)%in%levels(n)]
-
-  # check matching lengths:
-  if(length(x$lnP)<len[["lnP"]]) stop(paste(msg_prefix, "'names(par.start$lnP) %in% levels(r)' must be of length greater or equal to", len[["lnP"]]), call.=FALSE)
-  if(length(x$pi)<len[["pi"]]) stop(paste(msg_prefix, "'names(par.start$pi) %in% levels(n)' must be of length greater or equal to", len[["pi"]]), call.=FALSE)
-  if(length(x$delta)<len[["delta"]]) stop(paste(msg_prefix, "'names(par.start$delta) %in% levels(n)' must be of length greater or equal to", len[["delta"]]), call.=FALSE)
-
-  # subset to required lengths:
-  x$lnP <- x$lnP[1:len[["lnP"]]]
-  x$pi <- x$pi[1:len[["pi"]]]
-  x$delta <- x$delta[1:len[["delta"]]]
+  # match start parameters to expected ones:
+  x <- x[match(x=par.order, table=names(x))]
+  if(any(is.na(x))){
+    stop("Non-valid input for 'par' -> not all required parameters provided")
+  }
 
   # return output:
   return(x)
@@ -387,7 +375,6 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
   if(is.null(settings$connect)) settings$connect <- TRUE
   if(is.null(settings$chatty)) settings$chatty <- TRUE
   if(is.null(settings$use.jac)) settings$use.jac <- FALSE
-  if(is.null(settings$par.start)) settings$par.start <- NULL
   if(is.null(settings$self.start)) settings$self.start <- "s1"
   if(is.null(settings$w.delta)) settings$w.delta <- NULL
 
@@ -418,7 +405,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
     check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
     check.log(x=settings$use.jac, min.len=1, max.len=1, na.ok=FALSE)
     check.char(x=settings$self.start, min.len=1, max.len=1, na.ok=FALSE)
-    # settings$w.delta and settings$par.start are checked later
+    # settings$w.delta is checked later
 
   }
 
@@ -426,6 +413,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
   defaults <- formals(minpack.lm::nls.lm)
   dots <- list(...)
   defaults[names(dots)] <- dots
+  if(length(defaults$par)<=1 && defaults$par=="") defaults$par <- NULL
 
   # residual function to be minimzed:
   resid_fun <- function(par, p, r, n, w, w.delta, base=NULL){
@@ -473,35 +461,42 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
     # number of products
     N <- nlevels(pdata$n)
 
-    # set delta weights if missing:
-    if(is.null(settings$w.delta)){
-      w.delta <- pdata[, tapply(X=w, INDEX=n, FUN=mean)]
-      w.delta <- w.delta/sum(w.delta) # normalisation of weights
-    }else{
-      if(is.null(names(settings$w.delta))) stop("Non-valid input for 'settings$w.delta' -> vector must have names")
-      if(!all(levels(pdata$n)%in%names(settings$w.delta), na.rm=TRUE)) stop("Non-valid input for 'settings$w.delta' -> weights for all products 'levels(n)' required")
-      if(abs(sum(settings$w.delta)-1)>1e-5 && settings$chatty) warning("Sum of 'settings$w.delta' not 1")
-      w.delta <- settings$w.delta
+    # delta weights:
+    w.delta <- settings$w.delta[match(x=levels(pdata$n), table=names(settings$w.delta))]
+    if(any(is.na(w.delta)) && settings$chatty){
+      warning("Not all values in 'settings$w.delta' matched to 'levels(n)' -> reset to 'settings$w.delta=NULL'")
+      w.delta <- NULL
     }
+    if(is.null(w.delta)) w.delta <- pdata[, tapply(X=w, INDEX=n, FUN=mean)]
+    w.delta <- w.delta/sum(w.delta) # normalisation of weights
 
-    # set start parameters if not given by user:
-    if(is.null(settings$par.start)){
+    # parameter start values:
+    if(is.null(defaults$par)){
       settings$self.start <- match.arg(arg=settings$self.start, choices=paste0("s", 1:3))
-      start <- with(pdata, nlcpd_self_start(p=p, r=r, n=n, w=w, w.delta=w.delta, base=base, strategy=settings$self.start))
-    }else{
-      start <- with(pdata, nlcpd_start_check(x=settings$par.start, r=r, n=n, len=c("lnP"=R-1, "pi"=N, "delta"=N-1)))
+      defaults$par <- with(pdata, nlcpd_self_start(p=p, r=r, n=n, w=w, w.delta=w.delta, base=base, strategy=settings$self.start))
     }
 
-    # # input checks on start:
-    # check.nlcpd.start(x=start, r=pdata$r, n=pdata$n, min.len=c("lnP"=R-1, "pi"=N, "delta"=N-1))
+    # check and set parameter start values:
+    par.start <- unlist(x=defaults$par, use.names=TRUE)
+    par.start <- with(pdata, nlcpd_set_start(x=par.start, r=r, n=n, base=base))
 
-    # reorder start parameters:
-    start <- start[c("pi", "lnP", "delta")] # important if use.jac=TRUE
-    par.start <- unlist(start, use.names=TRUE)
+    # match ordering of lower bounds to start parameters:
+    if(!is.null(defaults$lower)){
+      defaults$lower <- defaults$lower[match(x=names(par.start), table=names(defaults$lower))]
+      # if(any(is.na(defaults$lower)) & settings$chatty) warning("No lower bounds used for some parameters")
+      defaults$lower[is.na(defaults$lower)] <- -Inf
+    }
+
+    # match ordering of lower bounds to start parameters:
+    if(!is.null(defaults$upper)){
+      defaults$upper <- defaults$upper[match(x=names(par.start), table=names(defaults$upper))]
+      # if(any(is.na(defaults$upper)) & settings$chatty) warning("No upper bounds used for some parameters")
+      defaults$upper[is.na(defaults$upper)] <- Inf
+    }
 
     # set lower and/or upper bounds on delta parameter
     # for products with only one observations. with
-    # one observations only, delta can not be estimated
+    # one observation only, delta can not be estimated
     # properly and estimated price levels will no longer
     # be transitive:
     if(any(nfreq<=1, na.rm=TRUE)){

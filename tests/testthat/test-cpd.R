@@ -97,9 +97,11 @@ expect_equal(
 )
 
 # only quantity weighting:
+ub <- list("lnP"=setNames(rep(Inf, 2), 2:3), "pi"=setNames(rep(Inf, 4), 1:4), "delta"=setNames(rep(1, 3), 2:4))
+lb <- list("lnP"=setNames(rep(-Inf, 2), 2:3), "pi"=setNames(rep(-Inf, 4), 1:4), "delta"=setNames(rep(1, 3), 2:4))
 expect_equal(
   dt[, nlcpd(p=price, r=region, n=product, w=quantity, base="1", simplify=TRUE,
-               upper=c(rep(Inf, 6), rep(1, 3)), lower=c(rep(-Inf, 6), rep(1, 3)))],
+               upper=unlist(ub), lower=unlist(lb))],
   cpd.q,
   tolerance=1e-5
 )
@@ -137,17 +139,17 @@ expect_no_error(
              settings=list(w.delta=c("1"=0.3,"2"=0.5,"3"=0.1,"4"=0.1)))]
 )
 
-expect_error(
+expect_warning(
   dt[, nlcpd(p=price, r=region, n=product, settings=list(w.delta=c("1"=0.2)))]
 )
 
 # valid parameter start values:
-par.start <- list("lnP"=setNames(rep(0, nlevels(dt$region)-1), levels(dt$region)[-1]),
+par.start <- list("lnP"=setNames(rep(0, nlevels(dt$region)), levels(dt$region)),
                   "pi"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)),
-                  "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
+                  "delta"=setNames(rep(1, nlevels(dt$product)), levels(dt$product)))
 
 expect_no_error(
-  dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
+  dt[, nlcpd(p=price, r=region, n=product, par=par.start)]
 )
 
 # missing names:
@@ -156,7 +158,7 @@ par.start <- list("lnP"=rep(0, nlevels(dt$region)-1),
                   "delta"=rep(1, nlevels(dt$product)-1))
 
 expect_error(
-  dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
+  dt[, nlcpd(p=price, r=region, n=product, par=par.start)]
 )
 
 # length of 'lnP' smaller than R-1:
@@ -165,7 +167,7 @@ par.start <- list("lnP"=setNames(rep(0, nlevels(dt$region)-2), levels(dt$region)
                   "delta"=setNames(rep(1, nlevels(dt$product)-1), levels(dt$product)[-1]))
 
 expect_error(
-  dt[, nlcpd(p=price, r=region, n=product, settings=list(par.start=par.start))]
+  dt[, nlcpd(p=price, r=region, n=product, par=par.start)]
 )
 
 # length of 'lnP' greater than R-1 but all names present in 'levels(r)':
