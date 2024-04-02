@@ -53,13 +53,15 @@ The `pricelevels`-package provides index number methods for price comparisons wi
       * Lowe: `lowe()`
       * Young: `young()`
 2. **Multilateral price indices**: 
-    - CPD and NLCPD methods: `cpd()` and `nlcpd()`
+    - (Nonlinear) CPD method: `cpd()` and `nlcpd()`
     - GEKS method: `geks()`
     - Multilateral systems of equations:
+      * Multilateral variants of Carli, Dutot, Jevons, and Harmonic: `mcarli()`, `mdutot()`, `mjevons()`, `mharmonic()`
       * Geary-Khamis: `gkhamis()`
-      * Iklé-Dikhanov-Balk: `idb()`
-      * Gerardi: `gerardi()`
-      * Rao: `rao()`
+      * Iklé: `ikle()`
+      * Rao system: `rao()`
+      * Rao-Hajargasht: `rhajargasht()`
+    - Gerardi index: `gerardi()`  
 
 Moreover, the package offers functions for sampling and characterizing price data. This vignette highlights the main package features. It contains four sections. The first is on price data, the second on bilateral indices, and the third on multilateral indices. The last section section is on some further package features.
 
@@ -380,9 +382,10 @@ While the Laspeyres index uses the quantities (or expenditure shares) of the bas
 
 Multilateral price indices simultaneously use the prices of all regions involved in the price comparison to compute a set of transitive price index numbers - irrespective of any data gaps. The `pricelevels`-package offers the three most prominent multilateral price indices, and a newly developed extension:
 
-- CPD and NLCPD methods: `cpd()` and `nlcpd()`
+- (Nonlinear) CPD method: `cpd()` and `nlcpd()`
 - GEKS method: `geks()`
-- Multilateral systems of equations: `gkhamis()`, `idb()`, `gerardi()`, and `rao()`
+- Multilateral systems of equations: `gkhamis()`, `ikle()`, `rao()`, and `rhajargasht()`
+- Gerardi index: `gerardi()`
 
 ## CPD and NLCPD methods
 
@@ -485,18 +488,17 @@ all.equal(P1.geks[2], P1.geks[3]*P3.geks[2], check.attributes=FALSE)
 
 The following price indices belong to this very general class of multilateral price indices and are implemented in the `pricelevels`-package.
 
-- Geary-Khamis method `gkhamis()` proposed by  @Geary1958 and @Khamis1972;
-- Gerardi method `gerardi()` used by @Eurostat1978;
-- Rao method `rao()` proposed by @Rao1990;
-- Ikle-Dikhanov-Balk method `idb()` developed by @Ikle1972, @Dikhanov1994, and @Balk1996.
+- Geary-Khamis method [@Geary1958; @Khamis1972]: `gkhamis()`
+- Rao method [@Rao1990]: `rao()`
+- Iklé method [@Ikle1972; @Dikhanov1994; @Balk1996]: `ikle()`
+- Rao-Hajargasht arithmetic method [@Rao2016]: `rhajargasht()`
+- Multilateral variants of Carli, Dutot, Jevons, and Harmonic mean [@Rao2016]: `mcarli()`, `mdutot()`, `mjevons()`, `mharmonic()`
 
 All methods have in common that they set up a system of interrelated equations of international product prices and regional price levels, which must be solved iteratively. It is only the definition of the international product prices and the price levels that differ between the methods.
 
-The *Geary-Khamis method* defines the international average prices, $\pi_n$, as
-$$\pi_n = \frac{\sum_{r=1}^{R} q_n^r \left( p_n^r/ P^r \right)}{\sum_{r=1}^{R} q_n^r}$$
-for all products $n=1,\ldots,N$ and the regional price levels, $P^r$, as
-$$P^r = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} \pi_n q_n^r} = \left[ \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right)^{-1} \right]^{-1}$$
-for all regions $r=1,\ldots,R$, where the weights $w_n^r= p_n^r q_n^r / \sum_{n=1}^{N} p_n^r q_n^r$ represent expenditure shares. This system of interrelated equations can be solved iteratively or analytically using matrix algebra [@Diewert1999]. Which approach is computationally faster depends on the data. 
+The *Geary-Khamis method* defines the international average prices, $\pi_n \ (n=1,\ldots,N)$, and the regional price levels, $P^r \ (r=1,\ldots,R)$, as
+$$\pi_n = \frac{\sum_{r=1}^{R} q_n^r \left( p_n^r/ P^r \right)}{\sum_{r=1}^{R} q_n^r} \quad \text{and} \quad P^r = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} \pi_n q_n^r} = \left[ \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right)^{-1} \right]^{-1} \, ,$$
+where the weights $w_n^r= p_n^r q_n^r / \sum_{n=1}^{N} p_n^r q_n^r$ represent expenditure shares. This system of interrelated equations can be solved iteratively or analytically using matrix algebra [@Diewert1999]. Which approach is computationally faster depends on the data. 
 ```{r}
 # sample data with gaps:
 set.seed(123)
@@ -514,15 +516,22 @@ system.time(m2 <- dt.big[, gkhamis(p=price, r=region, n=product, q=quantity,
 all.equal(m1, m2, tol=1e-05)
 ```
 
-The *Gerardi index* and the *Iklé-Dikhanov-Balk (IDB) index* define the price levels exactly in the same way as the Geary-Khamis index. However, they define the international product prices differently. For the Gerardi index, the $\pi_n$'s are computed as simple geometric averages of the prices,
-$$\pi_n = \left( \prod_{r=1}^{R} p_i^r \right)^{1/R} \quad n=1,\ldots,N \ , $$
-while in the IDB index they rely on expenditure shares:
-$$\pi_n = \left[ \frac{\sum_{r=1}^{R} w_n^r \left( p_n^r / P^r \right)^{-1}}{\sum_{r=1}^{R} w_n^r} \right]^{-1} \quad n=1,\ldots,N \ . $$
-The IDB index uses the expenditure shares instead of quantity shares as the Geary-Khamis. Therefore, it suffers less from the *Gerschenkorn effect* as bigger countries do not receive more influence in the calculations than smaller countries. 
+The *Iklé index* defines the regional price levels $P^r$ exactly in the same way as the Geary-Khamis index. However, the calculation of the international product prices $\pi_n$ uses expenditure shares instead of quantities:
+$$\pi_n = \left[ \frac{\sum_{r=1}^{R} w_n^r \left( p_n^r / P^r \right)^{-1}}{\sum_{r=1}^{R} w_n^r} \right]^{-1} \quad \text{and} \quad P^r = \left[ \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right)^{-1} \right]^{-1} \, . $$
+Therefore, the Iklé index suffers less from the *Gerschenkorn effect* than the Geary-Khamis index as bigger countries do not receive more influence in the calculations than smaller countries. 
 
-In contrast to the Geary-Khamis index, the Gerardi and IDB indices can be computed with quantities $q_n^r$ *or* expenditure share weights $w_n^r$. This also applies to the *Rao index*, which derives the international product prices, $\pi_n \ (n=1,\ldots,N)$, and regional price levels, $P^r \ (r=1,\ldots,R)$, from the following system of interrelated equations:
+In contrast to the Geary-Khamis index, the Iklé index can be computed with quantities $q_n^r$ *or* expenditure share weights $w_n^r$. This also applies to the *Rao index*, which derives the international product prices, $\pi_n \ (n=1,\ldots,N)$, and regional price levels, $P^r \ (r=1,\ldots,R)$, from the following system of interrelated equations:
+$$\pi_n = \prod_{r=1}^{R} \left( p_n^r / P^r \right)^{w_n^r / \sum_{s=1}^{R} w_n^s} \quad \text{and} \quad P^r = \prod_{n=1}^{N} \left( p_n^r / \pi_n \right)^{w_n^r} \, , $$ 
+while the *Rao-Hajargasht index* sets up the following system of equations:
 
-$$\pi_n = \prod_{r=1}^{R} \left( p_n^r / P^r \right)^{w_n^r / \sum_{s=1}^{R} w_n^s} \quad \text{and} \quad P^r = \prod_{n=1}^{N} \left( p_n^r / \pi_n \right)^{w_n^r} \ . $$ 
+$$\pi_n = \sum_{r=1}^{R} \frac{w_n^r}{\sum_{s=1}^{R} w_n^s} \left( p_n^r / P^r \right) \quad \text{and} \quad P^r = \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right) \ . $$
+Following @Rao2016[p. 417], unweighted variants exist for these multilateral indices, which are implemented in
+
+* `mcarli()` => unweighted variant of `rhajargasht()`
+* `mdutot()` => `gkhamis()`
+* `mjevons()` => `rao()`
+* `mharmonic()` => `ikle()`
+
 Also the price indices belonging to this class of multilateral systems of equations produce transitive price levels.
 ```{r}
 # Geary-Khamis index transitive:
@@ -530,10 +539,32 @@ P1.gk <- dt.gaps[, gkhamis(p=price, r=region, n=product, q=quantity, base="1")]
 P3.gk <- dt.gaps[, gkhamis(p=price, r=region, n=product, q=quantity, base="3")]
 all.equal(P1.gk[2], P1.gk[3]*P3.gk[2], check.attributes=FALSE)
 
-# Rao index transitive:
-P1.rao <- dt.gaps[, rao(p=price, r=region, n=product, q=quantity, base="1")]
-P3.rao <- dt.gaps[, rao(p=price, r=region, n=product, q=quantity, base="3")]
-all.equal(P1.rao[2], P1.rao[3]*P3.rao[2], check.attributes=FALSE)
+# multilateral Carli index transitive:
+P1.carli <- dt.gaps[, mcarli(p=price, r=region, n=product, base="1")]
+P3.carli <- dt.gaps[, mcarli(p=price, r=region, n=product, base="3")]
+all.equal(P1.carli[2], P1.carli[3]*P3.carli[2], check.attributes=FALSE)
+```
+
+## Gerardi index
+
+The multilateral Gerardi index used by @Eurostat1978 is implemented in the function `gerardi()`. Similar to the indices from the previous section, the Gerardi index defines international product prices, $\pi_n$, and regional price levels, $P^r$:
+
+$$\pi_n = \left( \prod_{r=1}^{R} p_i^r \right)^{1/R} \quad n=1,\ldots,N$$
+and
+$$P^r = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} \pi_n q_n^r} = \left[ \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right)^{-1} \right]^{-1} \quad r=1,\ldots,R \, .$$
+
+Consequently, the regional price levels are defined in the same way as for the Geary-Khamis and Ikle methods. It is only the definition of the international product prices that differs. More importantly, however, the $\pi_n$ rely only on the observed prices. Therefore, the Gerardi index does not require an iterative procedure, but can be solved in one step.
+
+One obvious drawback of the Gerardi index is the definition of $\pi_n$ as an unweighted geometric mean even when quantities or expenditure shares are available. Hence, the function `gerardi()` offers another variant where the $\pi_n$'s are computed as weighted geometric means. This can be set by `settings=list(variant="adjusted")`.
+```{r}
+dt.gaps[, gerardi(p=price, r=region, n=product, q=quantity, base="1", settings=list(variant="adjusted"))]
+```
+The Gerardi index produces transitive regional price levels.
+```{r}
+# Gerardi index transitive:
+P1 <- dt.gaps[, gerardi(p=price, r=region, n=product, q=quantity, base="1")]
+P3 <- dt.gaps[, gerardi(p=price, r=region, n=product, q=quantity, base="3")]
+all.equal(P1[2], P1[3]*P3[2], check.attributes=FALSE)
 ```
 
 # Some further package features

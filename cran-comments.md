@@ -1,9 +1,13 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Updated the package description in the DESCRIPTION file
-* Added a reference to the World Bank's methodological manual in the DESCRIPTION file
-* Included the Authors@R field in the DESCRIPTION file
+* Added the functions `mjevons()`, `mcarli()`, `mdutot()`, and `mharmonic()`
+* Introduced matching of lower and upper bounds in `nlcpd()`
+* Replaced argument `par.start` with the default `par` in `nlcpd()`
+* Separated the `gerardi()` index from the iterative ones
+* Duplicated prices are aggregated now as weighted averages instead of unweighted ones
+* Updated the package vignette
+* Updated tests
 
 ## Test environments
 - R-hub windows-x86_64-devel (r-devel)
@@ -11,14 +15,6 @@ This is a resubmission. In this version I have:
 - R-hub fedora-clang-devel (r-devel)
 
 ## R CMD check results
-❯ On windows-x86_64-devel (r-devel), ubuntu-gcc-release (r-release), fedora-clang-devel (r-devel)
-```
-  checking CRAN incoming feasibility ... NOTE
-  Maintainer: 'Sebastian Weinand <s.weinand90@googlemail.com>'
-  
-  New submission
-```
-
 ❯ On windows-x86_64-devel (r-devel)
 ```
   checking HTML version of manual ... NOTE
@@ -50,4 +46,4 @@ As noted in [R-hub issue #560](https://github.com/r-hub/rhub/issues/560), this s
 ```
 As noted in [R-hub issue #503](https://github.com/r-hub/rhub/issues/503), this could be due to a bug/crash in MiKTeX and can likely be ignored.
 
-0 errors ✔ | 0 warnings ✔ | 5 notes ✖
+0 errors ✔ | 0 warnings ✔ | 4 notes ✖

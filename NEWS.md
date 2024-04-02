@@ -1,3 +1,12 @@
+# pricelevels 1.1.0
+
+* New functions `mjevons()`, `mcarli()`, `mdutot()`, and `mharmonic()`
+* In `nlcpd()`, introduced matching of lower and upper bounds and replaced argument `par.start` with the default `par`
+* Separated the `gerardi()` index from the iterative ones
+* Duplicated prices are aggregated now as weighted averages instead of unweighted ones in the helper function `arrange()`
+* Updated the package vignette
+* Updated tests
+
 # pricelevels 1.0.2
 
 In the DESCRIPTION file:

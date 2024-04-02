@@ -29,13 +29,15 @@ The `pricelevels`-package provides index number methods for price comparisons wi
       * Lowe: `lowe()`
       * Young: `young()`
 2. **Multilateral price indices**: 
-    - CPD and NLCPD methods: `cpd()` and `nlcpd()`
+    - (Nonlinear) CPD method: `cpd()` and `nlcpd()`
     - GEKS method: `geks()`
     - Multilateral systems of equations:
+      * Multilateral variants of Carli, Dutot, Jevons, and Harmonic: `mcarli()`, `mdutot()`, `mjevons()`, `mharmonic()`
       * Geary-Khamis: `gkhamis()`
-      * Iklé-Dikhanov-Balk: `idb()`
-      * Gerardi: `gerardi()`
-      * Rao: `rao()`
+      * Iklé: `ikle()`
+      * Rao system: `rao()`
+      * Rao-Hajargasht: `rhajargasht()`
+    - Gerardi index: `gerardi()`
 
 Moreover, the package offers functions for sampling and characterizing price data. Details can be found in the package vignette.
 
