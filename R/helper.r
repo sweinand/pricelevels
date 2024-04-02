@@ -119,9 +119,9 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
 
     # average duplicated prices and weights, sum duplicated quantities:
     if(is.null(q)){
-      dt <- dt[, list("p"=mean(p), "z"=mean(z)), by=c("r","n")]
+      dt <- dt[, list("p"=stats::weighted.mean(x=p, w=z), "z"=mean(z)), by=c("r","n")]
     }else{
-      dt <- dt[, list("p"=mean(p), "z"=sum(z)), by=c("r","n")]
+      dt <- dt[, list("p"=stats::weighted.mean(x=p, w=z), "z"=sum(z)), by=c("r","n")]
     }
 
     # print warning:
