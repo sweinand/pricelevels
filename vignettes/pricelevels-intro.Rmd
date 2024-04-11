@@ -56,7 +56,6 @@ The `pricelevels`-package provides index number methods for price comparisons wi
     - (Nonlinear) CPD method: `cpd()` and `nlcpd()`
     - GEKS method: `geks()`
     - Multilateral systems of equations:
-      * Multilateral variants of Carli, Dutot, Jevons, and Harmonic: `mcarli()`, `mdutot()`, `mjevons()`, `mharmonic()`
       * Geary-Khamis: `gkhamis()`
       * Iklé: `ikle()`
       * Rao system: `rao()`
@@ -397,7 +396,7 @@ $$\ln p_n^r = \ln \pi_n + \ln P^r + \ln \epsilon_n^r \quad \text{with} \ \ln \ep
 $$\ln p_n^r = \ln \pi_n + \delta_n \ln P^r + \ln \epsilon_n^r \quad \text{with} \ \ln \epsilon_n^r \sim N(0, \sigma^2)$$
 The CPD method implicitly assumes that all $\delta_n=1$. However, this assumption is not very realistic as price elasticities can considerably differ between the products, particularly at higher levels (e.g., rents versus food).
 
-Estimating the CPD and NLCPD regression model produces estimates for the regional price levels, respectively. However, both methods require a normalization of the estimated price levels $\widehat{\ln P^r}$ to avoid multicollinearity. With normalization $\sum_{r=1}^{R} \widehat{\ln P^r}=0$, the price levels are expressed relative to the regional average; otherwise, the (logarithm of the) price level of one specific region is set to 0. The NLCPD method conditionally imposes the restriction $\sum_{n=1}^{N} w_n \widehat{\delta_n}=1$, which is satisfied by the CPD method by definition.
+Estimating the CPD and NLCPD regression model produces estimates for the regional price levels, respectively. However, both methods require a normalization of the estimated price levels $\widehat{\ln P^r}$ to avoid multicollinearity. With normalization $\sum_{r=1}^{R} \widehat{\ln P^r}=0$, the price levels are expressed relative to the regional average; otherwise, the (logarithm of the) price level of one specific region is set to 0. The NLCPD method additionally imposes the restriction $\sum_{n=1}^{N} w_n \widehat{\delta}_n=1$. In this package (function `nlcpd()`), it is always the parameter $\widehat{\delta}_1$ that is derived residually from this restriction.
 
 The CPD and NLCPD methods are implemented in the functions `cpd()` and `nlcpd()`. The functions can be used similarly to those for bilateral indices as shown below. However, if requested by the user, they provide some additional information and they can express the regional price levels relative to the unweighted regional average by setting `base=NULL`.
 ```{r}
@@ -492,7 +491,6 @@ The following price indices belong to this very general class of multilateral pr
 - Rao method [@Rao1990]: `rao()`
 - Iklé method [@Ikle1972; @Dikhanov1994; @Balk1996]: `ikle()`
 - Rao-Hajargasht arithmetic method [@Rao2016]: `rhajargasht()`
-- Multilateral variants of Carli, Dutot, Jevons, and Harmonic mean [@Rao2016]: `mcarli()`, `mdutot()`, `mjevons()`, `mharmonic()`
 
 All methods have in common that they set up a system of interrelated equations of international product prices and regional price levels, which must be solved iteratively. It is only the definition of the international product prices and the price levels that differ between the methods.
 
@@ -525,12 +523,7 @@ $$\pi_n = \prod_{r=1}^{R} \left( p_n^r / P^r \right)^{w_n^r / \sum_{s=1}^{R} w_n
 while the *Rao-Hajargasht index* sets up the following system of equations:
 
 $$\pi_n = \sum_{r=1}^{R} \frac{w_n^r}{\sum_{s=1}^{R} w_n^s} \left( p_n^r / P^r \right) \quad \text{and} \quad P^r = \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right) \ . $$
-Following @Rao2016[p. 417], unweighted variants exist for these multilateral indices, which are implemented in
-
-* `mcarli()` => unweighted variant of `rhajargasht()`
-* `mdutot()` => `gkhamis()`
-* `mjevons()` => `rao()`
-* `mharmonic()` => `ikle()`
+All formulas above for $\pi_n$ and $P^r$ require quantities (or expenditure share weights). Following @Rao2016[p. 417], however, unweighted variants of the multilateral indices exist, which are implemented in the corresponding functions by setting `q=NULL` or `w=NULL`.
 
 Also the price indices belonging to this class of multilateral systems of equations produce transitive price levels.
 ```{r}
@@ -538,18 +531,13 @@ Also the price indices belonging to this class of multilateral systems of equati
 P1.gk <- dt.gaps[, gkhamis(p=price, r=region, n=product, q=quantity, base="1")]
 P3.gk <- dt.gaps[, gkhamis(p=price, r=region, n=product, q=quantity, base="3")]
 all.equal(P1.gk[2], P1.gk[3]*P3.gk[2], check.attributes=FALSE)
-
-# multilateral Carli index transitive:
-P1.carli <- dt.gaps[, mcarli(p=price, r=region, n=product, base="1")]
-P3.carli <- dt.gaps[, mcarli(p=price, r=region, n=product, base="3")]
-all.equal(P1.carli[2], P1.carli[3]*P3.carli[2], check.attributes=FALSE)
 ```
 
 ## Gerardi index
 
 The multilateral Gerardi index used by @Eurostat1978 is implemented in the function `gerardi()`. Similar to the indices from the previous section, the Gerardi index defines international product prices, $\pi_n$, and regional price levels, $P^r$:
 
-$$\pi_n = \left( \prod_{r=1}^{R} p_i^r \right)^{1/R} \quad n=1,\ldots,N$$
+$$\pi_n = \left( \prod_{r=1}^{R} p_n^r \right)^{1/R} \quad n=1,\ldots,N$$
 and
 $$P^r = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} \pi_n q_n^r} = \left[ \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right)^{-1} \right]^{-1} \quad r=1,\ldots,R \, .$$
 

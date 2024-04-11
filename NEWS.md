@@ -1,3 +1,15 @@
+# pricelevels 1.2.0
+
+* Included the functions 
+  - `mjevons()` in `rao()`
+  - `mcarli()` in `rhajargsaht()`
+  - `mdutot()` in `gkhamis()`
+  - `mharmonic()` in `ikle()`
+  
+  by setting `q=NULL` and/or `w=NULL`
+* Updated the package vignette
+* Updated tests
+
 # pricelevels 1.1.0
 
 * New functions `mjevons()`, `mcarli()`, `mdutot()`, and `mharmonic()`

@@ -1,7 +1,7 @@
 Package: pricelevels
 Type: Package
 Title: Spatial Price Level Comparisons
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: person("Sebastian", "Weinand", role=c("aut", "cre"), email="s.weinand90@googlemail.com")
 Description: Price comparisons within or between countries provide an overall measure of the relative difference in prices, often denoted as price levels. This package provides index number methods for such price comparisons (e.g., The World Bank, 2011, <doi:10.1596/978-0-8213-9728-2>). Moreover, it contains functions for sampling and characterizing price data.
 License: EUPL
