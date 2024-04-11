@@ -22,7 +22,7 @@ gerardi(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
    \itemize{
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
-   \item \code{variant} : for \code{original}, the international prices are calcualted as unweighted geometric means. This is the original approach. With \code{adjusted}, the international prices are calculated as weighted geometric means.
+   \item \code{variant} : for \code{original}, the international prices are calculated as unweighted geometric means. This is the original approach. With \code{adjusted}, the international prices are calculated as weighted geometric means.
    }}
 }
 
