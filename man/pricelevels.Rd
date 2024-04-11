@@ -37,7 +37,7 @@ Before calculations start, missing values are excluded and duplicated observatio
 The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
 }
 
-\value{A matrix price levels where the rows contain the index methods and the columns the regions.}
+\value{A matrix of price levels where the rows contain the index methods and the columns the regions.}
 
 \examples{
 \donttest{# sample complete price data:

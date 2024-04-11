@@ -1,7 +1,7 @@
 # START
 
 # Title:    Available price indices
-# Date:     8 March 2024
+# Date:     2 April 2024
 
 library(data.table)
 
@@ -21,12 +21,11 @@ multP[, "name" := paste("geks", name, sep="-")]
 multP[, "type" := "multilateral"]
 multP <- rbind(multP,
                data.table("name"=c("cpd","nlcpd","gkhamis","rao","ikle",
-                                   "gerardi","rhajargasht","mcarli","mjevons",
-                                   "mdutot","mharmonic"),
+                                   "rhajargasht","gerardi"),
                           "type"="multilateral",
-                          "uses_none"=c(T,T,F,F,F,F,F,T,T,T,T),
-                          "uses_q"=c(T,T,T,T,T,T,T,F,F,F,F),
-                          "uses_w"=c(T,T,F,T,T,T,T,F,F,F,F)))
+                          "uses_none"=c(T,T,T,T,T,T,F),
+                          "uses_q"=c(T,T,T,T,T,T,T),
+                          "uses_w"=c(T,T,F,T,T,T,T)))
 
 # list of all available price indices:
 pindices <- rbind(bilP, multP)

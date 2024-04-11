@@ -2,8 +2,8 @@
 
 # price indices:
 Punw <- sort(pricelevels:::pindices[uses_none==TRUE, name])
-Pq <- sort(pricelevels:::pindices[uses_none==TRUE | uses_q==TRUE, name])
-Pw <- sort(pricelevels:::pindices[uses_none==TRUE | uses_w==TRUE, name])
+Pw <- sort(pricelevels:::pindices[(uses_none==TRUE & uses_q==FALSE) | uses_w==TRUE, name])
+Pq <- sort(pricelevels:::pindices[, name])
 
 
 # Data with one region only -----------------------------------------------

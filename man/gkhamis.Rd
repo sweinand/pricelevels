@@ -1,9 +1,5 @@
 \name{gkhamis}
 
-\alias{mcarli}
-\alias{mjevons}
-\alias{mharmonic}
-\alias{mdutot}
 \alias{gkhamis}
 \alias{ikle}
 \alias{rao}
@@ -18,27 +14,18 @@ Calculation of regional price levels using the
   \item Iklé method (Ikle, 1972; Dikhanov, 1997; Balk, 1996): \code{ikle()}
   \item Rao system (Rao, 1990): \code{rao()}
   \item Rao-Hajargasht method (Rao and Hajargasht, 2016): \code{rhajargasht()}
-  \item Multilateral variants of Carli, Dutot, Jevons, and Harmonic mean (Rao and Hajargasht, 2016): \code{mcarli(), mdutot(), mjevons(), mharmonic()}
 }
 All methods have in common that they set up a system of interrelated equations of international product prices and price levels, which must be solved iteratively. It is only the definition of the international product prices and price levels that differ between the methods (see package vignette).
 }
 
 \usage{
-gkhamis(p, r, n, q, base=NULL, simplify=TRUE, settings=list())
+gkhamis(p, r, n, q=NULL, base=NULL, simplify=TRUE, settings=list())
 
-ikle(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
+ikle(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
 
-mcarli(p, r, n, base=NULL, simplify=TRUE, settings=list())
+rao(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
 
-mdutot(p, r, n, base=NULL, simplify=TRUE, settings=list())
-
-mharmonic(p, r, n, base=NULL, simplify=TRUE, settings=list())
-
-mjevons(p, r, n, base=NULL, simplify=TRUE, settings=list())
-
-rao(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
-
-rhajargasht(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
+rhajargasht(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \arguments{
@@ -58,7 +45,13 @@ rhajargasht(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \details{
-In their original form, the index methods use quantities and/or weights. However, Rao and Hajargasht (2016, p. 417) have shown that similar solutions exist for the unweighted definitions of international product prices and price levels. This is implemented in functions \code{mcarli(), mdutot(), mjevons(), mharmonic()}, which do not require quantities or weights.
+In their original form, the above index methods use quantities (or weights). However, Rao and Hajargasht (2016, p. 417) have shown that similar solutions exist for the unweighted definitions of international product prices and price levels. This is implemented in the functions where
+\itemize{
+  \item \code{gkhamis(q=NULL)} corresponds to a multilateral Dutot index;
+  \item \code{ikle(q=NULL, w=NULL)} to a multilateral Harmonic mean index;
+  \item \code{rao(q=NULL, w=NULL)} to a multilateral Jevons index;
+  \item \code{rhajargasht(q=NULL, w=NULL)} to a multilateral Carli index.
+}
 
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 

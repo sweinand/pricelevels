@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   8 March 2024
+# Date:   2 April 2024
 
 # list available price indices:
 list.indices <- function(){
@@ -57,9 +57,9 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
     type.vals <- pindices$name[pindices$uses_none==TRUE]
   }else{
     if(is.null(q)){
-      type.vals <- pindices$name[pindices$uses_none==TRUE | pindices$uses_w==TRUE]
+      type.vals <- pindices$name[(pindices$uses_none==TRUE & pindices$uses_q==FALSE) | pindices$uses_w==TRUE]
     }else{
-      type.vals <- pindices$name[pindices$uses_none==TRUE | pindices$uses_q==TRUE]
+      type.vals <- pindices$name
     }
   }
 
@@ -104,20 +104,20 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
         pdata[, geks.main(p=p, r=r, n=n, base=base, settings=c(list("type"=type.geks), settings))]
       },
 
-      "mcarli"=if("mcarli"%in%type){
-        pdata[, mcarli(p=p, r=r, n=n, base=base, settings=settings)]
+      "rao"=if("rao"%in%type){
+        pdata[, rao(p=p, r=r, n=n, base=base, settings=settings)]
       },
 
-      "mdutot"=if("mdutot"%in%type){
-        pdata[, mdutot(p=p, r=r, n=n, base=base, settings=settings)]
+      "rhajargasht"=if("rhajargasht"%in%type){
+        pdata[, rhajargasht(p=p, r=r, n=n, base=base, settings=settings)]
       },
 
-      "mharmonic"=if("mharmonic"%in%type){
-        pdata[, mharmonic(p=p, r=r, n=n, base=base, settings=settings)]
+      "ikle"=if("ikle"%in%type){
+        pdata[, ikle(p=p, r=r, n=n, base=base, settings=settings)]
       },
 
-      "mjevons"=if("mjevons"%in%type){
-        pdata[, mjevons(p=p, r=r, n=n, base=base, settings=settings)]
+      "gkhamis"=if("gkhamis"%in%type){
+        pdata[, gkhamis(p=p, r=r, n=n, base=base, settings=settings)]
       }
 
     )
@@ -143,22 +143,6 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
         if(length(type.geks)>0){
           pdata[, geks.main(p=p, r=r, n=n, w=w, base=base, settings=c(list("type"=type.geks), settings))]
-        },
-
-        "mcarli"=if("mcarli"%in%type){
-          pdata[, mcarli(p=p, r=r, n=n, base=base, settings=settings)]
-        },
-
-        "mdutot"=if("mdutot"%in%type){
-          pdata[, mdutot(p=p, r=r, n=n, base=base, settings=settings)]
-        },
-
-        "mharmonic"=if("mharmonic"%in%type){
-          pdata[, mharmonic(p=p, r=r, n=n, base=base, settings=settings)]
-        },
-
-        "mjevons"=if("mjevons"%in%type){
-          pdata[, mjevons(p=p, r=r, n=n, base=base, settings=settings)]
         },
 
         "rao"=if("rao"%in%type){
@@ -198,22 +182,6 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
         if(length(type.geks)>0){
           pdata[, geks.main(p=p, r=r, n=n, q=q, base=base, settings=c(list("type"=type.geks), settings))]
-        },
-
-        "mcarli"=if("mcarli"%in%type){
-          pdata[, mcarli(p=p, r=r, n=n, base=base, settings=settings)]
-        },
-
-        "mdutot"=if("mdutot"%in%type){
-          pdata[, mdutot(p=p, r=r, n=n, base=base, settings=settings)]
-        },
-
-        "mharmonic"=if("mharmonic"%in%type){
-          pdata[, mharmonic(p=p, r=r, n=n, base=base, settings=settings)]
-        },
-
-        "mjevons"=if("mjevons"%in%type){
-          pdata[, mjevons(p=p, r=r, n=n, base=base, settings=settings)]
         },
 
         "rao"=if("rao"%in%type){

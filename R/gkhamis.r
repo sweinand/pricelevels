@@ -2,7 +2,7 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     8 March 2024
+# Date:     8 April 2024
 
 # print output for class 'multeq':
 print.multeq <- function(x, ...){
@@ -57,8 +57,7 @@ solve_multeq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, 
   }
 
   # allowed index typey:
-  type.vals <- c(paste0("m", c("dutot","carli","jevons","harmonic")),
-                 c("gkhamis","ikle","rao","rhajargasht"))
+  type.vals <- c("gkhamis","ikle","rao","rhajargasht")
   type.vals <- pindices[pindices$name%in%type.vals,]
 
   # check against allowed index types:
@@ -74,26 +73,15 @@ solve_multeq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, 
   # error handling for quantity and weights:
   if(settings$check.inputs){
 
-    if(any(type%in%type.vals$name[type.vals$uses_q==TRUE & type.vals$uses_w==TRUE]) && is.null(q) && is.null(w)){
-      stop(paste0("Non-valid input -> 'q' or 'w' required but both missing"), call.=FALSE)
-    }
-
-    if(any(type%in%type.vals$name[type.vals$uses_q==TRUE & type.vals$uses_w==FALSE]) && is.null(q)){
-      stop(paste0("Non-valid input -> 'q' required but missing"), call.=FALSE)
+    if(any(type%in%"gkhamis") && is.null(q) && !is.null(w)){
+      stop(paste0("Non-valid input -> 'q' required but 'w' provided"), call.=FALSE)
     }
 
   }
 
-  # # error handling for quantity and weights:
-  # if(settings$check.inputs && is.null(q) && is.null(w)){
-  #   stop(paste0("Non-valid input for type='", type, "' -> 'q' or 'w' required"), call.=FALSE)
-  # }
-  # if(settings$check.inputs && type=="gk" && is.null(q)){
-  #   stop(paste0("Non-valid input for type='", type, "' -> 'q' required"), call.=FALSE)
-  # }
-
   # initialize data:
   pdata <- arrange(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)
+  if(is.null(q) && is.null(w)) pdata[, c("q","w"):=1]
 
   # set base region:
   base <- set.base(r=pdata$r, base=base, null.ok=TRUE, settings=settings)
@@ -153,7 +141,7 @@ solve_multeq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, 
 
   # normalization:
   if(is.null(base)){
-    if(type%in%c("rao","mjevons")){
+    if(type%in%"rao"){
       P <- P/exp(mean(log(P)))
     }else{
       P <- P/mean(P)
@@ -193,10 +181,13 @@ solve_multeq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, 
 }
 
 # geary-khamis:
-gkhamis <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
+gkhamis <- function(p, r, n, q=NULL, base=NULL, simplify=TRUE, settings=list()){
 
-  # see CPI Manual (2020, p. 448)
+  # see
+  # CPI Manual (2020, p. 448)
   # https://www.ilo.org/wcmsp5/groups/public/---dgreports/---stat/documents/publication/wcms_761444.pdf
+  # Rao and Hajargasht (2016, p. 417)
+  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
 
   # definition of average product prices:
   v.def <- function(p, q, w=NULL, n, P){
@@ -224,10 +215,13 @@ gkhamis <- function(p, r, n, q, base=NULL, simplify=TRUE, settings=list()){
 }
 
 # ikle:
-ikle <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+ikle <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
-  # see CPI Manual (2020, p. 448)
+  # see
+  # CPI Manual (2020, p. 448)
   # https://www.ilo.org/wcmsp5/groups/public/---dgreports/---stat/documents/publication/wcms_761444.pdf
+  # Rao and Hajargasht (2016, p. 417)
+  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
 
   # definition of average product prices:
   v.def <- function(p, q=NULL, w, n, P){
@@ -256,10 +250,13 @@ ikle <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 }
 
 # rao:
-rao <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+rao <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
-  # see Hajargasht (2022, p. 612)
+  # see
+  # Hajargasht (2022, p. 612)
   # https://link.springer.com/book/10.1007/978-981-19-2023-3
+  # Rao and Hajargasht (2016, p. 417)
+  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
 
   # definition of average product prices:
   v.def <- function(p, q=NULL, w, n, P){
@@ -280,6 +277,37 @@ rao <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
     p=p, r=r, n=n, q=q, w=w,
     base=base, simplify=simplify, settings=settings,
     P.FUN=P.def, v.FUN=v.def, type="rao")
+
+  # return output:
+  return(res)
+
+}
+
+# rao-hajargasht arithmetic index:
+rhajargasht <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
+
+  # Rao and Hajargasht (2016, p. 417)
+  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
+
+  # definition of average product prices:
+  v.def <- function(p, q=NULL, w, n, P){
+    res <- stats::ave(x=w*(p/P), n, FUN=sum) / stats::ave(x=w, n, FUN=sum)
+    names(res) <- n
+    return(res)
+  }
+
+  # definition of price levels:
+  P.def <- function(p, q=NULL, w, r, v){
+    res <- stats::ave(x=w*(p/v), r, FUN=sum) / stats::ave(x=w, r, FUN=sum)
+    names(res) <- r
+    return(res)
+  }
+
+  # compute index:
+  res <- solve_multeq(
+    p=p, r=r, n=n, q=q, w=w,
+    base=base, simplify=simplify, settings=settings,
+    P.FUN=P.def, v.FUN=v.def, type="rhajargasht")
 
   # return output:
   return(res)
@@ -317,160 +345,5 @@ rao <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 #   return(res)
 #
 # }
-
-# rao-hajargasht arithmetic index:
-rhajargasht <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
-
-  # Rao and Hajargasht (2016, p. 417)
-  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
-
-  # definition of average product prices:
-  v.def <- function(p, q=NULL, w, n, P){
-    res <- stats::ave(x=w*(p/P), n, FUN=sum) / stats::ave(x=w, n, FUN=sum)
-    names(res) <- n
-    return(res)
-  }
-
-  # definition of price levels:
-  P.def <- function(p, q=NULL, w, r, v){
-    res <- stats::ave(x=w*(p/v), r, FUN=sum) / stats::ave(x=w, r, FUN=sum)
-    names(res) <- r
-    return(res)
-  }
-
-  # compute index:
-  res <- solve_multeq(
-    p=p, r=r, n=n, q=q, w=w,
-    base=base, simplify=simplify, settings=settings,
-    P.FUN=P.def, v.FUN=v.def, type="rhajargasht")
-
-  # return output:
-  return(res)
-
-}
-
-# multilateral dutot:
-mdutot <- function(p, r, n, base=NULL, simplify=TRUE, settings=list()){
-
-  # Rao and Hajargasht (2016, p. 417)
-  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
-
-  # definition of average product prices:
-  v.def <- function(p, q=NULL, w=NULL, n, P){
-    res <- stats::ave(x=p/P, n, FUN=mean)
-    names(res) <- n
-    return(res)
-  }
-
-  # definition of price levels:
-  P.def <- function(p, q=NULL, w=NULL, r, v){
-    res <- stats::ave(x=p, r, FUN=sum) / stats::ave(x=v, r, FUN=sum)
-    names(res) <- r
-    return(res)
-  }
-
-  # compute index:
-  res <- solve_multeq(
-    p=p, r=r, n=n, q=NULL, w=NULL,
-    base=base, simplify=simplify, settings=settings,
-    P.FUN=P.def, v.FUN=v.def, type="mdutot")
-
-  # return output:
-  return(res)
-
-}
-
-# multilateral harmonic mean:
-mharmonic <- function(p, r, n, base=NULL, simplify=TRUE, settings=list()){
-
-  # Rao and Hajargasht (2016, p. 417)
-  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
-
-  # definition of average product prices:
-  v.def <- function(p, q=NULL, w=NULL, n, P){
-    res <- 1 / stats::ave(x=P/p, n, FUN=mean)
-    names(res) <- n
-    return(res)
-  }
-
-  # definition of price levels:
-  P.def <- function(p, q=NULL, w=NULL, r, v){
-    res <- 1 / stats::ave(x=v/p, r, FUN=mean)
-    names(res) <- r
-    return(res)
-  }
-
-  # compute index:
-  res <- solve_multeq(
-    p=p, r=r, n=n, q=NULL, w=NULL,
-    base=base, simplify=simplify, settings=settings,
-    P.FUN=P.def, v.FUN=v.def, type="mharmonic")
-
-  # return output:
-  return(res)
-
-}
-
-# multilateral jevons:
-mjevons <- function(p, r, n, base=NULL, simplify=TRUE, settings=list()){
-
-  # Rao and Hajargasht (2016, p. 417)
-  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
-
-  # definition of average product prices:
-  v.def <- function(p, q=NULL, w=NULL, n, P){
-    res <- exp(stats::ave(x=log(p/P), n, FUN=mean))
-    names(res) <- n
-    return(res)
-  }
-
-  # definition of price levels:
-  P.def <- function(p, q=NULL, w=NULL, r, v){
-    res <- exp(stats::ave(x=log(p/v), r, FUN=mean))
-    names(res) <- r
-    return(res)
-  }
-
-  # compute index:
-  res <- solve_multeq(
-    p=p, r=r, n=n, q=NULL, w=NULL,
-    base=base, simplify=simplify, settings=settings,
-    P.FUN=P.def, v.FUN=v.def, type="mjevons")
-
-  # return output:
-  return(res)
-
-}
-
-# multilateral carli:
-mcarli <- function(p, r, n, base=NULL, simplify=TRUE, settings=list()){
-
-  # Rao and Hajargasht (2016, p. 417)
-  # https://www.sciencedirect.com/science/article/abs/pii/S0304407615002882
-
-  # definition of average product prices:
-  v.def <- function(p, q=NULL, w=NULL, n, P){
-    res <- stats::ave(x=p/P, n, FUN=mean)
-    names(res) <- n
-    return(res)
-  }
-
-  # definition of price levels:
-  P.def <- function(p, q=NULL, w=NULL, r, v){
-    res <- stats::ave(x=p/v, r, FUN=mean)
-    names(res) <- r
-    return(res)
-  }
-
-  # compute index:
-  res <- solve_multeq(
-    p=p, r=r, n=n, q=NULL, w=NULL,
-    base=base, simplify=simplify, settings=settings,
-    P.FUN=P.def, v.FUN=v.def, type="mcarli")
-
-  # return output:
-  return(res)
-
-}
 
 # END
