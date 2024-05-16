@@ -2,7 +2,7 @@
 
 # Title:  General helper functions
 # Author: Sebastian Weinand
-# Date:   16 January 2024
+# Date:   16 May 2024
 
 # set base region:
 set.base <- function(r, base, null.ok, qbase=FALSE, settings=list()){
@@ -119,9 +119,9 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
 
     # average duplicated prices and weights, sum duplicated quantities:
     if(is.null(q)){
-      dt <- dt[, list("p"=stats::weighted.mean(x=p, w=z), "z"=mean(z)), by=c("r","n")]
+      dt <- dt[, list("p"=stats::weighted.mean(x=p, w=ifelse(is.na(z), 0, z), na.rm=TRUE), "z"=mean(z, na.rm=TRUE)), by=c("r","n")]
     }else{
-      dt <- dt[, list("p"=stats::weighted.mean(x=p, w=z), "z"=sum(z)), by=c("r","n")]
+      dt <- dt[, list("p"=stats::weighted.mean(x=p, w=ifelse(is.na(z), 0, z), na.rm=TRUE), "z"=sum(z, na.rm=TRUE)), by=c("r","n")]
     }
 
     # print warning:
@@ -143,7 +143,7 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
       dt[, "q" := NA_real_]
       if(settings$norm.weights){
         # normalize given weights:
-        dt[, "w" := z/sum(z), by="r"]
+        dt[, "w" := z/sum(z, na.rm=TRUE), by="r"]
       }else{
         # else go with provided input:
         dt[, "w" := z]

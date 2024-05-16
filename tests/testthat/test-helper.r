@@ -75,4 +75,14 @@ expect_equal(names(res5), c("r","n","p","q","w"))
 expect_equal(res5$q, rep(NA_real_, nrow(dt)))
 expect_equal(res5$w, dt$quantity)
 
+# duplicated values:
+dt2 <- rbind(dt[1,], dt)
+res6 <- dt2[, pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
+expect_equal(nrow(dt2)-1, nrow(res6))
+
+# missings:
+dt2[1, "region":=NA]
+res7 <- dt2[, pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
+expect_equal(nrow(dt2)-1, nrow(res7))
+
 # END
