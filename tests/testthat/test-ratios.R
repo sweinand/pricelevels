@@ -10,12 +10,16 @@ levels(dt1$region) <- c("a","b","c")
 
 # compute manually:
 res <- dt1[, price/price[region=="b"], by="product"]
-res <- setNames(res$V1, rep("b", nrow(res)))
-
-# calculate price ratios by product groups:
 expect_equal(
-  dt1[, ratios(p = price, r = region, n = product, base = "b")],
-  res
+  dt1[, ratios(p=price, r=region, n=product, base="b")],
+  res$V1
+)
+
+# compute manually:
+res <- dt1[, price/mean(price), by="product"]
+expect_equal(
+  dt1[, ratios(p=price, r=region, n=product, base=NULL)],
+  res$V1
 )
 
 
@@ -26,21 +30,25 @@ expect_equal(
 dt2 <- dt1[-c(5,10), ]
 
 # compute manually:
-res <- dt2[, if("b"%in%region){price/price[region=="b"]}else{price/price[region=="a"]}, by="product"]
-res <- setNames(res$V1, rep(c("b","a","b"), c(3,2,5)))
-
+res <- dt2[, if("b"%in%region){price/price[region=="b"]}else{price/price[region=="a"]}, by="product"]$V1
+attr(res, "base") <- setNames(c(F,T,F,T,F,F,T,F,T,F), dt2[, if("b"%in%region){rep("b",.N)}else{rep("a",.N)}, by="product"]$V1)
 expect_equal(
-  dt2[, ratios(price, region, product, base = "b")],
+  dt2[, ratios(p=price, r=region, n=product, base="b", settings=list(chatty=FALSE))],
   res
 )
 
 # compute manually:
-res <- dt2[, if("b"%in%region){price/price[region=="b"]}else{rep(NA_real_, .N)}, by="product"]
-res <- setNames(res$V1, rep("b",10))
-
+res <- dt2[, price/mean(price), by="product"]
 expect_equal(
-  dt2[, ratios(price, region, product, base="b", static=TRUE)],
-  res
+  dt2[, ratios(p=price, r=region, n=product, base=NULL, settings=list(chatty=FALSE))],
+  res$V1
+)
+
+# compute manually with static base:
+res <- dt2[, if("b"%in%region){price/price[region=="b"]}else{rep(NA_real_, .N)}, by="product"]
+expect_equal(
+  dt2[, ratios(p=price, r=region, n=product, base="b", static=TRUE)],
+  res$V1
 )
 
 
@@ -53,20 +61,17 @@ dt3[1, "price" := dt1[2,price]+abs(rnorm(1))]
 anyDuplicated(dt3, by=c("region","product"))
 
 # compute manually:
-res <- dt3[, if("b"%in%region){price/price[region=="b"][1]}else{price/price[region=="a"][1]}, by="product"]
-res <- setNames(res$V1, rep("b", 11))
-
+res31 <- dt3[, if("b"%in%region){price/price[region=="b"][1]}else{price/price[region=="a"][1]}, by="product"]
 expect_equal(
-  dt3[, ratios(price, region, product, base="b", drop=FALSE)],
-  res
+  dt3[, ratios(p=price, r=region, n=product, base="b")],
+  res31$V1
 )
 
 # compute manually:
-res <- res[-c(1,5,8,10)]
-
+res32 <- dt3[, price/mean(price), by="product"]
 expect_equal(
-  dt3[, ratios(price, region, product, base="b", drop=TRUE)],
-  res
+  dt3[, ratios(p=price, r=region, n=product, base=NULL)],
+  res32$V1
 )
 
 # END
