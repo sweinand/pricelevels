@@ -2,7 +2,7 @@
 
 # Title:  General helper functions
 # Author: Sebastian Weinand
-# Date:   16 May 2024
+# Date:   18 May 2024
 
 # set base region:
 set.base <- function(r, base, null.ok, qbase=FALSE, settings=list()){
@@ -159,6 +159,47 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
 
   # return data:
   return(dt)
+
+}
+
+# plot price ratios and price levels:
+plot.pricelevels <- function(data, P=numeric()){
+
+  # @Args:
+  # data    a data.frame with columns region and ratio
+  # P       a vector or matrix with price levels
+
+  # create empty boxplot:
+  graphics::boxplot(ratio~region, data=data,
+                    border=NA,
+                    axes=FALSE,
+                    xlab="Region",
+                    ylab="Price levels and ratios",
+                    main="Price ratios and price levels of the regions")
+
+  # add horizontal lines:
+  y.ticks <- graphics::par("yaxp")
+  graphics::abline(h=seq(from=y.ticks[1], to=y.ticks[2], length=y.ticks[3]+1),
+                   col="lightgrey", lty=2)
+
+  # add horizontal line at equality:
+  graphics::abline(h=1, col="lightgrey", lty=2)
+
+  # add vertical lines:
+  x.ticks <- graphics::par("xaxp")
+  graphics::abline(v=seq(from=x.ticks[1], to=x.ticks[2], length=x.ticks[3]+1),
+                   col="lightgrey", lty=2)
+
+  # add boxplot:
+  graphics::boxplot(ratio~region, data=data, add=TRUE)
+
+  # add price indices:
+  if(is.matrix(P)){
+    if(nrow(P)>1) mycols <- 1:nrow(P) else mycols <- "red"
+    graphics::matpoints(t(P), pch=20, cex=1.5, col=mycols)
+  }else{
+    graphics::matpoints(P, pch=20, cex=1.5, col="red")
+  }
 
 }
 
