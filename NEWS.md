@@ -1,3 +1,10 @@
+# pricelevels 1.3.0
+
+* Introduced the setting of global options `options(pricelevels.[])`
+* Introduced the plotting of price levels using the new non-exported function `plot.pricelevels()`
+* Adjusted the behavior of `ratios()`
+* Fixed a bug in the non-exported function `arrange()`
+
 # pricelevels 1.2.0
 
 * Included the functions 

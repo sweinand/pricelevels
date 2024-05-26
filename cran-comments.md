@@ -1,15 +1,10 @@
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Included the functions 
-  - `mjevons()` in `rao()`
-  - `mcarli()` in `rhajargsaht()`
-  - `mdutot()` in `gkhamis()`
-  - `mharmonic()` in `ikle()`
-  
-  by setting `q=NULL` and/or `w=NULL`
-* Updated the package vignette
-* Updated tests
+* Introduced the setting of global options `options(pricelevels.[])`
+* Introduced the plotting of price levels using the new non-exported function `plot.pricelevels()`
+* Adjusted the behavior of `ratios()`
+* Fixed a bug in the non-exported function `arrange()`
 
 ## Test environments
 - R-hub windows-x86_64-devel (r-devel)
