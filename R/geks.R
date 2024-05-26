@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   14 March 2024
+# Date:   18 May 2024
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -12,17 +12,17 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(missing(w)) w <- NULL
 
   # set default settings if missing:
-  if(is.null(settings$connect)) settings$connect <- FALSE
-  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- FALSE # different to other indices
   if(is.null(settings$type)) settings$type <- "jevons"
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
-  if(is.null(settings$missings)) settings$missings <- TRUE
-  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
-  settings$norm.weights <- TRUE
-  # the setting 'setting$base' is only used by geks() as provided
+  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
+  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
+  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
+  # the setting 'settings$base' is only used by geks() as provided
   # by the user, but always FALSE for index.pairs()
 
   # input checks:
@@ -158,17 +158,18 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
   if(missing(w)) w <- NULL
 
   # set default settings if missing:
-  if(is.null(settings$connect)) settings$connect <- TRUE
-  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
+  if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
   if(is.null(settings$type)) settings$type <- "jevons"
   if(is.null(settings$wmethod)) settings$wmethod <- "none"
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
-  if(is.null(settings$missings)) settings$missings <- TRUE
-  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
-  settings$norm.weights <- TRUE
+  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
+  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
+  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
@@ -247,6 +248,7 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
   # set response and explanatory variables:
   index <- as.matrix(subset(x=pdata, select=type))
   colnames(index) <- paste("geks", colnames(index), sep="-")
+  r0 <- r # store initial regions for plotting
   r <- factor(pdata$region)
   rb <- factor(pdata$base)
 
@@ -301,8 +303,7 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
   # estimate GEKS regression model:
   geks_reg_out <- stats::lm(formula=geks_mod, weights=w2, singular.ok=FALSE)
 
-  # simplify to price levels only or full regression output:
-  if(simplify){
+  if(simplify || settings$plot){
 
     # extract estimated regional price levels:
     out <- as.matrix(stats::coef(geks_reg_out))
@@ -320,7 +321,23 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
     rownames(out) <- r.lvl
     out <- t(out)
 
-  }else{
+  }
+
+  if(settings$plot){
+
+    # price data must be arranged once again:
+    settings$chatty <- FALSE
+    pdata <- arrange(p=p, r=r0, n=n, q=q, w=w, base=base, settings=settings)
+
+    # compute price ratios:
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=settings)]
+    pdata[, "region":=factor(r, levels=r.lvl)]
+    plot.pricelevels(data=pdata, P=out)
+
+  }
+
+  # simplify to price levels only or full regression output:
+  if(!simplify){
 
     # keep lm-object:
     if(length(type)>1L){

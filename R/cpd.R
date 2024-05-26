@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   16 March 2024
+# Date:   16 May 2024
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
@@ -12,14 +12,15 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
   if(missing(w)) w <- NULL
 
   # set default settings if missing:
-  if(is.null(settings$connect)) settings$connect <- TRUE
-  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
+  if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
-  if(is.null(settings$missings)) settings$missings <- TRUE
-  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
-  settings$norm.weights <- FALSE # different to other indices
+  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
+  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
+  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
@@ -98,8 +99,7 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
     cpd_reg_out <- stats::lm(formula=cpd_mod, data=pdata, weights=w, singular.ok=FALSE)
   }
 
-  # simplify to price levels only or not:
-  if(simplify){
+  if(simplify || settings$plot){
 
     # extract estimated regional price levels:
     out <- stats::dummy.coef(cpd_reg_out)[["lnP"]]
@@ -116,7 +116,20 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
     # unlog price levels:
     out <- exp(out)
 
-  }else{
+  }
+
+  if(settings$plot){
+
+    # compute price ratios:
+    setnames(x=pdata, old=c("lnP","pi"), new=c("r","n"))
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "region":=factor(r, levels=r.lvl)]
+    plot.pricelevels(data=pdata, P=out)
+
+  }
+
+  # dont print simplified output:
+  if(!simplify){
 
     # keep lm-object:
     out <- cpd_reg_out
@@ -125,7 +138,7 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
   }
 
   # print output to console:
-  out
+  return(out)
 
 }
 
@@ -372,17 +385,18 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
   if(missing(w)) w <- NULL
 
   # set default settings if missing:
-  if(is.null(settings$connect)) settings$connect <- TRUE
-  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
+  if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
   if(is.null(settings$use.jac)) settings$use.jac <- FALSE
   if(is.null(settings$self.start)) settings$self.start <- "s1"
   if(is.null(settings$w.delta)) settings$w.delta <- NULL
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
-  if(is.null(settings$missings)) settings$missings <- TRUE
-  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
-  settings$norm.weights <- FALSE # different to other indices
+  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
+  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
+  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
@@ -536,8 +550,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
       w.delta = w.delta,
       base = base)
 
-    # simplify to price levels only or not:
-    if(simplify){
+    if(simplify || settings$plot){
 
       # extract estimated regional price levels:
       out <- stats::coef(nlcpd_reg_out)
@@ -555,12 +568,22 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
       out <- exp(out)[match(x=r.lvl, table=names(out))]
       names(out) <- r.lvl
 
-    }else{
+    }
 
-      # keep object:
+    if(settings$plot){
+
+      # compute price ratios:
+      pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+      pdata[, "region":=factor(r, levels=r.lvl)]
+      plot.pricelevels(data=pdata, P=out)
+
+    }
+
+    # dont print simplified output:
+    if(!simplify){
+
+      # keep object and add delta weights:
       out <- nlcpd_reg_out
-
-      # add delta weights:
       out$w.delta <- w.delta
 
     }

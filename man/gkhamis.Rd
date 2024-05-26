@@ -36,8 +36,9 @@ rhajargasht(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
    \item{simplify}{A logical indicating whether a named vector of estimated regional price levels (\code{TRUE}) should be returned, or also the average product prices.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
-   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
-   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{getOption("pricelevels.chatty")}.
+   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{getOption("pricelevels.connect")} for \code{geks()} and \code{FALSE} for \code{index.pairs()}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{plot} : A logical specifying if the calculated price levels should be plotted or not. If \code{TRUE}, the price ratios of each region are displayed as boxplots and the price levels are added as colored points. The default is \code{getOption("pricelevels.plot")}.
    \item \code{solve} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gkhamis()}, the analytical solution proposed by Diewert (1999) is also allowed by setting to \code{matrix}.
    \item \code{tol} : the tolerance level when convergence is achieved if \code{type="iterative"}. The default is \code{1e-9}.
    \item \code{max.iter} : the maximum number of iterations if \code{type="iterative"}. The default is \code{99}.

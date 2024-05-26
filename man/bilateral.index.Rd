@@ -91,8 +91,9 @@ young(p, r, n, q, base=NULL, settings=list())
    \item{base}{A character specifying the base region to which all price levels are expressed. If \code{NULL}, base region is set internally.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
-   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
-   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{getOption("pricelevels.chatty")}.
+   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{getOption("pricelevels.connect")}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{plot} : A logical specifying if the calculated price levels should be plotted or not. If \code{TRUE}, the price ratios of each region are displayed as boxplots and the price levels are added as colored points. The default is \code{getOption("pricelevels.plot")}.
    \item \code{qbase} : A character specifying the region \eqn{b} whose quantities (and prices) should be used in \code{lowe()} and \code{young()}. If \code{NULL}, prices are averaged and quantities added up for each product, i.e. \eqn{p_i^b=\sum_{r=1}^{R} p_i^r / R} and \eqn{q_i^b=\sum_{r=1}^{R} q_i^r}.
    }}
 }

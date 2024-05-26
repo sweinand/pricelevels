@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     5 February 2024
+# Date:     18 May 2024
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -1075,14 +1075,15 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   if(missing(w)) w <- NULL
 
   # set default settings if missing:
-  if(is.null(settings$connect)) settings$connect <- TRUE
-  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
+  if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
-  if(is.null(settings$missings)) settings$missings <- TRUE
-  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
-  settings$norm.weights <- TRUE
+  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
+  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
+  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
@@ -1191,6 +1192,15 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   r.lvl <- levels(factor(r))
   out <- out[ ,match(x=r.lvl, table=colnames(out)), drop=FALSE]
   colnames(out) <- r.lvl
+
+  if(settings$plot){
+
+    # compute price ratios:
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "region":=factor(r, levels=r.lvl)]
+    plot.pricelevels(data=pdata, P=out)
+
+  }
 
   # print output to console:
   return(out)

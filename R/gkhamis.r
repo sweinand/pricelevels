@@ -2,7 +2,7 @@
 
 # Title:    Multilateral systems of equations
 # Author:   Sebastian Weinand
-# Date:     8 April 2024
+# Date:     18 May 2024
 
 # print output for class 'multeq':
 print.multeq <- function(x, ...){
@@ -18,17 +18,18 @@ solve_multeq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, 
   if(missing(w)) w <- NULL
 
   # set default settings if missing:
-  if(is.null(settings$connect)) settings$connect <- TRUE
-  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
+  if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
   if(is.null(settings$solve)) settings$solve <- "iterative"
   if(is.null(settings$tol)) settings$tol <- 1e-9
   if(is.null(settings$max.iter)) settings$max.iter <- 99L
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
-  if(is.null(settings$missings)) settings$missings <- TRUE
-  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
-  settings$norm.weights <- TRUE
+  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
+  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
+  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
@@ -150,14 +151,25 @@ solve_multeq <- function(p, r, n, q, w, base=NULL, simplify=TRUE, P.FUN, v.FUN, 
     P <- P/P[names(P)==base]
   }
 
-  if(simplify){
+  if(simplify || settings$plot){
 
     # match to initial ordering:
     r.lvl <- levels(factor(r))
     res <- P[match(x=r.lvl, table=names(P))]
     names(res) <- r.lvl
 
-  }else{
+  }
+
+  if(settings$plot){
+
+    # compute price ratios:
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "region":=factor(r, levels=r.lvl)]
+    plot.pricelevels(data=pdata, P=res)
+
+  }
+
+  if(!simplify){
 
     # average product prices using normalized price levels:
     v <- pdata[, v.FUN(p=p, q=q, w=w, n=n, P=P[match(x=r, table=names(P))])]

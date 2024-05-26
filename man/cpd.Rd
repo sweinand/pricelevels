@@ -23,8 +23,10 @@ nlcpd(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list(), ...)
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
-   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{TRUE}.
-   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{TRUE}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{getOption("pricelevels.chatty")}.
+   \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{getOption("pricelevels.connect")}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
+   \item \code{norm.weights} : A logical specifying if the weights \code{w} should be renormalized such that they add up to 1 for each region \code{r} or not. The default is \code{TRUE}.
+   \item \code{plot} : A logical specifying if the calculated price levels should be plotted or not. If \code{TRUE}, the price ratios of each region are displayed as boxplots and the price levels are added as colored points. The default is \code{getOption("pricelevels.plot")}.
    \item \code{self.start} : Only if \code{par=NULL}, the strategy how parameter start values are internally derived by \code{nlcpd()}. Currently, values \code{s1}, \code{s2} and \code{s3} are allowed. For \code{s1}, simple price averages across products and regions are used as start values, while these are derived by the CPD method for strategies \code{s2} and \code{s3}. Start values for \code{delta} are either set to 1 or derived by their first-order condition if \code{s3}. By default, \code{self.start='s1'}.
    %\item \code{use.bounds} : A logical indicating if lower and upper bounds should be used for the parameters \eqn{\ln P^r} and \eqn{\ln \pi_i}. If \code{TRUE}, these are derived from the values in \code{par.start}. If \code{TRUE} and \code{upper} and/or \code{lower} is given as well (see below), the latter are used.
    \item \code{use.jac} : A logical indicating if the jacobian matrix should be used by \code{nlcpd()} for the nonlinear optimization or not. The default is \code{FALSE}.
@@ -46,7 +48,7 @@ Note that both the CPD and the NLCPD method require a normalization of the estim
 
 Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
 
-If \code{q} is provided, expenditure shares are derived as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r} and used as weights in the regression. If only \code{w} is provided, the weights \code{w} are used in the regression without any further adjustment. This is different to the behavior of the other price index functions in the \code{pricelevels}-package where the weights \code{w} are (re-)normalized for each region \code{r}.
+If \code{q} is provided, expenditure shares are derived as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r} and used as weights in the regression. If only \code{w} is provided, the weights \code{w} are (re-)normalized by default. If the weights \code{w} do not represent expenditure shares, the (re-)normalization can be turned off by \code{settings=list(norm.weights=FALSE)}.
 }
 
 \author{Sebastian Weinand}

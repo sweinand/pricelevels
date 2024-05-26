@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   2 April 2024
+# Date:   18 May 2024
 
 # list available price indices:
 list.indices <- function(){
@@ -19,8 +19,9 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   if(missing(w)) w <- NULL
 
   # set default settings if missing:
-  if(is.null(settings$connect)) settings$connect <- TRUE
-  if(is.null(settings$chatty)) settings$chatty <- TRUE
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
+  if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
 
   # store and then drop 'settings$type' if provided:
   if(!is.null(settings$type)){
@@ -31,26 +32,32 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   }
 
   # overwrite non-exported settings:
-  settings$missings <- TRUE
-  settings$duplicates <- TRUE
-  settings$norm.weights <- TRUE # also for cpd() and nlcpd()
+  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
+  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
+  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE # also for cpd() and nlcpd()
 
-  # main input checks:
-  check.num(x=p, int=c(0, Inf))
-  check.char(x=r)
-  check.char(x=n)
-  check.num(x=w, null.ok=TRUE, int=c(0, Inf))
-  check.num(x=q, null.ok=TRUE, int=c(0, Inf))
-  check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
-  check.lengths(x=r, y=n)
-  check.lengths(x=r, y=p)
-  check.lengths(x=r, y=w)
-  check.lengths(x=r, y=q)
+  # input checks:
+  if(settings$check.inputs){
 
-  # check settings:
-  check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
-  check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
-  check.char(x=type, min.len=1, max.len=Inf, null.ok=TRUE, na.ok=FALSE)
+    # main input checks:
+    check.num(x=p, int=c(0, Inf))
+    check.char(x=r)
+    check.char(x=n)
+    check.num(x=w, null.ok=TRUE, int=c(0, Inf))
+    check.num(x=q, null.ok=TRUE, int=c(0, Inf))
+    check.char(x=base, miss.ok=TRUE, min.len=1, max.len=1, null.ok=TRUE, na.ok=FALSE)
+    check.lengths(x=r, y=n)
+    check.lengths(x=r, y=p)
+    check.lengths(x=r, y=w)
+    check.lengths(x=r, y=q)
+
+    # check settings:
+    check.log(x=settings$connect, min.len=1, max.len=1, na.ok=FALSE)
+    check.log(x=settings$chatty, min.len=1, max.len=1, na.ok=FALSE)
+    check.char(x=type, min.len=1, max.len=Inf, null.ok=TRUE, na.ok=FALSE)
+
+  }
 
   # allowed index types:
   if(is.null(q) && is.null(w)){
@@ -76,8 +83,11 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   # set base region:
   base <- set.base(r=pdata$r, base=base, null.ok=FALSE, settings=settings)
 
+  # store settings for plotting:
+  makeplot <- settings$plot
+
   # overwrite settings to avoid double checking:
-  settings$missings <- settings$duplicates <- settings$connect <- settings$check.inputs <- FALSE
+  settings$missings <- settings$duplicates <- settings$connect <- settings$check.inputs <- settings$plot <- FALSE
 
   # class of bilateral indices and geks indices:
   type.bil <- type[type%in%pindices$name[pindices$type=="bilateral"]]
@@ -218,6 +228,15 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   r.lvl <- levels(factor(r))
   out <- out[ ,match(x=r.lvl, table=colnames(out)), drop=FALSE]
   colnames(out) <- r.lvl
+
+  if(makeplot){
+
+    # compute price ratios:
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "region":=factor(r, levels=r.lvl)]
+    plot.pricelevels(data=pdata, P=out)
+
+  }
 
   # return output:
   return(out)
