@@ -2,13 +2,10 @@
 
 # Title:  General helper functions
 # Author: Sebastian Weinand
-# Date:   18 May 2024
+# Date:   18 June 2025
 
 # set base region:
 set.base <- function(r, base, null.ok, qbase=FALSE, settings=list()){
-
-  # @ allowed settings:
-  # - chatty
 
   # @args:
   # r         factor, vector of regions
@@ -16,6 +13,9 @@ set.base <- function(r, base, null.ok, qbase=FALSE, settings=list()){
   # null.ok   logical, base=NULL allowed or not
   # qbase     logical, qbase=TRUE if base region quantities relevant
   # chatty    logical, print warning or not
+
+  # set default settings if missing:
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
 
   # derive base region if required and base=NULL:
   if(is.null(base) && !null.ok){
@@ -50,6 +50,7 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
 
   # @ allowed settings:
   # - missings : check and remove NAs
+  # - prods : check and remove products with prices in only one region
   # - connect : check and remove non-connected regions
   # - duplicates : check and aggregate duplicated values
   # - chatty : print warnings
@@ -63,6 +64,14 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
   # settings$norm.weights=TRUE
   # if neither 'q' nor 'w' is provided, the output data will
   # contain 'w=NA' and 'z=NA'
+
+  # set default settings if missing:
+  if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
+  if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- FALSE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # set quantities or weights if available:
   if(is.null(q) && is.null(w)){
@@ -80,13 +89,14 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
     # if both q and w are provided, q will be checked:
     nas <- dt[, stats::complete.cases(r, n, p, z)]
     dt <- dt[nas,]
-    if(settings$chatty & sum(!nas)>0L){
-      warning(paste(sum(!nas), "incomplete case(s) found and removed"), call.=FALSE)
-    }
 
     # stop if no observations left:
     if(nrow(dt)<=0L){
       stop("No complete cases available -> all data pairs contain at least one NA", call.=FALSE)
+    }
+
+    if(settings$chatty & sum(!nas)>0L){
+      warning(paste(sum(!nas), "incomplete case(s) found and removed"), call.=FALSE)
     }
 
   }
@@ -127,6 +137,26 @@ arrange <- function(p, r, n, q=NULL, w=NULL, base, settings=list()){
     # print warning:
     if(settings$chatty){
       warning("Duplicated observations found and aggregated", call.=FALSE)
+    }
+
+  }
+
+  # if there is more than one region in the data, check and
+  # remove products with price observation(s) in only one region:
+  if(settings$prods & data.table::uniqueN(x=dt$r, na.rm=TRUE)>1L){
+
+    dt[, "nobs":=.N, by="n"] # no need to use uniqueN() here
+    nobs <- sum(dt$nobs<=1L, na.rm=TRUE)
+    dt <- dt[nobs>1L,]
+    dt[, "nobs":=NULL]
+
+    # # stop if no observations left:
+    # if(nrow(dt)<=0L){
+    #   stop("No data available to derive price levels -> there is only one region", call.=FALSE)
+    # }
+
+    if(settings$chatty & any(nobs>0L, na.rm=TRUE)){
+      warning(paste(nobs, "product(s) with prices in only one region found and removed"), call.=FALSE)
     }
 
   }

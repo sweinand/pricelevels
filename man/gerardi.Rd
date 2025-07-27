@@ -13,9 +13,9 @@ gerardi(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \arguments{
-   \item{p}{A numeric vector of prices.}
+   \item{p}{A numeric vector of positive prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see details). If both \code{q} and \code{w} are provided, \code{q} will be used.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see Section 'Details'). If both \code{q} and \code{w} are provided, \code{q} will be used.}
    \item{base}{A character specifying the base region to which all price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average.}
    \item{simplify}{A logical indicating whether a named vector of estimated regional price levels (\code{TRUE}) should be returned, or also the average product prices.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
@@ -28,7 +28,9 @@ gerardi(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \details{
-Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+Before calculations start, missing values are removed from the data.
+Duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+If there is more than one region in the data, products with prices in only one region \code{r} are removed.
 
 The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
 }

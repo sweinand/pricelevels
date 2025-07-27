@@ -2,7 +2,7 @@
 
 # Title:    Gerardi index
 # Author:   Sebastian Weinand
-# Date:     18 May 2024
+# Date:     20 June 2025
 
 gerardi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list()){
 
@@ -17,16 +17,17 @@ gerardi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list(
   if(is.null(settings$variant)) settings$variant <- "original"
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
-  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
-  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
   if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
 
     # main inputs:
-    check.num(x=p, int=c(0, Inf))
+    check.num(x=p, int=c(0.001, Inf))
     check.char(x=r)
     check.char(x=n)
     check.num(x=w, null.ok=TRUE, int=c(0, Inf))
@@ -93,7 +94,7 @@ gerardi <- function(p, r, n, q, w=NULL, base=NULL, simplify=TRUE, settings=list(
   if(settings$plot){
 
     # compute price ratios:
-    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, q=q, w=w, base=base, settings=list(chatty=FALSE, static=TRUE))]
     pdata[, "region":=factor(r, levels=r.lvl)]
     plot.pricelevels(data=pdata, P=res)
 

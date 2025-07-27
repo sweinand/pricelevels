@@ -11,11 +11,10 @@
 Calculation of regional price levels using the
 \itemize{
   \item Geary-Khamis method (Geary, 1958; Khamis, 1972): \code{gkhamis()}
-  \item Iklé method (Ikle, 1972; Dikhanov, 1997; Balk, 1996): \code{ikle()}
+  \item Iklé method (Iklé, 1972; Dikhanov, 1997; Balk, 1996): \code{ikle()}
   \item Rao system (Rao, 1990): \code{rao()}
   \item Rao-Hajargasht method (Rao and Hajargasht, 2016): \code{rhajargasht()}
 }
-All methods have in common that they set up a system of interrelated equations of international product prices and price levels, which must be solved iteratively. It is only the definition of the international product prices and price levels that differ between the methods (see package vignette).
 }
 
 \usage{
@@ -29,9 +28,9 @@ rhajargasht(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \arguments{
-   \item{p}{A numeric vector of prices.}
+   \item{p}{A numeric vector of positive prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see details). If both \code{q} and \code{w} are provided, \code{q} will be used. Note that \code{gkhamis()} does not use weights \code{w}.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see Section 'Details'). If both \code{q} and \code{w} are provided, \code{q} will be used. Note that \code{gkhamis()} does not use weights \code{w}.}
    \item{base}{A character specifying the base region to which all price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average.}
    \item{simplify}{A logical indicating whether a named vector of estimated regional price levels (\code{TRUE}) should be returned, or also the average product prices.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
@@ -40,23 +39,32 @@ rhajargasht(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{getOption("pricelevels.connect")} for \code{geks()} and \code{FALSE} for \code{index.pairs()}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
    \item \code{plot} : A logical specifying if the calculated price levels should be plotted or not. If \code{TRUE}, the price ratios of each region are displayed as boxplots and the price levels are added as colored points. The default is \code{getOption("pricelevels.plot")}.
    \item \code{solve} : the method used for solving the system of equations. The default for all indices is \code{iterative} for iterative solving until convergence. For \code{gkhamis()}, the analytical solution proposed by Diewert (1999) is also allowed by setting to \code{matrix}.
-   \item \code{tol} : the tolerance level when convergence is achieved if \code{type="iterative"}. The default is \code{1e-9}.
-   \item \code{max.iter} : the maximum number of iterations if \code{type="iterative"}. The default is \code{99}.
+   \item \code{tol} : the tolerance level when convergence is achieved if \code{solve="iterative"}. The default is \code{1e-9}.
+   \item \code{max.iter} : the maximum number of iterations if \code{solve="iterative"}. The default is \code{99}.
    }}
 }
 
 \details{
-In their original form, the above index methods use quantities (or weights). However, Rao and Hajargasht (2016, p. 417) have shown that similar solutions exist for the unweighted definitions of international product prices and price levels. This is implemented in the functions where
+Before calculations start, missing values are removed from the data.
+Duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+If there is more than one region in the data, products with prices in only one region \code{r} are removed.
+
+The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
+}
+
+\section{Method}{
+The Geary-Khamis, Iklé and Rao-Hajargasht methods as well as the Rao system have in common that they set up a system of interrelated equations of international product prices and price levels, which is solved iteratively.
+It is only the definition of the international product prices and price levels that differ between the methods (see also package vignette).
+
+In their original form, the four methods use quantities (or weights).
+However, Rao and Hajargasht (2016, p. 417) show that similar solutions exist for the unweighted definitions of international product prices and price levels.
+In the package, this is implemented in the functions where
 \itemize{
   \item \code{gkhamis(q=NULL)} corresponds to a multilateral Dutot index;
   \item \code{ikle(q=NULL, w=NULL)} to a multilateral Harmonic mean index;
   \item \code{rao(q=NULL, w=NULL)} to a multilateral Jevons index;
   \item \code{rhajargasht(q=NULL, w=NULL)} to a multilateral Carli index.
 }
-
-Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
-
-The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
 }
 
 \author{Sebastian Weinand}
@@ -73,7 +81,7 @@ Geary, R. C. (1958). A Note on the Comparison of Exchange Rates and Purchasing
 Power Between Countries. \emph{Journal of the Royal Statistical Society. Series A
 (General)}, 121 (1), 97–99.
 
-Ikle, D. M. (1972). A new approach to the index number problem. \emph{The Quarterly Journal of Economics}, 86 (2), 188-211.
+Iklé, D. M. (1972). A new approach to the index number problem. \emph{The Quarterly Journal of Economics}, 86 (2), 188-211.
 
 Khamis, S. H. (1972). A New System of Index Numbers for National and International
 Purposes. \emph{Journal of the Royal Statistical Society. Series A (General)},
@@ -84,7 +92,9 @@ Rao, D. S. P. (1990). A system of log-change index numbers for multilateral comp
 Rao, D. S. P. and G. Hajargasht (2016). Stochastic approach to computation of purchasing power parities in the International Comparison Program. \emph{Journal of Econometrics}, 191 (2016), 414-425.
 }
 
-\value{For \code{simplify=TRUE}, a named vector of regional price levels. Otherwise, for \code{simplify=FALSE}, a list containing the named vector of international product prices and regional price levels, the number of iterations until convergence, and the achieved difference at convergence.
+\value{For \code{simplify=TRUE}, a named vector of regional price levels.
+
+For \code{simplify=FALSE}, a list containing the named vector of international product prices and regional price levels, the number of iterations until convergence, and the achieved difference at convergence.
 }
 
 \examples{
