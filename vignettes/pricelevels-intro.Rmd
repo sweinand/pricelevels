@@ -43,7 +43,7 @@ The `pricelevels`-package provides index number methods for price comparisons wi
       * (Geometric) Laspeyres: `laspeyres()` and `geolaspeyres()`
       * (Geometric) Paasche: `paasche()` and `geopaasche()`
       * Fisher: `fisher()`
-      * Toernqvist: `toernqvist()`
+      * Törnqvist: `toernqvist()`
       * (Geometric) Walsh: `walsh()` and `geowalsh()`
       * Theil: `theil()`
       * Marshall-Edgeworth: `medgeworth()`
@@ -51,7 +51,7 @@ The `pricelevels`-package provides index number methods for price comparisons wi
       * Sato-Vartia: `svartia()`
       * Drobisch: `drobisch()`
       * Lowe: `lowe()`
-      * Young: `young()`
+      * (Geometric) Young: `young()` and `geoyoung()`
 2. **Multilateral price indices**: 
     - (Nonlinear) CPD method: `cpd()` and `nlcpd()`
     - GEKS method: `geks()`
@@ -65,7 +65,7 @@ The `pricelevels`-package provides index number methods for price comparisons wi
 Moreover, the package offers functions for sampling and characterizing price data. This vignette highlights the main package features. It contains four sections. The first is on price data, the second on bilateral indices, and the third on multilateral indices. The last section section is on some further package features.
 
 The `pricelevels`-functions are designed based on `R`'s [`data.table`](https://CRAN.R-project.org/package=data.table)-package.
-```{r setup, warning=FALSE}
+```{r setup, warning=FALSE, message=FALSE}
 library(pricelevels) # load package
 library(data.table) # load data.table-package
 ```
@@ -84,11 +84,11 @@ Having such detailed data can pose some additional challenges. Not every individ
 
 ## Characteristics
 
-The `pricelevels`-package offers various functions to characterize price data and to deal with the issue of data gaps. As a first step, it's good to check the sparsity (*share of gaps*) of a dataset and if the dataset is connected.
+The `pricelevels`-package offers various functions to characterize price data and to deal with the issue of data gaps. As a first step, it's good to check the sparsity (*share of gaps*) of a data set and if the data set is connected.
 
 ### Connected price data
 
-Suppose we have prices for 5 products (all belonging to the same basic heading) in 4 regions. These data are stored in the data.table `dt`. Transforming `dt` into a price matrix (rows: products; columns: regions) shows that the data exhibit gaps as products `4` and `5` are not priced in regions `c` and `d`, respectively.
+Suppose we have prices for 5 products (all belonging to the same basic heading) in 4 regions. These data are stored in the data.table `dt`. Transforming `dt` into a price matrix (rows: products; columns: regions) shows that the data exhibit `gaps()` as products `4` and `5` are not priced in regions `c` and `d`, respectively.
 ```{r}
 # example price data with gaps:
 dt <- data.table(
@@ -99,13 +99,13 @@ dt <- data.table(
 # price matrix:
 dt[, tapply(X=p, INDEX=list(n,r), FUN=mean)]
 ```
-Due to the gaps, the `sparsity()` of this dataset is greater 0. As there are only a few gaps, however, function `is.connected()` indicates that the dataset is connected. The function `comparisons()` provides some further details. It shows that all four regions form one 'block of connected regions' since they are connected via direct or indirect links. Moreover, the function output highlights that each region can be directly compared with the other regions using at least one price ratio.
+As there are only a few gaps, the function `is.connected()` indicates that the data set is still connected. The function `properties()` provides a summary of the main data characteristics. It shows that all four regions form one 'block of connected regions' since they are connected via direct or indirect links. Moreover, the function output provides the number of non-redundant bilateral index `pairs()`.
 ```{r}
-dt[, sparsity(r=r, n=n)] # sparsity
+dt[, gaps(r=r, n=n)] # percentage of data gaps
 
 dt[, is.connected(r=r, n=n)] # is connected
 
-dt[, comparisons(r=r, n=n)] # one group of regions
+dt[, properties(r=r, n=n)] # one group of regions
 ```
 
 ### Non-connected price data
@@ -118,15 +118,15 @@ dt2 <- dt[!(n%in%1:3 & r%in%c("a","b")),]
 # price matrix:
 dt2[, tapply(X=p, INDEX=list(n,r), FUN=mean)]
 ```
-The sparsity increased to `r dt2[, sparsity(r=r, n=n)]`. Even worse, the dataset is no longer connected. This can be easily seen from the price matrix, where regions `a` and `b` form one block of connected regions, and regions `c` and `d` another but separate block. This is also highlighted in the output of `comparisons()`, which now has two rows.
+The percentage of gaps increased to `r dt2[, gaps(r=r, n=n)]`. Even worse, the data set is no longer connected. This can be easily seen from the price matrix, where regions `a` and `b` form one block of connected regions, and regions `c` and `d` another but separate block. This is also highlighted by the output of `properties()`, which now has two rows.
 ```{r}
-dt2[, sparsity(r=r, n=n)] # sparsity
+dt2[, gaps(r=r, n=n)] # percentage of data gaps
 
 dt2[, is.connected(r=r, n=n)] # is not connected
 
-dt2[, comparisons(r=r, n=n)] # two groups of regions
+dt2[, properties(r=r, n=n)] # two groups of regions
 ```
-The fact that the dataset `dt2` is not connected does not mean that no price comparison is possible. It only means that a price comparison of *all* regions cannot be done. The function output of `comparisons()` shows that separate price comparisons within each block of regions could be done. However, it is clear that a comparison of the price levels between the two blocks is still not possible. To follow this approach, the regions in `dt2` can be classified into blocks of connected regions using the function `neighbors()`. Otherwise, if one wants to carry out the price comparison only for the biggest block of connected regions, `dt2` can be connected using function `connect()`, as shown below.
+The fact that the data set `dt2` is not connected does not mean that no price comparison is possible. It only means that a price comparison of *all* regions cannot be done. The function output of `properties()` shows that separate price comparisons within each block of regions could be done. However, it is clear that a comparison of the price levels between the two blocks is still not possible. To follow this approach, the regions in `dt2` can be classified into blocks of connected regions using the function `neighbors()`. Otherwise, if one wants to carry out the price comparison only for the biggest block of connected regions, `dt2` can be connected using the function `connect()`, as shown below.
 ```{r}
 # group regions into groups of connected regions:
 dt2[, "block" := neighbors(r=r, n=n, simplify=TRUE)]
@@ -160,7 +160,7 @@ dt[, tapply(X=p, INDEX=list(n,r), FUN=mean)]
 
 ### Data gaps
 
-It is clear that the price data `dt` are connected. However, to get more realistic data, we have to introduce gaps. This can be done randomly as well. If there are only few gaps, the likelihood to end up with non-connected price data is relatively low. However, with more gaps, it can happen that the resulting price data are no longer connected. To overcome this issue, the function `rgaps()` introduces gaps into an existing (complete) dataset while ensuring that the data stay connected. In the following, we introduce approx. 20% gaps into the price data `dt`.
+It is clear that the price data `dt` are connected. However, to get more realistic data, we have to introduce gaps. This can be done randomly as well. If there are only few gaps, the likelihood to end up with non-connected price data is relatively low. However, with more gaps, it can happen that the resulting price data are no longer connected. To overcome this issue, the function `rgaps()` introduces gaps into an existing (complete) data set while ensuring that the data stay connected. In the following, we introduce approx. 20% gaps into the price data `dt`.
 ```{r}
 # introduce gaps:
 set.seed(1)
@@ -194,7 +194,7 @@ dt.gaps[, tapply(X=p, INDEX=list(n,r), FUN=mean)]
 
 The price data in `dt` represent the data that statistical offices usually collect as quantities or weights on individual products are not available. However, transaction data often include purchased quantities while data at the basic heading level exhibit expenditure weights as an indication of the relative importance for household consumption.
 
-As the purchased quantities can be expected to heavily depend on the prices of products, there is no stand-alone function for the sampling of random quantities. However, random expenditure weights for basic headings can be added to some dataset using the function `rweights()`. These weights can be the same for each basic heading in each region, differ across basic headings but are the same for each region, or differ across basic headings and regions. This is shown below, where we sample the weights for the individual products (and not basic headings):
+As the purchased quantities can be expected to heavily depend on the prices of products, there is no stand-alone function for the sampling of random quantities. However, random expenditure weights for basic headings can be added to some data set using the function `rweights()`. These weights can be the same for each basic heading in each region, differ across basic headings but are the same for each region, or differ across basic headings and regions. This is shown below, where we sample the weights for the individual products (and not basic headings):
 ```{r}
 # constant expenditure weights:
 dt.gaps[, "w1" := rweights(r=r, b=n, type=~1)]
@@ -227,7 +227,7 @@ The previous steps to simulate random price data are put together in the functio
 where the price of product $n$ in region $r$, $p_{bn}^r$, is explained by the general product price, $\pi_{bn}$, the product-specific elasticities $\delta_{bn}$, and the regional price level, $P^r$. The error term $u_{bn}^r$ follows a lognormal distribution.
 * The parameters used for the data generating process (i.e., the model above) are stored by `rdata()` and can be added to the function output if desired. This is particularly useful for simulations where some calculated price levels are compared to the 'true' price levels underlying the data generation.
 
-The following code snippet shows how easily a connected price dataset with gaps, sales and expenditure weights for $B=4$ basic headings with $N_b=(2,2,3,3)$ products in $R=9$ regions can be simulated.
+The following code snippet shows how easily a connected price data set with gaps, sales and expenditure weights for $B=4$ basic headings with $N_b=(2,2,3,3)$ products in $R=9$ regions can be simulated.
 ```{r}
 # simulate random price data:
 set.seed(123)
@@ -293,7 +293,7 @@ dt[, dutot(p=price, r=region, n=product, base="2")]
 ```
 The price comparison of each region relative to region `2` are carried out separately (or bilaterally). Each bilateral price comparison thus relies solely on the prices of the two regions that are compared. This is the rationale of bilateral price indices. However, it also results in some undesirable properties. 
 
-A price comparison of region `2` to `1` should generally give the same result as the reciprocal of the price comparison of region `1` to `2`. This requirement is denoted as the *country reversal test*. However, as shown below, only the Jevons index and the Dutot index comply with this requirement for the considered dataset.
+A price comparison of region `2` to `1` should generally give the same result as the reciprocal of the price comparison of region `1` to `2`. This requirement is denoted as the *country reversal test*. However, as shown below, only the Jevons index and the Dutot index comply with this requirement for the considered data set.
 ```{r}
 # harmonic mean index fails:
 all.equal(
@@ -361,6 +361,7 @@ Not each individual product or basic heading is equally important to consumers. 
 - Walsh index [@Walsh1901]: $$\begin{aligned} P_{\text{Walsh}}^{sr} &= \frac{\sum_{n=1}^{N} \sqrt{q_n^r q_n^s} \ p_n^r}{\sum_{n=1}^{N} \sqrt{q_n^r q_n^s} \ p_n^s}\\ &= \frac{\sum_{n=1}^{N} \left( \bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr} \right) \sqrt{p_n^r / p_n^s}}{\sum_{n=1}^{N} \left( \bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr} \right) \sqrt{p_n^s / p_n^r}} \quad , \text{with} \ \bar{w}_n^{sr} = \sqrt{w_n^r w_n^s} \end{aligned}$$
 - Geometric Laspeyres index: $$P_{\text{Geo-Laspeyres}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{w_n^s}$$
 - Geometric Paasche index: $$P_{\text{Geo-Paasche}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{w_n^r}$$
+- Geometric Young index: $$P_{\text{Geo-Young}}^{sr} = \prod_{n=1}^{N} \left( p_n^r / p_n^s \right)^{w_n^b} \quad , \text{with} \ w_n^{b} = \frac{p_n^b q_n^b}{\sum_{j=1}^N p_j^b q_j^b}$$
 - Törnqvist index [@Toernqvist1936]: $$\begin{aligned} P_{\text{Törnqvist}}^{sr} &= \sqrt{P_{\text{Geo-Laspeyres}}^{sr} \ P_{\text{Geo-Paasche}}^{sr}}\\ &= \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \frac{1}{2} \left( w_n^r + w_n^s \right) \end{aligned}$$
 - Geometric Walsh index [@Walsh1901]: $$P_{\text{Geo-Walsh}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \sqrt{w_n^r w_n^s}$$
 - Theil index [@Theil1973]: $$P_{\text{Theil}}^{sr} = \prod_{n=1}^N \left( p_n^r / p_n^s \right)^{\bar{w}_n^{sr} / \sum_{j=1}^N \bar{w}_j^{sr}} \quad , \text{with} \ \bar{w}_n^{sr} = \left[ \frac{1}{2} \left( w_n^r + w_n^s \right) \ w_n^r \ w_n^s \right]^{1/3}$$
@@ -492,7 +493,7 @@ The following price indices belong to this very general class of multilateral pr
 - Iklé method [@Ikle1972; @Dikhanov1994; @Balk1996]: `ikle()`
 - Rao-Hajargasht arithmetic method [@Rao2016]: `rhajargasht()`
 
-All methods have in common that they set up a system of interrelated equations of international product prices and regional price levels, which must be solved iteratively. It is only the definition of the international product prices and the price levels that differ between the methods.
+All methods have in common that they set up a system of interrelated equations of international product prices and regional price levels, which is solved iteratively. It is only the definition of the international product prices and the price levels that differ between the methods.
 
 The *Geary-Khamis method* defines the international average prices, $\pi_n \ (n=1,\ldots,N)$, and the regional price levels, $P^r \ (r=1,\ldots,R)$, as
 $$\pi_n = \frac{\sum_{r=1}^{R} q_n^r \left( p_n^r/ P^r \right)}{\sum_{r=1}^{R} q_n^r} \quad \text{and} \quad P^r = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} \pi_n q_n^r} = \left[ \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right)^{-1} \right]^{-1} \, ,$$
@@ -541,7 +542,7 @@ $$\pi_n = \left( \prod_{r=1}^{R} p_n^r \right)^{1/R} \quad n=1,\ldots,N$$
 and
 $$P^r = \frac{\sum_{n=1}^{N} p_n^r q_n^r}{\sum_{n=1}^{N} \pi_n q_n^r} = \left[ \sum_{n=1}^{N} w_n^r \left( p_n^r / \pi_n \right)^{-1} \right]^{-1} \quad r=1,\ldots,R \, .$$
 
-Consequently, the regional price levels are defined in the same way as for the Geary-Khamis and Ikle methods. It is only the definition of the international product prices that differs. More importantly, however, the $\pi_n$ rely only on the observed prices. Therefore, the Gerardi index does not require an iterative procedure, but can be solved in one step.
+Consequently, the regional price levels are defined in the same way as for the Geary-Khamis and Iklé methods. It is only the definition of the international product prices that differs. More importantly, however, the $\pi_n$ rely only on the observed prices. Therefore, the Gerardi index does not require an iterative procedure, but can be solved in one step.
 
 One obvious drawback of the Gerardi index is the definition of $\pi_n$ as an unweighted geometric mean even when quantities or expenditure shares are available. Hence, the function `gerardi()` offers another variant where the $\pi_n$'s are computed as weighted geometric means. This can be set by `settings=list(variant="adjusted")`.
 ```{r}
@@ -642,7 +643,7 @@ dt[, geks(p=price, r=region, n=product, base="1", setting=list(type="jevons"))]
 # jevons:
 dt[, jevons(p=price, r=region, n=product, base="1")]
 ```
-However, this approach is not convenient and also not efficient as each price index function checks the same user inputs, removes the same missing values and duplicated observations, and connects the same data if needed. This can be time consuming for bigger datasets. The `pricelevels`-package therefore offers the `pricelevels()`-function, which can be used to efficiently calculate multiple price indices at once.
+However, this approach is not convenient and also not efficient as each price index function checks the same user inputs, removes the same missing values and duplicated observations, and connects the same data if needed. This can be time consuming for bigger data sets. The `pricelevels`-package therefore offers the `pricelevels()`-function, which can be used to efficiently calculate multiple price indices at once.
 ```{r}
 dt[, pricelevels(p=price, r=region, n=product, base="1", settings=list(type=c("jevons","cpd","geks-jevons")))]
 ```
