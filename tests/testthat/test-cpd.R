@@ -1,6 +1,9 @@
 # START
 
 
+options(pricelevels.chatty=FALSE)
+
+
 # Data with one region only -----------------------------------------------
 
 
@@ -140,7 +143,7 @@ expect_no_error(
 )
 
 expect_warning(
-  dt[, nlcpd(p=price, r=region, n=product, settings=list(w.delta=c("1"=0.2)))]
+  dt[, nlcpd(p=price, r=region, n=product, settings=list(w.delta=c("1"=0.2), chatty=TRUE))]
 )
 
 # valid parameter start values:
@@ -194,50 +197,50 @@ dt <- rbind(dt1, dt2)
 # CPD method:
 expect_equal(
   dt[, cpd(p=price, r=region, n=product, q=quantity, base="1",
-              settings=list(chatty=FALSE, connect=TRUE))][1],
+              settings=list(connect=TRUE))][1],
   c("1"=1)
 )
 
 expect_equal(
   dt[, cpd(p=price, r=region, n=product, q=quantity, base="1",
-              settings=list(chatty=FALSE, connect=TRUE))][4:7],
+              settings=list(connect=TRUE))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
   dt[, cpd(p=price, r=region, n=product, q=quantity, base="4",
-              settings=list(chatty=FALSE, connect=TRUE))][1:3],
+              settings=list(connect=TRUE))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
   dt[, cpd(p=price, r=region, n=product, q=quantity, base="4",
-              settings=list(chatty=FALSE, connect=TRUE))][4],
+              settings=list(connect=TRUE))][4],
   c("4"=1)
 )
 
 # NLCPD method:
 expect_equal(
   dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="1",
-           settings=list(chatty=FALSE, connect=TRUE))][1],
+           settings=list(connect=TRUE))][1],
   c("1"=1)
 )
 
 expect_equal(
   dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="1",
-           settings=list(chatty=FALSE, connect=TRUE))][4:7],
+           settings=list(connect=TRUE))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
   dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="4",
-           settings=list(chatty=FALSE, connect=TRUE))][1:3],
+           settings=list(connect=TRUE))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
   dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="4",
-           settings=list(chatty=FALSE, connect=TRUE))][4],
+           settings=list(connect=TRUE))][4],
   c("4"=1)
 )
 
@@ -245,21 +248,28 @@ expect_equal(
 # Misc --------------------------------------------------------------------
 
 
-# example data with no gaps:
+# bilateral case with no gaps and weights:
 set.seed(123)
-dt <- rdata(R=3, B=1, N=4)
+dt <- rdata(R=2, B=1, N=4)
+Pjev <- dt[, jevons(p=price, r=region, n=product, base="1")]
 
-# CPD method:
-cpd.est <- dt[, cpd(p=price, r=region, n=product, base=NULL)]
-cpd.est1 <- dt[, cpd(p=price, r=region, n=product, base="1")]
-cpd.est2 <- dt[, cpd(p=price, r=region, n=product, base="2")]
-jev <- dt[, jevons(p=price, r=region, n=product, base="1")]
+# CPD method equal to Jevons index:
+cpd.est <- dt[, cpd(p=price, r=region, n=product, base="1")]
+expect_equal(cpd.est, Pjev)
 
-expect_equal(cpd.est1[1], c("1"=1))
-expect_equal(cpd.est2[2], c("2"=1))
-expect_equal(prod(cpd.est), 1)
-expect_equal(cpd.est1, cpd.est2/cpd.est2[1])
-expect_equal(cpd.est1, cpd.est/cpd.est[1])
-expect_equal(cpd.est1, jev)
+# NLCPD method equal to Jevons index:
+nlcpd.est1 <- dt[, nlcpd(p=price, r=region, n=product, base="1")]
+nlcpd.est2 <- dt[, nlcpd(p=price, r=region, n=product, base="1", settings=list(use.jac=TRUE))]
+expect_equal(nlcpd.est1, Pjev, tolerance=1e-6)
+expect_equal(nlcpd.est2, Pjev, tolerance=1e-6)
+
+# bilateral case with weights and no gaps:
+Pto <- dt[, toernqvist(p=price, r=region, n=product, q=quantity, base="1")]
+
+# NLCPD method equal to Toernqvist index:
+nlcpd.est1 <- dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="1")]
+nlcpd.est2 <- dt[, nlcpd(p=price, r=region, n=product, q=quantity, base="1", settings=list(use.jac=TRUE))]
+expect_equal(nlcpd.est1, Pto, tolerance=1e-6)
+expect_equal(nlcpd.est2, Pto, tolerance=1e-6)
 
 # END

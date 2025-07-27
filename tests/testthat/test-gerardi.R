@@ -1,6 +1,9 @@
 # START
 
 
+options(pricelevels.chatty=FALSE)
+
+
 # Data with one region only -----------------------------------------------
 
 
@@ -120,49 +123,49 @@ dt <- rbind(dt1, dt2)
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="1",
-           settings=list(chatty=FALSE, connect=TRUE))][1],
+           settings=list(connect=TRUE))][1],
   c("1"=1)
 )
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="1",
-           settings=list(chatty=FALSE, connect=TRUE))][4:7],
+           settings=list(connect=TRUE))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="4",
-           settings=list(chatty=FALSE, connect=TRUE))][1:3],
+           settings=list(connect=TRUE))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="4",
-           settings=list(chatty=FALSE, connect=TRUE))][4],
+           settings=list(connect=TRUE))][4],
   c("4"=1)
 )
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="1",
-             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][1],
+             settings=list(connect=TRUE, solve="matrix"))][1],
   c("1"=1)
 )
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="1",
-             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][4:7],
+             settings=list(connect=TRUE, solve="matrix"))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="4",
-             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][1:3],
+             settings=list(connect=TRUE, solve="matrix"))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
   dt[, gerardi(p=price, r=region, n=product, q=quantity, base="4",
-             settings=list(chatty=FALSE, connect=TRUE, solve="matrix"))][4],
+             settings=list(connect=TRUE, solve="matrix"))][4],
   c("4"=1)
 )
 

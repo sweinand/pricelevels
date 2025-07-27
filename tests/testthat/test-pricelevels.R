@@ -1,5 +1,9 @@
 # START
 
+
+options(pricelevels.chatty=FALSE)
+
+
 # price indices:
 Punw <- sort(pricelevels:::pindices[uses_none==TRUE, name])
 Pw <- sort(pricelevels:::pindices[(uses_none==TRUE & uses_q==FALSE) | uses_w==TRUE, name])
@@ -149,30 +153,30 @@ dt <- rbind(dt1, dt2)
 
 expect_error(
   dt[, pricelevels(p=price, r=region, n=product, q=quantity, base="1",
-            settings=list(chatty=FALSE, connect=FALSE))]
+            settings=list(connect=FALSE))]
 )
 
 expect_equal(
   dt[, pricelevels(p=price, r=region, n=product, q=quantity, base="1",
-              settings=list(chatty=FALSE, connect=TRUE))][,1],
+              settings=list(connect=TRUE))][,1],
   setNames(rep(1, length(Pq)), Pq)
 )
 
 expect_equal(
   dt[, pricelevels(p=price, r=region, n=product, q=quantity, base="1",
-              settings=list(chatty=FALSE, connect=TRUE))][,4:7],
+              settings=list(connect=TRUE))][,4:7],
   matrix(data=NA_real_, ncol=4, nrow=length(Pq), dimnames=list(Pq, 4:7))
 )
 
 expect_equal(
   dt[, pricelevels(p=price, r=region, n=product, q=quantity, base="4",
-              settings=list(chatty=FALSE, connect=TRUE))][,1:3],
+              settings=list(connect=TRUE))][,1:3],
   matrix(data=NA_real_, ncol=3, nrow=length(Pq), dimnames=list(Pq, 1:3))
 )
 
 expect_equal(
   dt[, pricelevels(p=price, r=region, n=product, q=quantity, base="4",
-              settings=list(chatty=FALSE, connect=TRUE))][,4],
+              settings=list(connect=TRUE))][,4],
   setNames(rep(1, length(Pq)), Pq)
 )
 

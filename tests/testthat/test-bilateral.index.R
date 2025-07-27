@@ -1,6 +1,9 @@
 # START
 
 
+options(pricelevels.chatty=FALSE)
+
+
 # Data with one region only -----------------------------------------------
 
 
@@ -30,6 +33,11 @@ expect_equal(
 
 expect_equal(
   dt[, young(p=price, r=region, n=product, q=quantity, base="1")],
+  c("1"=1)
+)
+
+expect_equal(
+  dt[, geoyoung(p=price, r=region, n=product, q=quantity, base="1")],
   c("1"=1)
 )
 
@@ -64,6 +72,10 @@ expect_no_error(
 
 expect_no_error(
   dt[, young(p=price, r=region, n=product, q=quantity, base="1")]
+)
+
+expect_no_error(
+  dt[, geoyoung(p=price, r=region, n=product, q=quantity, base="1")]
 )
 
 expect_no_error(
@@ -128,6 +140,9 @@ PGeoLa <- setNames(PGeoLa$V1, PGeoLa$region)
 PGeoPa <- dt1[, exp(sum(share/sum(share)*log(price/price.base))), by="region"]
 PGeoPa <- setNames(PGeoPa$V1, PGeoPa$region)
 
+PGeoYo <- dt1[, exp(sum((price.qbase*quantity.qbase)/sum(price.qbase*quantity.qbase)*log(price/price.base))), by="region"]
+PGeoYo <- setNames(PGeoYo$V1, PGeoYo$region)
+
 PTo <- dt1[, exp(sum(0.5*(price*quantity/sum(price*quantity)+price.base*quantity.base/sum(price.base*quantity.base))*log(price/price.base))), by="region"]
 PTo <- setNames(PTo$V1, PTo$region)
 
@@ -185,6 +200,7 @@ expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="1")], PT
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="1")], PMe)
 expect_equal(dt[, lowe(p=price, r=region, n=product, q=quantity, base="1", settings=list(qbase="3"))], PLo)
 expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="1", settings=list(qbase="3"))], PYo)
+expect_equal(dt[, geoyoung(p=price, r=region, n=product, q=quantity, base="1", settings=list(qbase="3"))], PGeoYo)
 expect_equal(dt[, uvalue(p=price, r=region, n=product, q=quantity, base="1")], PUv)
 expect_equal(dt[, banerjee(p=price, r=region, n=product, q=quantity, base="1")], PBan)
 expect_equal(dt[, davies(p=price, r=region, n=product, q=quantity, base="1")], PDav)
@@ -239,6 +255,9 @@ PGeoLa <- setNames(PGeoLa$V1, PGeoLa$region)
 
 PGeoPa <- dt2[, exp(sum(share/sum(share)*log(price/price.base))), by="region"]
 PGeoPa <- setNames(PGeoPa$V1, PGeoPa$region)
+
+PGeoYo <- dt2[, exp(sum((price.qbase*quantity.qbase)/sum(price.qbase*quantity.qbase)*log(price/price.base))), by="region"]
+PGeoYo <- setNames(PGeoYo$V1, PGeoYo$region)
 
 PTo <- dt2[, exp(sum(0.5*(price*quantity/sum(price*quantity)+price.base*quantity.base/sum(price.base*quantity.base))*log(price/price.base))), by="region"]
 PTo <- setNames(PTo$V1, PTo$region)
@@ -297,6 +316,7 @@ expect_equal(dt[, theil(p=price, r=region, n=product, q=quantity, base="2")], PT
 expect_equal(dt[, medgeworth(p=price, r=region, n=product, q=quantity, base="2")], PMe)
 expect_equal(dt[, lowe(p=price, r=region, n=product, q=quantity, base="2", settings=list(qbase="3"))], PLo)
 expect_equal(dt[, young(p=price, r=region, n=product, q=quantity, base="2", settings=list(qbase="3"))], PYo)
+expect_equal(dt[, geoyoung(p=price, r=region, n=product, q=quantity, base="2", settings=list(qbase="3"))], PGeoYo)
 expect_equal(dt[, uvalue(p=price, r=region, n=product, q=quantity, base="2")], PUv)
 expect_equal(dt[, banerjee(p=price, r=region, n=product, q=quantity, base="2")], PBan)
 expect_equal(dt[, davies(p=price, r=region, n=product, q=quantity, base="2")], PDav)
@@ -418,6 +438,14 @@ expect_error(
   dt[, lowe(p=price, r=region, n=product, q=quantity, settings=list(qbase=NA_character_))]
 )
 
+expect_error(
+  dt[, young(p=price, r=region, n=product, q=quantity, settings=list(qbase=NA_character_))]
+)
+
+expect_error(
+  dt[, geoyoung(p=price, r=region, n=product, q=quantity, settings=list(qbase=NA_character_))]
+)
+
 
 # Non-connected data ------------------------------------------------------
 
@@ -464,6 +492,7 @@ expect_equal(
 # sample data:
 set.seed(1)
 dt <- pricelevels::rdata(R=5, B=7, N=1, gaps=0.25)
+dt[c(2,13), "quantity":=0]
 dt[, "share" := price*quantity/sum(price*quantity), by="region"]
 data.table::setnames(dt, c("group","weight","r","n","is_sale","p","q","share"))
 
@@ -532,6 +561,15 @@ expect_equal(PYo1, PYo2)
 PYo3 <- pricelevels:::Pmatrix$young(P=P, Q=Q, qbase=NULL)
 PYo4 <- dt[, young(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))]
 expect_equal(PYo3, PYo4)
+
+# geometric young:
+PGeoYo1 <- pricelevels:::Pmatrix$geoyoung(P=P, Q=Q, qbase=2)
+PGeoYo2 <- dt[, geoyoung(p=p, r=r, n=n, q=q, base="1", settings=list(qbase="2"))]
+expect_equal(PGeoYo1, PGeoYo2)
+
+PGeoYo3 <- pricelevels:::Pmatrix$geoyoung(P=P, Q=Q, qbase=NULL)
+PGeoYo4 <- dt[, geoyoung(p=p, r=r, n=n, q=q, base="1", settings=list(qbase=NULL))]
+expect_equal(PGeoYo3, PGeoYo4)
 
 # uvalue:
 PUv1 <- pricelevels:::Pmatrix$uvalue(P=P, Q=Q)

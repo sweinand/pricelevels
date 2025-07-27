@@ -1,6 +1,9 @@
 # START
 
 
+options(pricelevels.chatty=FALSE)
+
+
 # Data with one region only -----------------------------------------------
 
 
@@ -14,8 +17,13 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))],
-  data.table("base"=as.factor(1), "region"=as.factor(1), "jevons"=1, "paasche"=1, key=c("base","region"))
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=TRUE))],
+  data.table("base"=as.factor(1), "region"=as.factor(1), "jevons"=1, "fisher"=1, key=c("base","region"))
+)
+
+expect_equal(
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=FALSE))],
+  data.table("base"=factor(x=character(), level="1"), "region"=factor(x=character(), level="1"), "jevons"=numeric(), "fisher"=numeric(), key=c("base","region"))
 )
 
 expect_equal(
@@ -24,8 +32,13 @@ expect_equal(
 )
 
 expect_equal(
-  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))],
-  matrix(data=1, nrow=2, dimnames=list(c("geks-jevons","geks-paasche"), "1"))
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=TRUE))],
+  matrix(data=1, nrow=2, dimnames=list(c("geks-jevons","geks-fisher"), "1"))
+)
+
+expect_equal(
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=FALSE))],
+  matrix(data=1, nrow=2, dimnames=list(c("geks-jevons","geks-fisher"), "1"))
 )
 
 
@@ -41,7 +54,11 @@ expect_no_error(
 )
 
 expect_no_error(
-  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))]
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=TRUE))]
+)
+
+expect_no_error(
+  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=FALSE))]
 )
 
 expect_no_error(
@@ -49,7 +66,11 @@ expect_no_error(
 )
 
 expect_no_error(
-  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","paasche")))]
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=TRUE))]
+)
+
+expect_no_error(
+  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type=c("jevons","fisher"), all.pairs=FALSE))]
 )
 
 
@@ -71,14 +92,15 @@ res.expec <- rbind(
 rownames(res.expec) <- c("1","2","3")
 
 expect_equal(
-  as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons"))], formula=base~region, value.var="jevons"), rownames="base"),
+  as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons", all.pairs=TRUE))], formula=base~region, value.var="jevons", droP=FALSE), rownames="base"),
   res.expec
 )
 
 res.expec[lower.tri(res.expec)] <- NA
+diag(res.expec) <- NA
 
 expect_equal(
-  as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons", all.pairs=FALSE))], formula=base~region, value.var="jevons"), rownames="base"),
+  as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons", all.pairs=FALSE))], formula=base~region, value.var="jevons", drop=FALSE), rownames="base"),
   res.expec
 )
 
@@ -89,37 +111,48 @@ expect_equal(
 
 expect_equal(
   nrow(dt[, index.pairs(p=price, r=region, n=product, settings=list(type="jevons", all.pairs=FALSE))]),
-  3*(3+1)/2
+  3*(3-1)/2
 )
 
 # geks():
 geks.est <- dt[, geks(p=price, r=region, n=product, w=weight, base=NULL, settings=list(type="toernqvist"))]
 geks.est1 <- dt[, geks(p=price, r=region, n=product, w=weight, base="1", settings=list(type="toernqvist"))]
-geks.est2 <- dt[, geks(p=price, r=region, n=product, w=weight, base="2", settings=list(type="toernqvist"))]
+geks.est2 <- dt[, geks(p=price, r=region, n=product, w=weight, base="2", settings=list(type="toernqvist", all.pairs=TRUE))]
+geks.est3 <- dt[, geks(p=price, r=region, n=product, w=weight, base="2", settings=list(type="toernqvist", all.pairs=FALSE))]
 
-expect_equal(is.vector(geks.est1), TRUE)
-expect_equal(is.vector(geks.est2), TRUE)
+expect_equal(prod(geks.est), 1)
 expect_equal(geks.est1[1], c("1"=1))
 expect_equal(geks.est2[2], c("2"=1))
-expect_equal(prod(geks.est), 1)
+expect_equal(geks.est3[2], c("2"=1))
+expect_equal(geks.est2, geks.est3)
 expect_equal(geks.est1, geks.est2/geks.est2[1])
 expect_equal(geks.est1, geks.est/geks.est[1])
 
 # expenditure share weights versus quantities identical:
-geks.est3 <- dt[, geks(p=price, r=region, n=product, w=share, base="1", settings=list(type="toernqvist"))]
-geks.est4 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist"))]
-expect_equal(geks.est3, geks.est4)
+expect_equal(
+  dt[, geks(p=price, r=region, n=product, w=share, base="1", settings=list(type="toernqvist", all.pairs=TRUE))],
+  dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist", all.pairs=TRUE))]
+)
+
+expect_equal(
+  dt[, geks(p=price, r=region, n=product, w=share, base="1", settings=list(type="toernqvist", all.pairs=FALSE))],
+  dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist", all.pairs=FALSE))]
+)
 
 # wmethod='shares' still transitive:
-geks.est5 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist", wmethod="shares"))]
-geks.est6 <- dt[, geks(p=price, r=region, n=product, q=quantity, base=NULL, settings=list(type="toernqvist", wmethod="shares"))]
-expect_equal(geks.est5, geks.est6/geks.est6[1])
+geks.est4 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist", wmethod="shares", all.pairs=TRUE))]
+geks.est5 <- dt[, geks(p=price, r=region, n=product, q=quantity, base=NULL, settings=list(type="toernqvist", wmethod="shares", all.pairs=TRUE))]
+expect_equal(geks.est4, geks.est5/geks.est5[1])
 
-# multiple index types at once:
-geks.est7 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type=c("toernqvist","jevons")))]
-expect_equal(is.matrix(geks.est7), TRUE)
-expect_equal(dim(geks.est7), c(2,3))
-expect_true(all(grepl("geks-", rownames(geks.est7))))
+geks.est6 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type="toernqvist", wmethod="shares", all.pairs=FALSE))]
+geks.est7 <- dt[, geks(p=price, r=region, n=product, q=quantity, base=NULL, settings=list(type="toernqvist", wmethod="shares", all.pairs=FALSE))]
+expect_equal(geks.est6, geks.est7/geks.est7[1])
+
+# multiple index formulas at once:
+geks.est8 <- dt[, geks(p=price, r=region, n=product, q=quantity, base="1", settings=list(type=c("toernqvist","jevons")))]
+expect_equal(is.matrix(geks.est8), TRUE)
+expect_equal(dim(geks.est8), c(2,3))
+expect_true(all(grepl("geks-", rownames(geks.est8))))
 
 
 # Settings ----------------------------------------------------------------
@@ -138,8 +171,9 @@ expect_error(
   dt[, index.pairs(p=price, r=region, n=product, settings=list(type="laspeyres"))]
 )
 
-expect_warning(
-  dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla"))]
+expect_gte(
+  length(capture_warnings(dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla", chatty=TRUE))])),
+  1L
 )
 
 expect_error(
@@ -147,8 +181,9 @@ expect_error(
             settings=list(type="toernqvist", wmethod="bla"))]
 )
 
-expect_warning(
-  dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla"))]
+expect_gte(
+  length(capture_warnings(dt[, geks(p=price, r=region, n=product, q=quantity, settings=list(type="young", qbase="bla", chatty=TRUE))])),
+  1L
 )
 
 
@@ -164,36 +199,36 @@ dt2[, "product":=factor(product, labels=6:9)]
 dt <- rbind(dt1, dt2)
 
 expect_equal(
-  dim(as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(chatty=FALSE))], formula=base~region, value.var="jevons"), rownames="base")),
+  dim(as.matrix(dcast(data=dt[, index.pairs(p=price, r=region, n=product, q=quantity)], formula=base~region, value.var="jevons"), rownames="base")),
   c(7,7)
 )
 
 expect_equal(
-  nrow(dt[, index.pairs(p=price, r=region, n=product, q=quantity, settings=list(chatty=FALSE))]),
+  nrow(dt[, index.pairs(p=price, r=region, n=product, q=quantity)]),
   3*3+4*4
 )
 
 expect_equal(
   dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
-             settings=list(chatty=FALSE, connect=TRUE))][1],
+             settings=list(connect=TRUE))][1],
   c("1"=1)
 )
 
 expect_equal(
   dt[, geks(p=price, r=region, n=product, q=quantity, base="1",
-             settings=list(chatty=FALSE, connect=TRUE))][4:7],
+             settings=list(connect=TRUE))][4:7],
   setNames(rep(NA_real_, 4), 4:7)
 )
 
 expect_equal(
   dt[, geks(p=price, r=region, n=product, q=quantity, base="4",
-             settings=list(chatty=FALSE, connect=TRUE))][1:3],
+             settings=list(connect=TRUE))][1:3],
   setNames(rep(NA_real_, 3), 1:3)
 )
 
 expect_equal(
   dt[, geks(p=price, r=region, n=product, q=quantity, base="4",
-             settings=list(chatty=FALSE, connect=TRUE))][4],
+             settings=list(connect=TRUE))][4],
   c("4"=1)
 )
 

@@ -1,42 +1,20 @@
 # START
 
 
+options(pricelevels.chatty=FALSE)
+
+
 # set.base() --------------------------------------------------------------
 
 
 # regions:
 r <- factor(c("a","b","b","c"))
-
-
-expect_equal(
-  set.base(r=r, base=NULL, null.ok=FALSE, settings=list(chatty=FALSE)),
-  "b"
-)
-
-expect_equal(
-  set.base(r=r, base="test", null.ok=FALSE, settings=list(chatty=FALSE)),
-  "b"
-)
-
-expect_equal(
-  set.base(r=r, base="a", null.ok=FALSE, settings=list(chatty=FALSE)),
-  "a"
-)
-
-expect_equal(
-  set.base(r=r, base=NULL, null.ok=TRUE, settings=list(chatty=FALSE)),
-  NULL
-)
-
-expect_equal(
-  set.base(r=r, base="test", null.ok=TRUE, settings=list(chatty=FALSE)),
-  "b"
-)
-
-expect_equal(
-  set.base(r=r, base="a", null.ok=TRUE, settings=list(chatty=FALSE)),
-  "a"
-)
+expect_equal(set.base(r=r, base=NULL, null.ok=FALSE), "b")
+expect_equal(set.base(r=r, base="test", null.ok=FALSE), "b")
+expect_equal(set.base(r=r, base="a", null.ok=FALSE), "a")
+expect_equal(set.base(r=r, base=NULL, null.ok=TRUE), NULL)
+expect_equal(set.base(r=r, base="test", null.ok=TRUE), "b")
+expect_equal(set.base(r=r, base="a", null.ok=TRUE), "a")
 
 
 # arrange() -------------------------------------------------------------
@@ -46,8 +24,9 @@ expect_equal(
 set.seed(123)
 dt <- rdata(R=3, B=1, N=4, gaps=0.1)
 dt[, "share" := price*quantity / sum(price*quantity), by="region"]
-settings <- list(missings=TRUE, connect=TRUE, duplicates=TRUE, chatty=FALSE, norm.weights=TRUE)
+settings <- list(missings=TRUE, prods=TRUE, connect=TRUE, duplicates=TRUE, norm.weights=TRUE)
 
+# quantities and weights:
 res1 <- dt[, pricelevels:::arrange(p=price, r=region, n=product, q=quantity, base="1", settings=settings)]
 expect_equal(names(res1), c("r","n","p","q","w"))
 expect_equal(res1$q, dt$quantity)
@@ -77,12 +56,40 @@ expect_equal(res5$w, dt$quantity)
 
 # duplicated values:
 dt2 <- rbind(dt[1,], dt)
-res6 <- dt2[, pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
+dt2[1, c("price","quantity","share") := list(1.1*price, 0.95*quantity, 0.98*share)]
+
+dt2agg <- dt2[, list("p"=sum(price*quantity/sum(quantity)), "q"=sum(quantity)), by=c("region","product")]
+dt2agg[, "w" := p*q/sum(p*q), by="region"]
+res6 <- dt2[, pricelevels:::arrange(p=price, r=region, n=product, q=quantity, base="1", settings=settings)]
 expect_equal(nrow(dt2)-1, nrow(res6))
+expect_equal(dt2agg[1, list(p,q,w)], res6[1, list(p,q,w)])
+
+dt2agg <- dt2[, list("p"=sum(price*share/sum(share)), "q"=NA_real_, "w"=mean(share)), by=c("region","product")]
+dt2agg[, "w" := w/sum(w), by="region"]
+settings$norm.weights <- TRUE
+res6 <- dt2[, pricelevels:::arrange(p=price, r=region, n=product, w=share, base="1", settings=settings)]
+expect_equal(nrow(dt2)-1, nrow(res6))
+expect_equal(dt2agg[1, list(p,q,w)], res6[1, list(p,q,w)])
 
 # missings:
-dt2[1, "region":=NA]
-res7 <- dt2[, pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
-expect_equal(nrow(dt2)-1, nrow(res7))
+dt3 <- data.table::copy(dt)
+dt3[1, "region":=NA]
+res7 <- dt3[, pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
+expect_equal(nrow(dt3)-1, nrow(res7))
+
+# one region only:
+expect_no_error(
+  dt[region=="1", pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
+)
+
+settings$chatty <- TRUE
+expect_warning(
+  dt[-c(2,3), pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
+)
+
+settings$prods <- FALSE
+expect_no_warning(
+  dt[-c(2,3), pricelevels:::arrange(p=price, r=region, n=product, w=quantity, base="1", settings=settings)]
+)
 
 # END
