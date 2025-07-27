@@ -2,7 +2,7 @@
 
 # Title:  Spatial price indices
 # Author: Sebastian Weinand
-# Date:   18 May 2024
+# Date:   20 June 2025
 
 # list available price indices:
 list.indices <- function(){
@@ -31,17 +31,18 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
     type <- NULL
   }
 
-  # overwrite non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
-  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
-  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  # set defaults for non-exported settings:
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
   if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE # also for cpd() and nlcpd()
 
   # input checks:
   if(settings$check.inputs){
 
     # main input checks:
-    check.num(x=p, int=c(0, Inf))
+    check.num(x=p, int=c(0.001, Inf))
     check.char(x=r)
     check.char(x=n)
     check.num(x=w, null.ok=TRUE, int=c(0, Inf))
@@ -59,6 +60,17 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
   }
 
+  # overwrite some exported settings:
+  if(identical(settings$solve, "matrix")){
+    # with wrong user input, this throws an error later when functions
+    # using this argument are evaluated. with input "matrix", this gives
+    # a warning.
+    settings$solve <- "iterative"
+    if(settings$chatty){
+      warning("Input for 'settings$solve' reset to 'iterative'", call.=FALSE)
+    }
+  }
+
   # allowed index types:
   if(is.null(q) && is.null(w)){
     type.vals <- pindices$name[pindices$uses_none==TRUE]
@@ -72,8 +84,10 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
   # check against allowed index types:
   if(is.null(type)){
+    type.null <- TRUE # for ordering of output
     type <- type.vals
   }else{
+    type.null <- FALSE
     type <- match.arg(arg=type, choices=type.vals, several.ok=TRUE)
   }
 
@@ -222,7 +236,7 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
 
   # collect results and order alphabetically:
   out <- do.call("rbind", Pout)
-  out <- out[order(rownames(out)), , drop=FALSE]
+  if(type.null) out <- out[order(rownames(out)), , drop=FALSE]
 
   # match to initial ordering:
   r.lvl <- levels(factor(r))
@@ -232,7 +246,7 @@ pricelevels <- function(p, r, n, q=NULL, w=NULL, base=NULL, settings=list()){
   if(makeplot){
 
     # compute price ratios:
-    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, q=w, w=w, base=base, settings=list(chatty=FALSE, static=TRUE))]
     pdata[, "region":=factor(r, levels=r.lvl)]
     plot.pricelevels(data=pdata, P=out)
 
