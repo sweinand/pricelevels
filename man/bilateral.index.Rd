@@ -20,6 +20,7 @@
 \alias{geolaspeyres}
 \alias{geopaasche}
 \alias{geowalsh}
+\alias{geoyoung}
 \alias{lowe}
 \alias{young}
 \alias{uvalue}
@@ -55,6 +56,8 @@ geopaasche(p, r, n, q, w=NULL, base=NULL, settings=list())
 
 geowalsh(p, r, n, q, w=NULL, base=NULL, settings=list())
 
+geoyoung(p, r, n, q, w=NULL, base=NULL, settings=list())
+
 harmonic(p, r, n, base=NULL, settings=list())
 
 jevons(p, r, n, base=NULL, settings=list())
@@ -85,16 +88,16 @@ young(p, r, n, q, base=NULL, settings=list())
 }
 
 \arguments{
-   \item{p}{A numeric vector of prices.}
+   \item{p}{A numeric vector of positive prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see details). Either \code{q} or \code{w} must be provided for weighted indices. If both \code{q} and \code{w} are provided, \code{q} will be used.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see Section 'Details'). Either \code{q} or \code{w} must be provided for weighted indices. If both \code{q} and \code{w} are provided, \code{q} will be used.}
    \item{base}{A character specifying the base region to which all price levels are expressed. If \code{NULL}, base region is set internally.}
    \item{settings}{A list of control settings to be used. The following settings are supported:
    \itemize{
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{getOption("pricelevels.chatty")}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{getOption("pricelevels.connect")}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
    \item \code{plot} : A logical specifying if the calculated price levels should be plotted or not. If \code{TRUE}, the price ratios of each region are displayed as boxplots and the price levels are added as colored points. The default is \code{getOption("pricelevels.plot")}.
-   \item \code{qbase} : A character specifying the region \eqn{b} whose quantities (and prices) should be used in \code{lowe()} and \code{young()}. If \code{NULL}, prices are averaged and quantities added up for each product, i.e. \eqn{p_i^b=\sum_{r=1}^{R} p_i^r / R} and \eqn{q_i^b=\sum_{r=1}^{R} q_i^r}.
+   \item \code{qbase} : A character specifying the region \eqn{b} whose quantities (and prices) should be used by \code{lowe()}, \code{young()}, and \code{geoyoung()}. If \code{NULL}, prices are averaged and quantities added up for each product, i.e. \eqn{p_i^b=\sum_{r=1}^{R} p_i^r / R} and \eqn{q_i^b=\sum_{r=1}^{R} q_i^r}.
    }}
 }
 
@@ -105,7 +108,9 @@ ILO, IMF, OECD, UNECE, Eurostat and World Bank (2020). \emph{Consumer Price Inde
 }
 
 \details{
-Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+Before calculations start, missing values are removed from the data.
+Duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+If there is more than one region in the data, products with prices in only one region \code{r} are removed.
 
 The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
 }
@@ -132,7 +137,7 @@ dt2[, "product":=factor(product, labels=6:9)]
 dt <- rbind(dt1, dt2)
 dt[, is.connected(r=region, n=product)] # non-connected now
 
-# compute jevons and toernqvist index:
+# compute jevons index with base region 1:
 dt[, jevons(p=price, r=region, n=product, base="1")]
 
 # change base region:

@@ -2,7 +2,7 @@
 
 # Title:    Bilateral price indices
 # Author:   Sebastian Weinand
-# Date:     18 May 2024
+# Date:     20 June 2025
 
 # see pages 603-628 of the Export and Import Price Index Manual
 # https://www.imf.org/external/np/sta/xipim/pdf/xipim.pdf
@@ -227,6 +227,23 @@ Pmatched <- list(
 
   },
 
+  "geoyoung" = function(p1, p0, pb, qb, wb){
+
+    # define weights:
+    if(missing(qb)){
+      w <- wb/sum(wb)
+    }else{
+      w <- (pb*qb)/sum(pb*qb)
+    }
+
+    # compute index:
+    res <- exp(weighted.mean(x=log(p1/p0), w=w))
+
+    # return output:
+    return(res)
+
+  },
+
   "theil" = function(p1, q1, w1, p0, q0, w0){
 
     # set weights:
@@ -357,7 +374,7 @@ Pmatched <- list(
     e1 <- sum(p1*q1)
 
     # adjustment factors:
-    z <- (p0*q0+p1*q1)/(q0+q1)
+    z <- ifelse(test=(q0+q1)>0, yes=(p0*q0+p1*q1)/(q0+q1), no=0)
     af0 <- sum(q0*z)
     af1 <- sum(q1*z)
 
@@ -813,6 +830,39 @@ Pmatrix <- list(
 
   },
 
+  "geoyoung" = function(P, Q, W=NULL, base=1L, qbase=1L){
+
+    # compute price ratios:
+    R <- log(P/P[, base])
+
+    # define weights:
+    if(is.null(qbase)){
+      W <- rowMeans(P, na.rm=TRUE)*rowSums(Q, na.rm=TRUE)
+    }else{
+      W <- P[,qbase]*Q[,qbase]
+    }
+
+    # align dimensions of weighting matrix:
+    W <- matrix(data=W, nrow=nrow(P), ncol=ncol(P), dimnames=dimnames(P))
+
+    # set weights to NA when no intersection of prices:
+    W[is.na(R)] <- NA
+
+    # normalize weights:
+    W <- W/colSums(x=W, na.rm=TRUE)[col(W)]
+
+    # compute index:
+    res <- exp(colSums(x=W*R, na.rm=TRUE))
+
+    # set to NA when no intersecting prices were found:
+    res[is.nan(res) | colSums(x=!is.na(W*P), na.rm=FALSE)<=0] <- NA
+    # -> colSums()-function returns 0 when everything is NA
+
+    # return output:
+    return(res)
+
+  },
+
   "theil" = function(P, Q, W, base=1L, qbase=NULL){
 
     # compute price ratios:
@@ -1080,16 +1130,17 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
-  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
-  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
   if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
   if(settings$check.inputs){
 
     # main inputs:
-    check.num(x=p, int=c(0, Inf))
+    check.num(x=p, int=c(0.001, Inf))
     check.char(x=r)
     check.char(x=n)
     check.num(x=q, null.ok=TRUE, int=c(0, Inf))
@@ -1136,9 +1187,9 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   # intersection with base region prices and weights:
   pdata <- merge(x=pdata, y=pdata[r==base,], by="n", all=FALSE, suffixes=c("","_base"))
 
-  # compute lowe and young indices:
-  out.lowe <- out.young <- NULL
-  if(any(c("lowe","young")%in%type)){
+  # compute lowe, young and geometric young indices:
+  out.lowe <- out.young <- out.geoyoung <-NULL
+  if(any(c("lowe","young","geoyoung")%in%type)){
 
     # set qbase-region:
     settings$qbase <- set.base(r=pdata$r, base=settings$qbase, null.ok=TRUE, qbase=TRUE, settings=settings)
@@ -1159,10 +1210,14 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
       out.young <- pdata[, Pmatched$young(p1=p, p0=p_base, pb=p_qbase, qb=q_qbase), by="r"]
     }
 
+    if("geoyoung"%in%type){
+      out.geoyoung <- pdata[, Pmatched$geoyoung(p1=p, p0=p_base, pb=p_qbase, qb=q_qbase), by="r"]
+    }
+
   }
 
   # compute remaining indices:
-  type.sub <- setdiff(type, c("lowe","young"))
+  type.sub <- setdiff(type, c("lowe","young","geoyoung"))
 
   # set "matched index function" based on type:
   indexfn <- Pmatched[match(x=type.sub, table=names(Pmatched))]
@@ -1182,7 +1237,9 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
 
   # gather data:
   names(out) <- type.sub
-  out <- rbindlist(l=c(list("lowe"=out.lowe, "young"=out.young), out), use.names=TRUE, fill=TRUE, idcol="index")
+  out <- rbindlist(
+    l=c(list("lowe"=out.lowe, "young"=out.young, "geoyoung"=out.geoyoung), out),
+    use.names=TRUE, fill=TRUE, idcol="index")
   out <- as.matrix(x=dcast(data=out, formula=index~r, value.var="V1", fill=NA), rownames=TRUE)
   out <- out[match(x=type, table=rownames(out)), , drop=FALSE]
 
@@ -1196,7 +1253,7 @@ bilateral.index <- function(p, r, n, q, w=NULL, type, base=NULL, settings=list()
   if(settings$plot){
 
     # compute price ratios:
-    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, q=q, w=w, base=base, settings=list(chatty=FALSE, static=TRUE))]
     pdata[, "region":=factor(r, levels=r.lvl)]
     plot.pricelevels(data=pdata, P=out)
 
@@ -1358,6 +1415,13 @@ geopaasche <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 geowalsh <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
 
   res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geowalsh", base=base, settings=settings)
+  res <- stats::setNames(as.vector(res), colnames(res))
+  return(res)
+
+}
+geoyoung <- function(p, r, n, q, w=NULL, base=NULL, settings=list()){
+
+  res <- bilateral.index(r=r, n=n, p=p, q=q, w=w, type="geoyoung", base=base, settings=settings)
   res <- stats::setNames(as.vector(res), colnames(res))
   return(res)
 
