@@ -2,7 +2,7 @@
 
 # Title:  Bilateral index pairs and GEKS method
 # Author: Sebastian Weinand
-# Date:   18 May 2024
+# Date:   22 July 2025
 
 # compute bilateral index pairs:
 index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
@@ -18,9 +18,10 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
-  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
-  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
   if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
   # the setting 'settings$base' is only used by geks() as provided
   # by the user, but always FALSE for index.pairs()
@@ -29,7 +30,7 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   if(settings$check.inputs){
 
     # main inputs:
-    check.num(x=p, int=c(0, Inf))
+    check.num(x=p, int=c(0.001, Inf))
     check.char(x=r)
     check.char(x=n)
     check.num(x=q, miss.ok=TRUE, null.ok=TRUE, int=c(0, Inf))
@@ -74,25 +75,21 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   pdata <- arrange(p=p, r=r, n=n, q=q, w=w, base=settings$base, settings=settings)
 
   # convert prices into matrix:
-  P <- as.matrix(
-    x=dcast(data=pdata, formula=n~r, fun.aggregate=mean, value.var="p", fill=NA),
-    rownames="n")
+  P <- with(data=pdata, expr=tapply(X=p, INDEX=list(n,r), FUN=mean))
 
-  # convert weights or quantities into matrix, where duplicated weights
-  # are averaged, duplicated quantites added up:
+  # convert weights or quantities into matrix:
   if(is.null(q) && is.null(w)){
     Z <- NULL
   }else{
     if(is.null(q)){
-      Z <- dcast(data=pdata, formula=n~r, fun.aggregate=mean, value.var="w", fill=NA)
+      Z <- with(data=pdata, expr=tapply(X=w, INDEX=list(n,r), FUN=mean))
     }else{
-      Z <- dcast(data=pdata, formula=n~r, fun.aggregate=sum, value.var="q", fill=NA)
+      Z <- with(data=pdata, expr=tapply(X=q, INDEX=list(n,r), FUN=sum))
     }
-    Z <- as.matrix(x=Z, rownames="n")
   }
 
   # set quantity base region:
-  if(any(c("lowe","young")%in%type)){
+  if(any(c("lowe","young","geoyoung")%in%type)){
     qbase <- set.base(r=pdata$r, base=settings$qbase, null.ok=TRUE, qbase=TRUE, settings=settings)
     if(!is.null(qbase)) qbase <- which(colnames(P)%in%qbase)
   }else{
@@ -111,26 +108,29 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
 
     if(!settings$all.pairs){
 
-      # faster, but only-non-redundant
+      # faster, but only upper matrix triangle:
       if(is.null(q)){
-        for(i in 1:R){
+        for(i in seq_len(R-1)){
           idx <- i:R # tighten column selection in each iteration
           res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], W=Z[, idx, drop=FALSE], base=1L, qbase=qbase)
         }
       }else{
-        for(i in 1:R){
+        for(i in seq_len(R-1)){
           idx <- i:R # tighten column selection in each iteration
           res[i, idx] <- indexfn[[j]](P=P[, idx, drop=FALSE], Q=Z[, idx, drop=FALSE], base=1L, qbase=qbase)
         }
       }
 
-      # slower, but complete
+      # drop the diagonal:
+      diag(res) <- NA_real_
+
+    # slower, but full matrix:
     }else{
 
       if(is.null(q)){
-        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, W=Z, base=i, qbase=qbase)
+        for(i in seq_len(R)) res[i, ] <- indexfn[[j]](P=P, W=Z, base=i, qbase=qbase)
       }else{
-        for(i in 1:R) res[i, ] <- indexfn[[j]](P=P, Q=Z, base=i, qbase=qbase)
+        for(i in seq_len(R)) res[i, ] <- indexfn[[j]](P=P, Q=Z, base=i, qbase=qbase)
       }
 
     }
@@ -140,10 +140,13 @@ index.pairs <- function(p, r, n, q=NULL, w=NULL, settings=list()){
   }
 
   # convert into datatable:
-  res <- expand.grid("base"=colnames(out[[1]]), "region"=rownames(out[[1]]), KEEP.OUT.ATTRS=FALSE)
+  res <- expand.grid("base"=colnames(out[[1]]), "region"=rownames(out[[1]]), KEEP.OUT.ATTRS=FALSE, stringsAsFactors=TRUE)
   for(j in seq_along(type)) res[, type[j]] <- as.vector(out[[j]])
-  res <- stats::na.omit(res)
+  r.lvl.all <- unique(x=c(levels(res$base), levels(res$region)))
+  res$base <- factor(x=res$base, levels=r.lvl.all)
+  res$region <- factor(x=res$region, levels=r.lvl.all)
   res <- as.data.table(x=res, key=c("base", "region"))
+  res <- stats::na.omit(res)
 
   # print output to console:
   return(res)
@@ -166,9 +169,10 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
   if(is.null(settings$all.pairs)) settings$all.pairs <- TRUE
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
-  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
-  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
   if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # input checks:
@@ -217,6 +221,7 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
     dtw <- crossprod(as.matrix(table(n, r, dnn=NULL))>0)
     wdata <- as.data.table(as.table(dtw))
     setnames(x=wdata, new=c("region","base","w"))
+    wdata[, c("region","base") := list(factor(region), factor(base))]
     pdata <- merge(x=pdata, y=wdata, all.x=TRUE, by=c("region","base"))
     w2 <- pdata$w
 
@@ -240,6 +245,7 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
     dtw <- merge(x=dtw, y=dtw, by="n", all=TRUE, allow.cartesian=TRUE)
     wdata <- dtw[, sum((s.x+s.y)/2), by=c("r.x","r.y")]
     setnames(x=wdata, new=c("region","base","w"))
+    wdata[, c("region","base") := list(factor(region), factor(base))]
     pdata <- merge(x=pdata, y=wdata, all.x=TRUE, by=c("region","base"))
     w2 <- pdata$w
 
@@ -249,8 +255,9 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
   index <- as.matrix(subset(x=pdata, select=type))
   colnames(index) <- paste("geks", colnames(index), sep="-")
   r0 <- r # store initial regions for plotting
-  r <- factor(pdata$region)
-  rb <- factor(pdata$base)
+  r.lvl.all <- unique(x=c(levels(pdata$region), levels(pdata$base)))
+  r <- factor(x=pdata$region, levels=r.lvl.all)
+  rb <- factor(x=pdata$base, levels=r.lvl.all)
 
   # set base region:
   base <- set.base(r=r, base=base, null.ok=TRUE, settings=settings)
@@ -327,10 +334,11 @@ geks.main <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, setting
 
     # price data must be arranged once again:
     settings$chatty <- FALSE
+    settings$static <- TRUE
     pdata <- arrange(p=p, r=r0, n=n, q=q, w=w, base=base, settings=settings)
 
     # compute price ratios:
-    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=settings)]
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, q=q, w=w, base=base, settings=settings)]
     pdata[, "region":=factor(r, levels=r.lvl)]
     plot.pricelevels(data=pdata, P=out)
 

@@ -5,7 +5,9 @@
 
 \title{GEKS method}
 
-\description{Function \code{index.pairs()} computes bilateral index numbers for all pairs of regions. Based on that, function \code{geks()} derives regional price levels using the GEKS method proposed by Gini (1924, 1931), Elteto and Koves (1964), and Szulc (1964).}
+\description{
+The function \code{index.pairs()} computes bilateral index numbers for all pairs of regions.
+Based on that, the function \code{geks()} derives regional price levels using the GEKS method proposed by Gini (1924, 1931), Elteto and Koves (1964), and Szulc (1964).}
 
 \usage{
 index.pairs(p, r, n, q=NULL, w=NULL, settings=list())
@@ -14,9 +16,9 @@ geks(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
 }
 
 \arguments{
-   \item{p}{A numeric vector of prices.}
+   \item{p}{A numeric vector of positive prices.}
    \item{r, n}{A character vector or factor of regional entities \code{r} and products \code{n}, respectively.}
-   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see details) to be used in the computation of weighted bilateral index numbers. Can be \code{NULL}, if the index formula specified in \code{type} does not require quantities or weights. If both \code{q} and \code{w} are provided, \code{q} will be used.}
+   \item{q, w}{A numeric vector of non-negative quantities \code{q} or expenditure share weights \code{w} (see Section 'Details') to be used in the computation of weighted bilateral index numbers. Can be \code{NULL}, if the index formula specified in \code{type} does not require quantities or weights. If both \code{q} and \code{w} are provided, \code{q} will be used.}
    \item{base}{A character specifying the base region to which all price levels are expressed. When \code{NULL}, they refer to the (unweighted) regional average.}
    \item{simplify}{A logical indicating whether the full regression-object should be provided (\code{FALSE}) or a named vector of estimated regional price levels (\code{TRUE}).}
    \item{settings}{A list of control settings to be used. The following settings are supported:
@@ -24,10 +26,10 @@ geks(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list())
    \item \code{chatty} : A logical specifying if warnings and info messages should be printed or not. The default is \code{getOption("pricelevels.chatty")}.
    \item \code{connect} : A logical specifying if the data should be checked for connectedness or not. The default is \code{getOption("pricelevels.connect")} for \code{geks()} and \code{FALSE} for \code{index.pairs()}. If the data are not connected, price levels are computed within the biggest block of connected regions or the block of regions to which the \code{base} region belongs. See also \code{\link{connect}()}.
    \item \code{plot} : A logical specifying if the calculated price levels should be plotted or not. If \code{TRUE}, the price ratios of each region are displayed as boxplots and the price levels are added as colored points. The default is \code{getOption("pricelevels.plot")}. Used only by \code{geks()}.
-   \item \code{all.pairs} : Logical indicating whether index numbers should be computed for all region pairs (\code{TRUE}) or only for non-redundant ones (\code{FALSE}), e.g. the index number of regions \code{AB} should be the same as the inverse of \code{BA}. The default is \code{TRUE}.
-   \item \code{type} : A character specifying the index method(s) used to aggregate prices into bilateral price indices for each pair of regions (first step of GEKS). See \code{\link{bilateral.index}} for allowed values. Multiple choices allowed. The default is \code{jevons}.
+   \item \code{all.pairs} : A logical indicating whether bilateral index numbers should be computed for all region pairs (\code{TRUE}, the default) or only for non-redundant ones (e.g., the index number \eqn{P^{AB}} is computed while \eqn{P^{BA}} and \eqn{P^{AA}} are excluded). For bilateral index formulas passing the country reversal test, the resulting price levels derived by \code{geks()} will be the same. The default is \code{TRUE}.
+   \item \code{type} : A character specifying the bilateral index formula(s) used to aggregate individual prices into price indices for each pair of regions (first step of GEKS). See \code{\link{bilateral.index}} for allowed values. Multiple choices allowed. The default is \code{jevons}.
    \item \code{wmethod} : the weighting method (second step of GEKS). Allowed values are \code{none} for equal weighting of all bilateral price indices, \code{obs} for weighting the bilateral price indices according to the underlying number of intersecting observations, or \code{shares} for weighting according to the intersecting expenditure shares. The default is \code{none}. Used only by \code{geks()}.
-   \item \code{qbase} : relevant only for \code{type='lowe'} and \code{type='young'}, see \code{\link{bilateral.index}}.
+   \item \code{qbase} : relevant only if \code{type} is one of \code{(lowe, young, geoyoung)}, see \code{\link{bilateral.index}}.
    }}
 }
 
@@ -44,19 +46,28 @@ Szulc, B. J. (1964). Indices for Multiregional Comparisons. \emph{Przeglad Staty
 }
 
 \value{
-For \code{index.pairs()}, a data.table with variables \code{base} (the base region), \code{region} (the comparison region), and \code{eval(settings$type)} (the price level between the two regions).
+For \code{index.pairs()}, a data.table with variables \code{base} (the base region), \code{region} (the comparison region), and the price level between the two regions (variable names defined by \code{settings$type}).
 
 For \code{geks()}, a named vector or matrix of (unlogged) regional price levels if \code{simplify=TRUE}. Otherwise, for \code{simplify=FALSE}, a \code{lm}-object containing the full regression output.
 }
 
 \details{
-The GEKS index is a two-step approach. First, prices are aggregated into bilateral index numbers using the index given in \code{type}. This is done for all pairs of regions via function \code{index.pairs()}. Second, these bilateral index numbers are transformed into a set of multilateral, transitive index numbers.
-
-Note that the quantities \code{q} or weights \code{w} are used within the aggregation of prices into index numbers (first stage) while the subsequent transformation of these index numbers (second stage) usually does not rely on any weights (but can if specified in \code{settings$wmethod}).
-
-Before calculations start, missing values are excluded and duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+Before calculations start, missing values are removed from the data.
+Duplicated observations for \code{r} and \code{n} are aggregated, that is, duplicated prices \code{p} and weights \code{w} are averaged and duplicated quantities \code{q} added up.
+If there is more than one region in the data, products with prices in only one region \code{r} are removed.
 
 The weights \code{w} must represent expenditure shares defined as \eqn{w_i^r = p_i^r q_i^r / \sum_{j=1}^{N} p_j^r q_j^r}. They are internally (re-)normalized such that they add up to 1 for each region \code{r}.
+}
+
+\section{Method}{
+The GEKS method is a two-step approach.
+First, prices are aggregated into bilateral index numbers, \eqn{P^{sr}}, using the index formulas given in \code{type}.
+This is done for all pairs of regions \eqn{s} and \eqn{r} via the function \code{index.pairs()}.
+Second, these bilateral index numbers are transformed into transitive index numbers, \eqn{P^r}, by estimating the following regression model:
+
+\deqn{\ln P^{sr} = \ln \left( P^r / P^s \right) + u^{sr}}
+
+The quantities \code{q} or weights \code{w} are used within the aggregation of prices into index numbers (first stage) while the subsequent transformation of these index numbers (second stage) usually does not rely on any weights (but can if specified in \code{settings$wmethod}).
 }
 
 \seealso{\code{\link{bilateral.index}}}
