@@ -1,132 +1,151 @@
 # START
 
-# Title:  Interregional connections
+# Title:  Price data characteristics
 # Author: Sebastian Weinand
-# Date:   5 February 2024
+# Date:   22 July 2025
 
-# divide into connected regions:
-neighbors <- function(r, n, simplify = FALSE){
+# flag if data is connected:
+is.connected <- function(r, n){
 
   # input checks:
-  check.char(x=r)
-  check.char(x=n)
+  check.char(x=r, min.len=0)
+  check.char(x=n, min.len=0)
+  check.lengths(x=r, y=n)
+
+  # coerce input vectors to character:
+  r <- as.character(r)
+  n <- as.character(n)
+
+  # drop missing values:
+  nas <- stats::complete.cases(r, n)
+  r <- r[nas]
+  n <- n[nas]
+
+  # unique regions and products:
+  R <- unique(r)
+  N <- unique(n)
+
+  # regions in which first product is present:
+  R1 <- unique(r[n==n[1]])
+  rdiff <- length(R)-length(R1)
+
+  # loop until there are no additions to the set of regions:
+  while(length(R1)<length(R) & rdiff>0L){
+
+    # regions in which first and all other products are present:
+    R1tmp <- unique(r[n%in%n[r%in%R1]])
+
+    # check if new regions were added:
+    rdiff <- length(R1tmp)-length(R1)
+
+    # new set of regions:
+    R1 <- R1tmp
+
+  }
+
+  # if all regions are present in R1, the data is connected;
+  # otherwise, there are multiple, separated blocks:
+  out <- all(R%in%R1) & length(R)>0L
+  # if there is only one region or only one product,
+  # the data is always connected
+
+  # print output to console:
+  return(out)
+
+}
+
+# divide data into blocks of connected regions:
+neighbors <- function(r, n, simplify=FALSE){
+
+  # input checks:
+  check.char(x=r, min.len=0)
+  check.char(x=n, min.len=0)
   check.log(x=simplify, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   check.lengths(x=r, y=n)
 
   # coerce input vectors to character:
-  region <- as.character(r)
-  product <- as.character(n)
+  r <- as.character(r)
+  n <- as.character(n)
 
   # create copy of initial region vector:
-  region0 <- region
+  r0 <- r
 
   # drop missing values:
-  missings <- is.na(region) | is.na(product)
-  region <- region[!missings]
-  product <- product[!missings]
+  nas <- stats::complete.cases(r, n)
+  r <- r[nas]
+  n <- n[nas]
 
-  # output in case there are only NAs:
-  if(all(missings)){
+  # unique regions and products:
+  R <- unique(r)
+  N <- unique(n)
 
-    # set output to NA:
-    out <- list(NA_character_)
+  # set starting parameters:
+  j <- 1 # iteration of loop
+  Rtmp <- NULL # regions in j-th group
+  out <- list() # container to store regional groups
 
-  }else{
+  # loop as long as regions are present in the vector:
+  while(length(r) > 0){
 
-    # explanation:
-    # a) one region and one or multiple product(s)
-    #    -> no regional connections possible -> one connected group of regions
-    # b) multiple regions and one product
-    #    -> all regions connected -> one connected group of regions
-    if(length(unique(region)) <= 1 | length(unique(product)) <= 1){
+    # regions in which first product is present:
+    R1 <- unique(r[n==n[1]])
+    rdiff <- length(R)-length(R1)
 
-      # set output to unique regions:
-      out <- list(unique(region))
+    # loop until there are no additions to the set of regions:
+    while(length(R1)<unique(length(r)) & rdiff>0L){
 
-    }else{
+      # regions in which first and all other products are present:
+      R1tmp <- unique(r[n%in%n[r%in%R1]])
 
-      # set starting parameters:
-      j <- 1 # iteration of loop
-      R <- NULL # regions in j-th group
-      out <- list() # container to store regional groups
+      # check if new regions were added:
+      rdiff <- length(R1tmp)-length(R1)
 
-      # loop as long as regions are present in the vector:
-      while(length(region) > 0){
-
-        # regions in which "first" product is present:
-        r_fst <- unique(region[product == product[1]])
-
-        # set start parameter:
-        i <- 1 # iteration of loop
-
-        # loop maximally over all (remaining) unique regions:
-        while(i < length(unique(region))){
-
-          # number of regions at i-th iteration:
-          n0 <- length(r_fst)
-
-          # regions in which "first" and following products are present:
-          r_fst <- unique(region[product %in% product[region %in% r_fst]])
-
-          # break loop when no changes occur, i.e. no regions are added:
-          if(n0 >= length(r_fst)){break()}
-
-          # increment by one:
-          i <- i+1
-
-        }
-
-        # store neighboring regions:
-        out[[j]] <- r_fst
-
-        # regions which are processed, i.e. already assigned to a group and
-        # therefore not available for further processing:
-        R <- c(R, r_fst)
-
-        # index of (remaining) regions:
-        idx_match <- region %in% R
-        # -> all regions when starting
-
-        # subset regions to remaining regions:
-        region <- region[!idx_match]
-
-        # subset products to remianing regions:
-        product <- product[!idx_match]
-
-        # increment by one:
-        j <- j+1
-
-      }
+      # new set of regions:
+      R1 <- R1tmp
 
     }
+
+    # store neighboring regions:
+    out[[j]] <- R1
+    # if there is only one region or only one product,
+    # the data is always connected
+
+    # regions which are processed, i.e. already assigned to a group and
+    # therefore not available for further processing:
+    Rtmp <- c(Rtmp, R1)
+
+    # subset to remaining regions an products:
+    idx <- r%in%Rtmp # all regions when starting
+    r <- r[!idx]
+    n <- n[!idx]
+
+    # increment by one:
+    j <- j+1
 
   }
 
   # divide into groups of connected regions:
   if(simplify){
 
-    # store neighbors as vector:
-    ngbs_all <- unlist(x = out, use.names = FALSE)
-
-    # add names:
-    names(ngbs_all) <- rep(x = 1:length(out), times = lengths(out))
+    # store groups of neighboring regions as named vector:
+    ngbs <- unlist(x=out, use.names=FALSE)
+    if(length(ngbs)>0L) names(ngbs) <- rep(x=1:length(out), times=lengths(out))
 
     # remove NAs in order to prevent matching between NAs:
-    ngbs_all <- ngbs_all[!is.na(ngbs_all)]
+    ngbs <- ngbs[!is.na(ngbs)]
 
-    # assign regions to corresponding groups:
-    as.factor(names(ngbs_all)[match(x = region0, table = ngbs_all)])
-
-  }else{
-
-    # unique list elements form regional connections:
-    out
+    # match groups of neighboring regions with individual regions:
+    out <- names(ngbs)[match(x=r0, table=ngbs)]
+    out <- as.integer(out)
 
   }
 
+  # return output:
+  return(out)
+
 }
 
-# connect price data:
+# connect data:
 connect <- function(r, n){
 
   # @description:
@@ -138,208 +157,130 @@ connect <- function(r, n){
   # logical indicating the observations to be kept
 
   # divide into connected region groups:
-  ngbs <- neighbors(r = r, n = n, simplify = TRUE)
+  ngbs <- neighbors(r=r, n=n, simplify=TRUE)
 
   # frequency count of observations by group:
-  ngbs.tab <- table(ngbs, useNA = "no")
+  ngbs.tab <- table(ngbs, useNA="no")
 
   # logical indicating the observations to be kept:
-  ngbs %in% names(which.max(ngbs.tab))
+  return(ngbs%in%names(which.max(ngbs.tab)))
 
 }
 
-# flag if region-product-sample is connected:
-is.connected <- function(r, n){
+# compute number of index pairs:
+pairs <- function(r, n){
 
   # input checks:
-  check.char(x=r)
-  check.char(x=n)
+  check.char(x=r, min.len=0)
+  check.char(x=n, min.len=0)
   check.lengths(x=r, y=n)
 
   # coerce input vectors to character:
-  region <- as.character(r)
-  product <- as.character(n)
+  r <- as.character(r)
+  n <- as.character(n)
 
   # drop missing values:
-  missings <- is.na(region) | is.na(product)
-  region <- region[!missings]
-  product <- product[!missings]
+  nas <- stats::complete.cases(r, n)
+  r <- r[nas]
+  n <- n[nas]
 
-  # output in case there are only NAs:
-  if(all(missings)){
+  # regional occurrences by product:
+  X0 <- as.matrix(x=table(n, r, useNA="no"), drop=FALSE)
 
-    # set output to NA:
-    out <- as.logical(NA)
+  # matrix of direct region pairs:
+  X1 <- crossprod(x=X0)
 
-  }else{
+  # remove redundant pairs (e.g., A to B versus B to A, or A to A):
+  X1[lower.tri(X1, diag=FALSE)] <- 0L
+  diag(X1) <- 0L
 
-    # explanation:
-    # a) one region and one or multiple product(s)
-    #    -> no regional connections possible -> one connected group of regions
-    # b) multiple regions and one product
-    #    -> all regions connected -> one connected group of regions
-    if(length(unique(region)) <= 1 | length(unique(product)) <= 1){
-
-      # set output to TRUE:
-      out <- TRUE
-
-    }else{
-
-      # regions in which "first" product is present:
-      r_fst <- unique(region[product == product[1]])
-
-      # set start parameter:
-      i <- 1 # iteration of loop
-
-      # loop maximally over all (remaining) unique regions:
-      while(i < length(unique(region))){
-
-        # number of regions at i-th iteration:
-        n0 <- length(r_fst)
-
-        # regions in which "first" and following products are present:
-        r_fst <- unique(region[product %in% product[region %in% r_fst]])
-
-        # break loop when no changes occur, i.e. no regions are added:
-        if(n0 >= length(r_fst)){break()}
-
-      }
-
-      # check if all regions are present in this group:
-      out <- all(unique(region) %in% r_fst)
-      # -> if this is not the case, then there are multiple,
-      #    separated groups
-
-    }
-
-  }
-
-  # print output to console:
-  out
+  # compute number of region pairs:
+  return(sum(X1>0L))
 
 }
 
-# get amount of computable pairwise comparisons:
-comparisons <- function(r, n, ngbs=NULL){
+# compute number of gaps:
+gaps <- function(r, n, relative=TRUE){
 
   # input checks:
-  check.char(x=r)
-  check.char(x=n)
+  check.char(x=r, min.len=0)
+  check.char(x=n, min.len=0)
+  check.log(x=relative, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
   check.lengths(x=r, y=n)
-  if(!is.null(ngbs)){if(!is.list(ngbs)){stop("'Wrong input for 'ngbs': list or NULL expected.")}}
 
   # coerce input vectors to character:
-  region <- as.character(r)
-  product <- as.character(n)
-
-  # create copy of initial region vector:
-  region0 <- region
-
-  # drop missing values:
-  missings <- is.na(region) | is.na(product)
-  region <- region[!missings]
-  product <- product[!missings]
-
-  # output in case there are only NAs:
-  if(all(missings)){
-
-    # store all numbers:
-    out <- data.table("group_id" = 1L,
-                      "group_members" = NA_character_,
-                      "group_size" = NA_integer_,
-                      "total" = NA_integer_,
-                      "direct" = NA_integer_,
-                      "indirect" = NA_character_,
-                      "n_obs" = NA_integer_)
-
-  }else{
-
-    # regional occurences by product:
-    X0 <- as.matrix(x = table(product, region, useNA = "no"))
-
-    # number of observations that contain interregional information:
-    n0 <- colSums(X0[rowSums(X0) > 1, , drop = FALSE])
-
-    # remove duplicated pairs, e.g. in case one product
-    # is observed multiple times in multiple regions:
-    X0[X0 > 1] <- 1
-
-    # matrix of 1st/direct neighbors:
-    X1 <- crossprod(x = X0)
-    # -> this is the time consuming part when there are
-    #    many regions and/or products!
-
-    # remove redundant pairs, e.g. comparison of A with B
-    # is the same as B with A:
-    X1[lower.tri(X1, diag = FALSE)] <- 0
-
-    # transform to data.table:
-    ngbs1 <- as.data.frame(as.table(X1), stringsAsFactors = FALSE)
-
-    # set names:
-    names(ngbs1) <- c("var1", "var2", "freq")
-
-    # remove further redundant pairs, e.g. comparison of A with A,
-    # and pairs which are not present in the data:
-    ngbs1 <- ngbs1[(ngbs1$var1!=ngbs1$var2) & ngbs$freq>0, ]
-
-    # divide into groups of connected regions:
-    if(is.null(ngbs)){ngbs <- neighbors(r = region, n = product, simplify = FALSE)}
-
-    # region groups:
-    groups <- as.vector(unlist(x = lapply(X = ngbs, FUN = function(i) if(length(i) > 5){paste(paste(i[1:5], collapse = ";"), "...", sep = ";")}else{paste(i, collapse = ";")}), use.names = FALSE))
-
-    # group size:
-    group_size <- as.vector(unlist(x = lapply(X = ngbs, FUN = length), use.names = FALSE))
-
-    # number of directly connected regional pairs:
-    n_dir <- as.vector(unlist(x = lapply(X = ngbs, FUN = function(i) sum(ngbs1$var1 %in% i)), use.names = FALSE))
-
-    # number of direct and indirect ('total') regional pairs:
-    n_total <- as.vector(unlist(x = lapply(X = ngbs, FUN = function(i) length(i)*(length(i)-1)/2), use.names = FALSE))
-
-    # number of indirectly connected regional pairs:
-    n_ind <- n_total - n_dir
-
-    # number observations that provide interregional information:
-    n_obs <- unlist(x = lapply(X = ngbs, FUN = function(i) sum(n0[match(i, names(n0))])), use.names = FALSE)
-
-    # bundle summary measures:
-    out <- data.table("group_id" = as.integer(1:length(ngbs)),
-                      "group_members" = as.character(groups),
-                      "group_size" = as.integer(group_size),
-                      "total" = as.integer(n_total),
-                      "direct" = as.integer(n_dir),
-                      "indirect" = as.integer(n_ind),
-                      "n_obs" = as.integer(n_obs))
-
-  }
-
-  # set key:
-  setkeyv(x = out, cols = "group_id")
-
-  # print output to console:
-  out[]
-
-}
-
-# function to compute sparsity of price data:
-sparsity <- function(r, n, useable=FALSE){
-
-  # input checks:
-  check.char(x=r)
-  check.char(x=n)
-  check.log(x=useable, min.len=1, max.len=1, miss.ok=TRUE, na.ok=FALSE)
-  check.lengths(x=r, y=n)
+  r <- as.character(r)
+  n <- as.character(n)
 
   # number of regions by product:
-  freq_tab <- as.matrix(table(n, r, useNA = "no"), drop = FALSE)
+  freqtab <- as.matrix(table(n, r, useNA="no"), drop=FALSE)
 
   # subset to products which are priced in multiple regions:
-  if(useable){freq_tab <- freq_tab[rowSums(freq_tab) > 1, , drop = FALSE]}
+  freqtab <- freqtab[rowSums(freqtab)>1L, , drop=FALSE]
 
-  # compute sparsity of price data:
-  as.vector(x = 1 - sum(freq_tab > 0)/prod(dim(freq_tab)), mode = "numeric")
+  # compute gaps in price data ignoring duplicated observations:
+  if(nrow(freqtab)>0L){
+    if(relative){
+      out <- 1-sum(freqtab>0L)/prod(dim(freqtab))
+    }else{
+      out <- prod(dim(freqtab))-sum(freqtab>0L)
+    }
+  }else{
+    out <- NA_real_
+  }
+
+  # numeric vector:
+  out <- as.vector(x=out, mode="numeric")
+
+  # return output:
+  return(out)
+
+}
+
+# summarize data properties:
+properties <- function(r, n){
+
+  # input checks:
+  check.char(x=r, min.len=0)
+  check.char(x=n, min.len=0)
+  check.lengths(x=r, y=n)
+
+  # coerce input vectors to character:
+  dt <- data.table("r"=as.character(r), "n"=as.character(n))
+
+  # drop missing values:
+  dt <- dt[stats::complete.cases(r, n), ]
+
+  # drop duplicated observations in line with the data
+  # processing of index formulas:
+  dt <- unique(x=dt, by=c("r","n"))
+
+  # add region group identifier:
+  dt[, "group" := neighbors(r=r, n=n, simplify=TRUE)]
+
+  # unique regions, share of gaps and number of region pairs per group:
+  out <- dt[, list("regions"=list(unique(r)), "gaps"=gaps(r=r, n=n), "pairs"=pairs(r=r, n=n)), by="group"]
+
+  # add group size:
+  regions <- NULL # avoid global bindings note when checking
+  out[, "size" := lengths(regions)]
+
+  # add number of unique products and observations with interregional content:
+  out <- merge(x=out,
+               y=dt[, .N, by=c("group","n")][N>1L, list("nprods"=.N, "nobs"=sum(N)), by="group"],
+               by="group", all.x=TRUE, sort=FALSE)
+
+  # adjust values:
+  out[pairs<1L, c("nprods","nobs") := 0L]
+
+  # set column order and key:
+  neword <- c("group","size","regions","pairs","nprods","nobs","gaps")
+  data.table::setcolorder(x=out, neworder=neword)
+  data.table::setindex(x=out, NULL)
+  data.table::setkeyv(x=out, cols="group")
+
+  # return output:
+  return(out[])
 
 }
 
