@@ -2,11 +2,12 @@
 
 # Title:  Define globals
 # Author: Sebastian Weinand
-# Date:   5 February 2024
+# Date:   22 July 2024
 
 # see https://community.rstudio.com/t/how-to-solve-no-visible-binding-for-global-variable-note/28887
 utils::globalVariables(
-  c("p_base",
+  c("is_base",
+    "p_base",
     "q_base",
     "w_base",
     "p_qbase",
@@ -20,7 +21,8 @@ utils::globalVariables(
     "turnover",
     "prod_turnover",
     "quantity",
-    "product")
+    "product",
+    "N")
   )
 
 # END
