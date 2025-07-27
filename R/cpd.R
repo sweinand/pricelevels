@@ -2,7 +2,7 @@
 
 # Title:  Linear and nonlinear CPD regression
 # Author: Sebastian Weinand
-# Date:   16 May 2024
+# Date:   20 June 2025
 
 # CPD method:
 cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list()){
@@ -15,18 +15,19 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
   if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
   if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
   if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
-  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
-  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
-  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
 
   # input checks:
   if(settings$check.inputs){
 
     # main inputs:
-    check.num(x=p, int=c(0, Inf))
+    check.num(x=p, int=c(0.001, Inf))
     check.char(x=r)
     check.char(x=n)
     check.num(x=w, null.ok=TRUE, int=c(0, Inf))
@@ -122,7 +123,7 @@ cpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=list
 
     # compute price ratios:
     setnames(x=pdata, old=c("lnP","pi"), new=c("r","n"))
-    pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+    pdata[, "ratio":=ratios(p=p, r=r, n=n, q=q, w=w, base=base, settings=list(chatty=FALSE, static=TRUE))]
     pdata[, "region":=factor(r, levels=r.lvl)]
     plot.pricelevels(data=pdata, P=out)
 
@@ -155,19 +156,18 @@ nlcpd_self_start <- function(p, r, n, w, w.delta, base=NULL, strategy="s1"){
 
   if(strategy == "s1"){
 
-    pi <- dt[, stats::weighted.mean(log(p), w), by="n"]
-    pi <- stats::setNames(pi$V1, pi$n)
-    pi <- pi[match(n.lev, names(pi))]
+    lnpi <- dt[, stats::weighted.mean(log(p), w), by="n"]
+    lnpi <- stats::setNames(lnpi$V1, lnpi$n)
+    lnpi <- lnpi[match(n.lev, names(lnpi))]
     lnP <- dt[, stats::weighted.mean(log(p), w), by="r"]
     lnP <- stats::setNames(lnP$V1, lnP$r)
     lnP <- lnP[match(r.lev, names(lnP))]
     if(is.null(base)){
-      lnP <- lnP[-length(lnP)]-mean(lnP)
+      lnP <- lnP-mean(lnP)
     }else{
-      lnP <- lnP[-1]-lnP[1] # nlcpd() relevels according to base, hence base is first position
+      lnP <- lnP-lnP[names(lnP)==base] # nlcpd() relevels according to base, hence base is first position
     }
-    delta <- rep(1, length(pi)-1)
-    names(delta) <- n.lev[-1]
+    delta <- stats::setNames(rep(1, length(lnpi)), n.lev)
 
   }
 
@@ -176,13 +176,12 @@ nlcpd_self_start <- function(p, r, n, w, w.delta, base=NULL, strategy="s1"){
     mod.cpd <- dt[, cpd(p=p, r=r, n=n, w=w, base=base, simplify=FALSE)]
     beta.cpd <- stats::dummy.coef(mod.cpd)
     lnP <- beta.cpd$lnP
-    pi <- beta.cpd$pi
+    lnpi <- beta.cpd$pi
     # if only one product:
-    if(is.null(pi)) pi <- stats::setNames(beta.cpd[["(Intercept)"]], n.lev)
+    if(is.null(lnpi)) lnpi <- stats::setNames(beta.cpd[["(Intercept)"]], n.lev)
 
     if(strategy == "s2"){
-      delta <- rep(1, length(pi)-1)
-      names(delta) <- n.lev[-1]
+      delta <- stats::setNames(rep(1, length(lnpi)), n.lev)
     }
 
     if(strategy == "s3"){
@@ -190,18 +189,26 @@ nlcpd_self_start <- function(p, r, n, w, w.delta, base=NULL, strategy="s1"){
       d <- w_delta <- NULL
 
       dt$lnP <- lnP[match(dt$r, names(lnP))]
-      dt$pi <- pi[match(dt$n, names(pi))]
-      dt.delta <- dt[ , list("d"=sum(lnP*(log(p)-pi)/sum(lnP^2)), "w_delta"=w_delta[1]), by="n"]
+      dt$lnpi <- lnpi[match(dt$n, names(lnpi))]
+      dt.delta <- dt[ , list("d"=sum(lnP*(log(p)-lnpi)/sum(lnP^2)), "w_delta"=w_delta[1]), by="n"]
       delta <- stats::setNames(dt.delta[, d/sum(d*w_delta)], dt.delta$n)
       delta <- delta[match(n.lev, names(delta))]
-      delta <- delta[-1]
-    }
 
-    if(is.null(base)) lnP <- lnP[-length(lnP)] else lnP <- lnP[-1]
+    }
 
   }
 
-  list("lnP"=lnP, "pi"=pi, "delta"=delta)
+  # reorder:
+  lnP <- lnP[match(x=r.lev, table=names(lnP))]
+  delta <- delta[match(x=n.lev, table=names(delta))]
+
+  # drop one parameter in lnP and delta:
+  if(is.null(base)) lnP <- lnP[-length(lnP)] else lnP <- lnP[names(lnP)!=base]
+  delta <- delta[-1]
+
+  # return parameter start values:
+  res <- list("lnP"=lnP, "pi"=lnpi, "delta"=delta)
+  return(res)
 
 }
 
@@ -347,7 +354,7 @@ nlcpd_jacobi <- function(par, n, r, w=NULL, w.delta, base=NULL){
 
   # (B) jacobian of lnP:
   if(is.null(base)) contr.lnP <- "contr.sum" else contr.lnP <- "contr.treatment"
-  B <- dt$delta*stats::model.matrix(~r, data=dt, xlev=list("r"=names(lnP)), contrasts.arg = list("r"=contr.lnP))[,-1]
+  B <- dt$delta*stats::model.matrix(~r, data=dt, xlev=list("r"=names(lnP)), contrasts.arg = list("r"=contr.lnP))[,-1,drop=FALSE]
   colnames(B) <- paste0("lnP.", setdiff(names(lnP), lnP.base))
 
   # (C) jacobian of delta:
@@ -361,7 +368,7 @@ nlcpd_jacobi <- function(par, n, r, w=NULL, w.delta, base=NULL){
     C <- stats::model.matrix(~n-1, data=dt, xlev=list("n"=names(delta)))
     # delta.base is always at first position. hence, also weight of
     # delta.base is at first position due to matching above
-    C <- dt$lnP*(C[,-1]-C[,1]%*%matrix(data=w.delta[-1]/w.delta[1], nrow=1L))
+    C <- dt$lnP*(C[,-1,drop=FALSE]-C[,1]%*%matrix(data=w.delta[-1]/w.delta[1], nrow=1L))
     # old approach:
     # C <- model.matrix(~n, data=dt, xlev=list("n"=c(setdiff(names(delta), delta.base), delta.base)), contrasts.arg = list("n"="contr.sum"))[,-1]
     # C[C<0] <- (-1)*matrix(data=w[-1]/w[1], ncol=length(w[-1]), nrow=length(C[C<0])/length(w[-1]), byrow=TRUE)
@@ -388,21 +395,22 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
   if(is.null(settings$chatty)) settings$chatty <- getOption("pricelevels.chatty")
   if(is.null(settings$connect)) settings$connect <- getOption("pricelevels.connect")
   if(is.null(settings$plot)) settings$plot <- getOption("pricelevels.plot")
+  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
   if(is.null(settings$use.jac)) settings$use.jac <- FALSE
   if(is.null(settings$self.start)) settings$self.start <- "s1"
   if(is.null(settings$w.delta)) settings$w.delta <- NULL
 
   # non-exported settings:
-  if(is.null(settings$check.inputs)) settings$check.inputs <- getOption("pricelevels.check.inputs")
-  if(is.null(settings$missings)) settings$missings <- getOption("pricelevels.missings")
-  if(is.null(settings$duplicates)) settings$duplicates <- getOption("pricelevels.duplicates")
-  if(is.null(settings$norm.weights)) settings$norm.weights <- TRUE
+  if(is.null(settings$check.inputs)) settings$check.inputs <- TRUE
+  if(is.null(settings$missings)) settings$missings <- TRUE
+  if(is.null(settings$prods)) settings$prods <- TRUE
+  if(is.null(settings$duplicates)) settings$duplicates <- TRUE
 
   # input checks:
   if(settings$check.inputs){
 
     # main inputs:
-    check.num(x=p, int=c(0, Inf))
+    check.num(x=p, int=c(0.001, Inf))
     check.char(x=r)
     check.char(x=n)
     check.num(x=w, null.ok=TRUE, int=c(0, Inf))
@@ -573,7 +581,7 @@ nlcpd <- function(p, r, n, q=NULL, w=NULL, base=NULL, simplify=TRUE, settings=li
     if(settings$plot){
 
       # compute price ratios:
-      pdata[, "ratio":=ratios(p=p, r=r, n=n, base=base, static=TRUE, settings=list(chatty=FALSE))]
+      pdata[, "ratio":=ratios(p=p, r=r, n=n, q=q, w=w, base=base, settings=list(chatty=FALSE, static=TRUE))]
       pdata[, "region":=factor(r, levels=r.lvl)]
       plot.pricelevels(data=pdata, P=out)
 
